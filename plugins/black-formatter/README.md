@@ -21,9 +21,19 @@ The plugin uses a PostToolUse hook that:
 3. Checks if the file ends with `.py`
 4. Runs `uv tool run black` to format the file
 
+## Version Configuration
+
+Black's version is pinned in the plugin script (`scripts/format-python.sh`).
+
+To use a different version, set the `BLACK_VERSION` environment variable:
+
+```bash
+export BLACK_VERSION="24.8.0"
+```
+
 ## Black configuration
 
-To customize the defaults used by `black`, add a config section to your `pyproject.toml`:
+To customize Black's formatting behavior, add a config section to your `pyproject.toml`:
 
 ```toml
 [tool.black]

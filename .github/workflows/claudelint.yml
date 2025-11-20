@@ -9,6 +9,8 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      CLAUDELINT_VERSION: "0.1.0"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,4 +19,4 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Run claudelint
-        run: uv tool run claudelint --strict .
+        run: uv tool run "claudelint@${CLAUDELINT_VERSION}" --strict .

@@ -9,6 +9,14 @@ on:
 jobs:
   black:
     runs-on: ubuntu-latest
+    env:
+      BLACK_VERSION: "24.10.0"
     steps:
-      - uses: actions/checkout@v4
-      - uses: psf/black@stable
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Run Black
+        run: uv tool run "black@${BLACK_VERSION}" --check --diff .

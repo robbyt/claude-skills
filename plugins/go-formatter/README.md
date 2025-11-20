@@ -21,6 +21,12 @@ The plugin uses a PostToolUse hook that:
 3. Checks if the file ends with `.go`
 4. Runs `gofmt -w` to format the file in-place
 
+## Version Information
+
+`gofmt` is bundled with Go, so its version matches your installed Go version. No separate version pinning is needed.
+
+Requires Go 1.16 or later.
+
 ## Note
 
 Once this plugin is installed, you can remove the PostToolUse hook from `~/.claude/settings.json` to avoid running gofmt twice.
