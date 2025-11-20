@@ -1,0 +1,11 @@
+{
+  "name": "claude-md-reflect",
+  "description": "Analyze chat history to identify areas for improving CLAUDE.md instruction files",
+  "version": "1.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["claude-md", "reflection", "improvement", "documentation"]
+}

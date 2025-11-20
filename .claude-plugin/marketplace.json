@@ -1,0 +1,25 @@
+{
+  "name": "robbyt-claude-skills",
+  "owner": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "metadata": {
+    "description": "Collection of Claude Code skills for developer workflows",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "claude-md-reflect",
+      "description": "Analyze chat history to identify areas for improving CLAUDE.md instruction files. Use when the user says 'reflect on CLAUDE.md', 'improve CLAUDE.md', or requests analysis of instruction files after a work session. Reviews recent conversation for misunderstandings, inconsistencies, or areas where instructions could be clearer.",
+      "source": "./plugins/claude-md-reflect",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": ["claude-md", "reflection", "improvement", "documentation"],
+      "strict": true
+    }
+  ]
+}
