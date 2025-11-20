@@ -1,0 +1,12 @@
+{
+  "name": "go-formatter",
+  "description": "Automatically format Go files with gofmt after Write/Edit/MultiEdit operations",
+  "version": "1.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["go", "golang", "formatter", "gofmt", "hooks"],
+  "hooks": "./hooks/hooks.json"
+}

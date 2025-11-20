@@ -20,6 +20,18 @@
       "license": "MIT",
       "keywords": ["claude-md", "reflection", "improvement", "documentation"],
       "strict": true
+    },
+    {
+      "name": "go-formatter",
+      "description": "Automatically format Go files with gofmt after Write/Edit/MultiEdit operations",
+      "source": "./plugins/go-formatter",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": ["go", "golang", "formatter", "gofmt", "hooks"],
+      "strict": true
     }
   ]
 }
