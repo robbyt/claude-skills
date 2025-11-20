@@ -21,6 +21,13 @@ Updating skills:
 3. Select `robbyt-claude-skills`
 4. Select the plugins you wish to update
 
+## Requirements
+
+These plugins require the following tools to be installed:
+
+- `uv` - Python package installer and runner ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
+- `jq` - JSON processor for parsing tool input
+
 ## Security
 
 **Important:** Claude Code plugins can contain scripts that run on your local computer. Only install plugins from sources you trust!

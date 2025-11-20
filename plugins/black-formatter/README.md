@@ -23,11 +23,11 @@ The plugin uses a PostToolUse hook that:
 
 ## Black configuration
 
-Black uses sensible defaults. To customize, add to your `pyproject.toml`:
+To customize the defaults used by `black`, add a config section to your `pyproject.toml`:
 
 ```toml
 [tool.black]
-line-length = 88
+line-length = 100
 target-version = ["py311"]
 ```
 
