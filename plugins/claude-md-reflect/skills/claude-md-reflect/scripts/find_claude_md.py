@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-TARGET_FILENAME = 'CLAUDE.md'
+TARGET_FILENAME = "CLAUDE.md"
 
 
 def find_claude_md_files(root_dir="."):
