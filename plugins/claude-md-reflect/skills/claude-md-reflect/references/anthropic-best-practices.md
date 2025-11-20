@@ -2,6 +2,10 @@
 
 Reference: Official Anthropic documentation
 
+- https://code.claude.com/docs/en/memory
+- https://www.anthropic.com/engineering/claude-code-best-practices
+
+
 ## What to Include
 
 - Common bash commands with descriptions

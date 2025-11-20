@@ -1,6 +1,6 @@
 # CLAUDE.md Anti-Patterns
 
-Common mistakes to avoid when writing or improving CLAUDE.md files.
+Common mistakes to avoid when writing or improving CLAUDE.md files. You should AVOID the following:
 
 ## Vague or Subjective Instructions
 
