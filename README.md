@@ -28,35 +28,17 @@ Consider enabling the sandbox feature in Claude Code: `/sandbox` (see [sandboxin
 
 ## Available Plugins
 
-### claude-md-reflect
+### [claude-md-reflect](plugins/claude-md-reflect/)
 
-Analyzes chat history to identify improvements for CLAUDE.md instruction files.
+Analyzes chat history to identify improvements for CLAUDE.md instruction files. Trigger with `reflect on CLAUDE.md`.
 
-**Usage:**
-```
-reflect on CLAUDE.md
-```
+[Read more →](plugins/claude-md-reflect/README.md)
 
-**What it does:**
-- Reviews session history for misunderstandings and issues
-- Proposes specific CLAUDE.md improvements
-- Presents changes with checkboxes for approval
-- Updates CLAUDE.md files with approved changes
+### [go-formatter](plugins/go-formatter/)
 
-### go-formatter
+Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
 
-Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations.
-
-**Usage:**
-Runs automatically as a PostToolUse hook - no manual invocation needed.
-
-**What it does:**
-- Watches for Write/Edit/MultiEdit tool usage
-- Detects when .go files are modified
-- Automatically runs `gofmt -w` on the file
-- Formats code to Go's standard style
-
-**Note:** Once this plugin is installed, you can remove the PostToolUse hook from `~/.claude/settings.json` to avoid duplication.
+[Read more →](plugins/go-formatter/README.md)
 
 ## Development
 
