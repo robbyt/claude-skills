@@ -32,6 +32,18 @@
       "license": "MIT",
       "keywords": ["go", "golang", "formatter", "gofmt", "hooks"],
       "strict": true
+    },
+    {
+      "name": "black-formatter",
+      "description": "Automatically format Python files with Black after Write/Edit/MultiEdit operations",
+      "source": "./plugins/black-formatter",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": ["python", "black", "formatter", "hooks"],
+      "strict": true
     }
   ]
 }

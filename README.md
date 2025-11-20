@@ -40,6 +40,12 @@ Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operation
 
 [Read more →](plugins/go-formatter/README.md)
 
+### [black-formatter](plugins/black-formatter/)
+
+Automatically formats Python files with `black` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
+
+[Read more →](plugins/black-formatter/README.md)
+
 ## Development
 
 To use locally during development:
