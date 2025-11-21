@@ -417,22 +417,38 @@ maps.DeleteFunc(m, func(k string, v int) bool {
 })
 ```
 
-**Replacing manual slice copying**:
+**Replacing manual slice and map copying**:
 
 **Bad**:
 ```go
+// Slice
 func (d *Driver) SetTrips(trips []Trip) {
   d.trips = make([]Trip, len(trips))
   copy(d.trips, trips)
+}
+
+// Map
+func (d *Driver) SetCache(cache map[string]int) {
+  d.cache = make(map[string]int, len(cache))
+  for k, v := range cache {
+    d.cache[k] = v
+  }
 }
 ```
 
 **Good**:
 ```go
-import "slices"
+import (
+  "maps"
+  "slices"
+)
 
 func (d *Driver) SetTrips(trips []Trip) {
   d.trips = slices.Clone(trips)
+}
+
+func (d *Driver) SetCache(cache map[string]int) {
+  d.cache = maps.Clone(cache)
 }
 ```
 

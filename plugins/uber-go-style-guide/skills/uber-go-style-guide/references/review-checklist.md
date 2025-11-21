@@ -437,9 +437,15 @@ func (c *Cache) Get(key string) string {
 ### Manual Slice and Map Operations (Should Use slices/maps Package)
 ```go
 // BAD - Manual operations
-original := []int{1, 2, 3}
+// Slice copy
 copy := make([]int, len(original))
 copy(copy, original)
+
+// Map copy
+m2 := make(map[string]int, len(m))
+for k, v := range m {
+  m2[k] = v
+}
 
 // GOOD - Use slices/maps package (Go 1.21+)
 import (
@@ -449,7 +455,7 @@ import (
 
 copy := slices.Clone(original)
 slices.Sort(items)
-mapCopy := maps.Clone(m)
+m2 := maps.Clone(m)
 ```
 
 ### Manual Context Cancellation in Tests
