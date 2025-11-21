@@ -115,6 +115,34 @@ doWork()
 
 ## Important Issues (Should Fix)
 
+### Unnecessary Loop Capture
+```go
+// BAD
+for _, v := range values {
+  v := v  // Remove this!
+  go func() { ... }()
+}
+```
+
+### Legacy Interface Usage
+```go
+// BAD
+func handle(v interface{})
+
+// GOOD
+func handle(v any)
+```
+
+### Unsafe Path Joining
+```go
+// BAD
+os.Open(filepath.Join(dir, name))
+
+// GOOD (Go 1.24+)
+root, _ := os.OpenRoot(dir)
+root.Open(name)
+```
+
 ### Handling Errors Multiple Times
 ```go
 // BAD - Logs AND returns
@@ -406,19 +434,32 @@ func (c *Cache) Get(key string) string {
 }
 ```
 
-### Manual Slice Operations (Should Use slices Package)
+### Manual Slice and Map Operations (Should Use slices/maps Package)
 ```go
 // BAD - Manual operations
 original := []int{1, 2, 3}
 copy := make([]int, len(original))
 copy(copy, original)
 
-// GOOD - Use slices package (Go 1.21+)
-import "slices"
+// GOOD - Use slices/maps package (Go 1.21+)
+import (
+  "maps"
+  "slices"
+)
 
 copy := slices.Clone(original)
 slices.Sort(items)
-found := slices.Contains(items, value)
+mapCopy := maps.Clone(m)
+```
+
+### Manual Context Cancellation in Tests
+```go
+// BAD
+ctx, cancel := context.WithCancel(context.Background())
+defer cancel()
+
+// GOOD (Go 1.24+)
+ctx := t.Context()
 ```
 
 ### time.Sleep in Tests (Should Use testing/synctest)

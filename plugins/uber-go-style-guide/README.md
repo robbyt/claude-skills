@@ -6,8 +6,9 @@ Reviews Go code for adherence to Uber's Go Style Guide.
 
 **Go 1.25.0 or later required.** This style guide uses modern Go features including:
 - Automatic loop variable scoping (Go 1.22+)
-- Generic slice functions and iterators (Go 1.21-1.23)
-- Testing improvements (`testing/synctest`, `b.Loop()`) (Go 1.24-1.25)
+- Generic slice/map functions and iterators (Go 1.21-1.23)
+- JSON `omitzero` and `os.Root` filesystem safety (Go 1.24)
+- Testing improvements (`testing/synctest`, `b.Loop()`, `t.Context()`) (Go 1.24-1.25)
 
 ## Usage
 

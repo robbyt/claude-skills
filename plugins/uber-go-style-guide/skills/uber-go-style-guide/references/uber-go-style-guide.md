@@ -37,6 +37,26 @@ Recommended linting tools: `staticcheck`, `golangci-lint`, and `go vet`.
 
 ## Interface & Type Handling
 
+### Use any instead of interface{}
+
+Use the `any` alias (Go 1.18+) for empty interfaces.
+
+**Bad**:
+```go
+func log(v interface{}) {
+  // ...
+}
+```
+
+**Good**:
+```go
+func log(v any) {
+  // ...
+}
+```
+
+---
+
 ### Pointers to Interfaces
 
 **Bad**:
@@ -197,6 +217,28 @@ func NewSMap() *SMap {
 
 ## Data Management
 
+### JSON omitzero
+
+Use the `omitzero` struct tag (Go 1.24+) to omit zero values during marshaling, replacing error-prone `omitempty` pointer patterns.
+
+**Bad**:
+```go
+type User struct {
+  // Pointer used only to allow omitting zero value (0)
+  Age *int `json:"age,omitempty"`
+}
+```
+
+**Good**:
+```go
+type User struct {
+  // Clearer intent, no pointer needed
+  Age int `json:"age,omitzero"`
+}
+```
+
+---
+
 ### Copy Slices and Maps at Boundaries
 
 **Bad**:
@@ -256,6 +298,30 @@ func (s *Stats) Snapshot() []int {
 
 ---
 
+### Safe File System Access
+
+Use `os.Root` (Go 1.24+) for traversal-resistant file access within a directory.
+
+**Bad**:
+```go
+// Vulnerable to "../" traversal
+f, err := os.Open(filepath.Join(dir, filename))
+```
+
+**Good**:
+```go
+root, err := os.OpenRoot(dir)
+if err != nil {
+  return err
+}
+defer root.Close()
+
+// Safe: errors if path escapes root
+f, err := root.Open(filename)
+```
+
+---
+
 ### Defer for Cleanup
 
 **Bad**:
@@ -309,31 +375,46 @@ c := make(chan int, 1)   // Buffered by 1 - specific use case
 
 ---
 
-### Generic Slice Functions
+### Generic Slice and Map Functions
 
-Use the `slices` package (Go 1.21+) for common slice operations instead of manual implementations.
+Use the `slices` and `maps` packages (Go 1.21+) for common operations instead of manual implementations.
 
-**Example operations**:
+**Slices**:
 ```go
 import "slices"
 
 // Clone - replaces manual copy
 original := []int{1, 2, 3}
-copy := slices.Clone(original)  // More readable than make+copy
+copy := slices.Clone(original)
 
 // Sort - generic sorting
 items := []string{"c", "a", "b"}
-slices.Sort(items)  // In-place sort
+slices.Sort(items)
 
 // Compact - remove consecutive duplicates
 data := []int{1, 1, 2, 2, 3}
-unique := slices.Compact(data)  // Returns []int{1, 2, 3}
+unique := slices.Compact(data)
+```
 
-// Contains - membership test
-found := slices.Contains(items, "a")
+**Maps**:
+```go
+import "maps"
 
-// Equal - deep equality
-same := slices.Equal([]int{1, 2}, []int{1, 2})
+// Clone
+m := map[string]int{"a": 1}
+copy := maps.Clone(m)
+
+// Equal
+m1 := map[string]int{"a": 1}
+m2 := map[string]int{"a": 1}
+if maps.Equal(m1, m2) {
+  // ...
+}
+
+// DeleteFunc (Go 1.21+)
+maps.DeleteFunc(m, func(k string, v int) bool {
+  return v%2 == 0
+})
 ```
 
 **Replacing manual slice copying**:
@@ -676,6 +757,31 @@ func New() (*Config, error) {
 ```
 
 **Why**: Dependency injection improves testability by allowing mock substitution.
+
+---
+
+### Loop Variable Scoping
+
+Do not manually capture loop variables. Go 1.22+ handles this automatically.
+
+**Bad**:
+```go
+for _, v := range values {
+  v := v // Unnecessary!
+  go func() {
+    process(v)
+  }()
+}
+```
+
+**Good**:
+```go
+for _, v := range values {
+  go func() {
+    process(v)
+  }()
+}
+```
 
 ---
 
@@ -1436,6 +1542,33 @@ func TestConcurrent(t *testing.T) {
   if !<-done {
     t.Fatal("operation failed") // Only in main test goroutine
   }
+}
+```
+
+---
+
+### Context in Tests
+
+Use `t.Context()` (Go 1.24+) to obtain a context that is automatically canceled when the test completes.
+
+**Bad**:
+```go
+func TestService(t *testing.T) {
+  ctx, cancel := context.WithCancel(context.Background())
+  defer cancel()  // Manual cleanup
+
+  result, err := service.Run(ctx)
+  // ...
+}
+```
+
+**Good**:
+```go
+func TestService(t *testing.T) {
+  ctx := t.Context()  // Auto-canceled on cleanup
+
+  result, err := service.Run(ctx)
+  // ...
 }
 ```
 
