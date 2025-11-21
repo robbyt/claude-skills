@@ -20,10 +20,10 @@ Trigger the skill by requesting a code review:
 
 ## What it does
 
-- Reviews Go code for critical bugs and important maintainability issues
-- Checks for common violations like unhandled errors, race conditions, and panics
-- Provides specific, actionable feedback with code examples
-- Focuses on correctness, concurrency safety, and idiomatic patterns
+- **Focuses on Architecture**: Concurrency patterns, data ownership, and API design
+- **Ignores Linting**: Skips formatting, import ordering, and syntax nitpicks covered by `golangci-lint`
+- **Modernization**: Suggests architectural refactors like `testing/synctest` and `os.Root` adoption
+- **Safety**: Checks for race conditions and goroutine leaks that static analysis misses
 
 ## How it works
 
@@ -40,23 +40,31 @@ The skill uses a 3-phase workflow:
 
 ## Focus Areas
 
-### Critical Issues (Must Fix)
-- Unhandled errors
-- Type assertions without check
-- Panics in production code
-- Fire-and-forget goroutines
-- Mutex races and missing defers
+### Critical Issues (Architecture & Safety)
+- Fire-and-forget goroutines (lifecycle)
+- Mutex races (requires race detector)
+- Panics in production code (context-dependent)
 
-### Important Issues (Should Fix)
-- Error handling patterns
-- Boundary safety (slice/map copying)
-- Struct design and initialization
-- Concurrency lifecycle management
-- Performance optimizations
+### Important Issues (Design & Patterns)
+- Error handling strategy (when/where to handle)
+- Data ownership (boundaries, copying)
+- Concurrency patterns (channels, lifecycle)
+- API design (embedding, evolution)
+- Testing strategy (table-driven, parallel, time mocking)
+
+## Recommended Linter Setup
+
+This guide complements (not duplicates) automated tools. Use with:
+
+```bash
+golangci-lint run --enable=errcheck,staticcheck,govet,gocritic,perfsprint,goimports,gci,nilslice,prealloc,thelper
+```
+
+The style guide focuses on what linters can't catch: architectural decisions, ownership semantics, and context-aware patterns.
 
 ## Integration
 
-Works alongside automated linters. Optionally invoke the `golangci-lint` skill for complementary static analysis.
+Works alongside golangci-lint. The skill focuses on semantic issues while linters handle syntax and common bugs.
 
 ## Review Principles
 

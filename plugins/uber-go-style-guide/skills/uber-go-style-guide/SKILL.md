@@ -63,22 +63,19 @@ Review the code systematically using the bundled references:
    - When encountering unfamiliar idioms
    - To verify best practices for specific scenarios
 
-**Grep patterns for common issues**:
+**Grep patterns for architectural issues**:
 ```bash
-# Find potential unhandled errors
-rg '^\s*[a-zA-Z_][a-zA-Z0-9_]*\(' --type go
-
-# Find type assertions
-rg '\.\([a-zA-Z]' --type go
-
-# Find panic usage
+# Find panic usage (context-dependent - init/main vs library)
 rg 'panic\(' --type go
 
-# Find go keyword (goroutines)
+# Find goroutine launches (check lifecycle management)
 rg '\bgo\s+' --type go
 
-# Find os.Exit or log.Fatal outside main
+# Find os.Exit or log.Fatal (should only be in main)
 rg '(os\.Exit|log\.Fatal)' --type go
+
+# Find global var declarations (check for mutable state)
+rg '^var\s+\w+\s*=' --type go
 ```
 
 ### Phase 3: Report Findings
@@ -91,6 +88,8 @@ Structure the review with **Critical** and **Important** issues only (skip Minor
 ## Code Review Summary
 
 [1-2 sentence overview of code quality and adherence]
+
+**Note**: This review focuses on architectural and semantic issues that require human judgment. For syntax, formatting, and common bugs (unhandled errors, type assertions, etc.), ensure `golangci-lint` is run separately.
 
 ## Critical Issues
 
@@ -154,24 +153,26 @@ golangci-lint run
 
 ## Key Focus Areas
 
-### Critical (Must Catch)
-- Unhandled errors
-- Panics in production
-- Race conditions
-- Goroutine lifecycle issues
-- Type assertion failures
+### Critical (Architecture & Safety)
+- Goroutine lifecycle issues (fire-and-forget)
+- Race conditions (requires race detector, not linter)
+- Panics in production (context-dependent: library vs main)
 
-### Important (Should Catch)
-- Error handling patterns (wrapping, multiple handling)
-- Boundary safety (slice/map copying)
-- Exit handling (os.Exit location)
-- Struct design (embedding, initialization)
-- Performance (strconv vs fmt, container capacity)
+### Important (Design & Patterns)
+- Error handling strategy (when/where to handle, observability boundaries)
+- Data ownership (boundaries, copying, shared state)
+- Concurrency patterns (channel sizing, context propagation)
+- API design (embedding, evolution, encapsulation)
+- Testing strategy (table-driven, parallel, time mocking)
 
-### Skip
-- Minor style inconsistencies
-- Line length nitpicks
-- Trivial naming suggestions
+### Skip (Handled by Linters)
+- Unhandled errors (errcheck)
+- Type assertions without checks (staticcheck)
+- Missing struct field names (govet)
+- Import grouping (goimports/gci)
+- Formatting issues (gofmt)
+- Common bugs (staticcheck, govet)
+- Performance nitpicks without profiling data
 
 ## Review Principles
 
@@ -183,13 +184,15 @@ golangci-lint run
 
 ## When to Load Full Style Guide
 
-Load `references/uber-go-style-guide.md` when:
-- Encountering unfamiliar patterns that need detailed explanation
-- User asks about specific style guide sections
-- Need comprehensive examples for a particular topic
-- Verifying best practices for complex scenarios (functional options, advanced concurrency)
+Load `references/review-checklist.md` first for quick architectural patterns - it focuses on semantic issues requiring judgment.
 
-The review-checklist covers 90% of common issues. Load the full guide for the remaining 10%.
+Load `references/uber-go-style-guide.md` when:
+- Need detailed rationale for architectural decisions
+- Encountering unfamiliar patterns (functional options, generic interfaces)
+- User asks about specific style guide sections
+- Verifying best practices for complex scenarios
+
+**Important**: Skip reporting issues that golangci-lint would catch. The agent should focus on design, architecture, and context-dependent patterns that require human understanding.
 
 ## Context Matters
 

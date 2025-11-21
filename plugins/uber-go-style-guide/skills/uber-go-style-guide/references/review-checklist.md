@@ -1,48 +1,12 @@
-# Review Checklist - Common Violations
+# Review Checklist - Architectural & Semantic Patterns
 
-Quick reference for frequently violated patterns in Go code. Use this to prioritize review focus.
+Quick reference for patterns requiring human judgment. Linter-caught issues (unhandled errors, type assertions, formatting, etc.) are handled by `golangci-lint`.
 
-## Critical Issues (Must Fix)
+**Focus**: Architecture, ownership, lifecycle, strategy - not syntax or common bugs.
 
-### Unhandled Errors
-```go
-// BAD
-file.Close()
-json.Unmarshal(data, &v)
+---
 
-// GOOD
-if err := file.Close(); err != nil {
-  return fmt.Errorf("close file: %w", err)
-}
-if err := json.Unmarshal(data, &v); err != nil {
-  return fmt.Errorf("unmarshal: %w", err)
-}
-```
-
-### Type Assertions Without Check
-```go
-// BAD - Panics if wrong type
-str := value.(string)
-
-// GOOD
-str, ok := value.(string)
-if !ok {
-  return fmt.Errorf("expected string, got %T", value)
-}
-```
-
-### Panics in Production Code
-```go
-// BAD
-if len(args) == 0 {
-  panic("missing args")
-}
-
-// GOOD
-if len(args) == 0 {
-  return errors.New("missing args")
-}
-```
+## Critical Issues (Architecture & Safety)
 
 ### Fire-and-Forget Goroutines
 ```go
@@ -54,7 +18,7 @@ go func() {
   }
 }()
 
-// GOOD
+// GOOD - Managed lifecycle with stop channel
 type Worker struct {
   stop chan struct{}
   done chan struct{}
@@ -63,9 +27,12 @@ type Worker struct {
 func (w *Worker) Start() {
   go func() {
     defer close(w.done)
+    ticker := time.NewTicker(interval)
+    defer ticker.Stop()
+
     for {
       select {
-      case <-time.After(interval):
+      case <-ticker.C:
         doWork()
       case <-w.stop:
         return
@@ -76,9 +43,13 @@ func (w *Worker) Start() {
 
 func (w *Worker) Stop() {
   close(w.stop)
-  <-w.done
+  <-w.done  // Wait for completion
 }
 ```
+
+**Why critical**: Goroutines without lifecycle control leak resources and prevent graceful shutdown.
+
+---
 
 ### Mutex Races
 ```go
@@ -93,438 +64,258 @@ defer s.mu.Unlock()
 return s.data
 ```
 
-### Missing Defer for Unlock
+**Why critical**: Race conditions cause non-deterministic bugs. Run with `go test -race` to detect.
+
+**Note**: This requires runtime race detector, not caught by static linters.
+
+---
+
+### Panics in Production Code
+```go
+// BAD - Library code
+func ParseConfig(data []byte) *Config {
+  if len(data) == 0 {
+    panic("empty config")  // Never panic in libraries!
+  }
+  ...
+}
+
+// GOOD - Return error
+func ParseConfig(data []byte) (*Config, error) {
+  if len(data) == 0 {
+    return nil, errors.New("empty config")
+  }
+  ...
+}
+
+// ACCEPTABLE - main() or init() only
+func main() {
+  if len(os.Args) < 2 {
+    log.Fatal("missing argument")  // OK in main
+  }
+}
+```
+
+**Why critical**: Panics in library code prevent callers from recovering. Only acceptable in `main()` and `init()`.
+
+---
+
+## Important Issues (Design & Patterns)
+
+### Concurrency
+
+#### Goroutines in init()
 ```go
 // BAD
-m.Lock()
-if condition {
-  m.Unlock()
-  return
+func init() {
+  go monitor()  // Can't control lifecycle
 }
-doWork()
-m.Unlock()
+
+// GOOD - Explicit lifecycle
+type Monitor struct {
+  stop chan struct{}
+}
+
+func (m *Monitor) Start() {
+  go m.run()
+}
+
+func (m *Monitor) Close() error {
+  close(m.stop)
+  return nil
+}
+```
+
+**Why**: `init()` goroutines have no shutdown mechanism, affecting testability and predictability.
+
+---
+
+#### Channel Buffer Size > 1
+```go
+// BAD - Unjustified magic number
+c := make(chan int, 64)  // Why 64? What happens at 65?
 
 // GOOD
-m.Lock()
-defer m.Unlock()
-if condition {
-  return
-}
-doWork()
+c := make(chan int)      // Unbuffered - explicit synchronization
+c := make(chan int, 1)   // Buffered by 1 - specific use case
 ```
 
-## Important Issues (Should Fix)
+**Why**: Buffer sizes >1 require justification. How is overflow prevented? What are blocking semantics?
 
-### Unnecessary Loop Capture
+---
+
+#### Manual Context Cancellation in Tests
 ```go
-// BAD
-for _, v := range values {
-  v := v  // Remove this!
-  go func() { ... }()
-}
-```
+// BAD - Manual lifecycle
+func TestOperation(t *testing.T) {
+  ctx, cancel := context.WithCancel(context.Background())
+  defer cancel()
 
-### Legacy Interface Usage
-```go
-// BAD
-func handle(v interface{})
-
-// GOOD
-func handle(v any)
-```
-
-### Unsafe Path Joining
-```go
-// BAD
-os.Open(filepath.Join(dir, name))
-
-// GOOD (Go 1.24+)
-root, _ := os.OpenRoot(dir)
-root.Open(name)
-```
-
-### Handling Errors Multiple Times
-```go
-// BAD - Logs AND returns
-if err != nil {
-  log.Printf("error: %v", err)
-  return fmt.Errorf("operation failed: %w", err)
+  // test code
 }
 
-// GOOD - Return with context
-if err != nil {
-  return fmt.Errorf("operation failed: %w", err)
+// GOOD (Go 1.24+) - Automatic cleanup
+func TestOperation(t *testing.T) {
+  ctx := t.Context()  // Auto-canceled when test ends
+
+  // test code
 }
-// Let caller decide whether to log
 ```
 
-### Not Copying Slices/Maps at Boundaries
+**Why**: `t.Context()` ensures proper cleanup ordering and integrates with test lifecycle.
+
+---
+
+### Data Ownership
+
+#### Not Copying Slices/Maps at Boundaries
 ```go
 // BAD
 func (d *Driver) SetTrips(trips []Trip) {
   d.trips = trips  // Caller can mutate!
 }
 
+func (d *Driver) GetTrips() []Trip {
+  return d.trips  // Caller can mutate!
+}
+
 // GOOD (Go 1.21+)
 import "slices"
 
 func (d *Driver) SetTrips(trips []Trip) {
-  d.trips = slices.Clone(trips)
+  d.trips = slices.Clone(trips)  // Defensive copy
 }
 
-// GOOD (Alternative)
-func (d *Driver) SetTrips(trips []Trip) {
-  d.trips = make([]Trip, len(trips))
-  copy(d.trips, trips)
+func (d *Driver) GetTrips() []Trip {
+  return slices.Clone(d.trips)  // Defensive copy
 }
 ```
 
-### Embedded Types in Public Structs
-```go
-// BAD - Leaks implementation
-type ConcreteList struct {
-  AbstractList  // Public API couples to AbstractList
-}
+**Why**: Shared slice/map references violate encapsulation. Copy at API boundaries to maintain ownership.
 
-// GOOD - Explicit delegation
-type ConcreteList struct {
-  list *AbstractList
-}
+**Judgment required**: When performance matters, document shared ownership explicitly.
 
-func (c *ConcreteList) Add(e Entity) {
-  c.list.Add(e)
-}
-```
+---
 
-### os.Exit or log.Fatal Outside main()
-```go
-// BAD
-func process() {
-  if err := validate(); err != nil {
-    log.Fatal(err)  // Bypasses caller's defers!
-  }
-}
-
-// GOOD
-func process() error {
-  if err := validate(); err != nil {
-    return fmt.Errorf("validate: %w", err)
-  }
-  return nil
-}
-
-func main() {
-  if err := process(); err != nil {
-    log.Fatal(err)  // Only in main
-  }
-}
-```
-
-### Goroutines in init()
-```go
-// BAD
-func init() {
-  go backgroundTask()  // Can't control lifecycle
-}
-
-// GOOD
-type Service struct {
-  stop chan struct{}
-}
-
-func (s *Service) Start() {
-  go s.backgroundTask()
-}
-
-func (s *Service) Close() error {
-  close(s.stop)
-  return nil
-}
-```
-
-### Mutex Embedding
-```go
-// BAD - Exposes Lock/Unlock publicly
-type Counter struct {
-  sync.Mutex
-  n int
-}
-
-// GOOD - Private field
-type Counter struct {
-  mu sync.Mutex
-  n  int
-}
-```
-
-### Not Using var for Zero Values
-```go
-// BAD
-users := []User{}
-config := Config{}
-
-// GOOD
-var users []User   // Nil slice is valid and usable
-var config Config  // All fields zero-valued
-```
-
-### Missing Field Names in Struct Initialization
-```go
-// BAD - Fragile to field reordering
-u := User{"John", "Doe", 30}
-
-// GOOD
-u := User{
-  FirstName: "John",
-  LastName:  "Doe",
-  Age:       30,
-}
-```
-
-### Redundant Error Wrapping Messages
-```go
-// BAD
-return fmt.Errorf("failed to create store: %w", err)
-
-// GOOD
-return fmt.Errorf("create store: %w", err)
-```
-
-### Not Specifying Container Capacity
-```go
-// BAD - Multiple reallocations
-results := make([]Result, 0)
-for _, item := range items {
-  results = append(results, process(item))
-}
-
-// GOOD
-results := make([]Result, 0, len(items))
-for _, item := range items {
-  results = append(results, process(item))
-}
-```
-
-### Using fmt.Sprint Instead of strconv
-```go
-// BAD - Slower, more allocations
-s := fmt.Sprint(id)
-
-// GOOD
-s := strconv.Itoa(id)
-```
-
-### Inconsistent Import Grouping
-```go
-// BAD
-import (
-  "go.uber.org/zap"
-  "fmt"
-  "github.com/user/pkg"
-  "os"
-)
-
-// GOOD - stdlib, then external
-import (
-  "fmt"
-  "os"
-
-  "github.com/user/pkg"
-  "go.uber.org/zap"
-)
-```
-
-### Using new() Instead of &T{}
-```go
-// BAD
-cfg := new(Config)
-
-// GOOD
-cfg := &Config{}
-```
-
-### Excessive Nesting
-```go
-// BAD
-if err == nil {
-  if valid {
-    if ready {
-      // Success case deeply nested
-    }
-  }
-}
-
-// GOOD - Early returns
-if err != nil {
-  return err
-}
-if !valid {
-  return ErrInvalid
-}
-if !ready {
-  return ErrNotReady
-}
-// Success case at top level
-```
-
-### Unnecessary else
-```go
-// BAD
-var a int
-if b {
-  a = 100
-} else {
-  a = 10
-}
-
-// GOOD
-a := 10
-if b {
-  a = 100
-}
-```
-
-### Complex Table Tests
-Look for table tests with:
-- Multiple boolean flags (`shouldErr`, `shouldCallX`, `shouldCallY`)
-- Cascading assertions (if X then check Y, else check Z)
-- Deep mock setup with branching
-
-**Solution**: Split into separate test functions
-
-### Channel Buffer Size > 1
-```go
-// BAD - Hard to justify
-c := make(chan int, 100)
-
-// GOOD
-c := make(chan int)      // Unbuffered
-c := make(chan int, 1)   // Buffered by 1 for specific use case
-```
-
-### Interface Pointers
-```go
-// BAD
-var i *io.Reader
-
-// GOOD
-var i io.Reader
-```
-
-### Global Mutable State
+#### Global Mutable State
 ```go
 // BAD
 var cache = make(map[string]string)
 
 func Get(key string) string {
-  return cache[key]  // Hard to test
+  return cache[key]  // Hard to test, race-prone
 }
 
 // GOOD - Dependency injection
 type Cache struct {
+  mu   sync.RWMutex
   data map[string]string
 }
 
-func New() *Cache {
+func NewCache() *Cache {
   return &Cache{data: make(map[string]string)}
 }
 
 func (c *Cache) Get(key string) string {
+  c.mu.RLock()
+  defer c.mu.RUnlock()
   return c.data[key]
 }
 ```
 
-### Manual Slice and Map Operations (Should Use slices/maps Package)
-```go
-// BAD - Manual operations
-// Slice copy
-copy := make([]int, len(original))
-copy(copy, original)
+**Why**: Global mutable state prevents testability and causes race conditions. Use dependency injection.
 
-// Map copy
-m2 := make(map[string]int, len(m))
-for k, v := range m {
-  m2[k] = v
+---
+
+### API Design
+
+#### Embedded Types in Public Structs
+```go
+// BAD - Leaks implementation, prevents evolution
+type ConcreteList struct {
+  AbstractList  // Exposes all AbstractList methods publicly!
 }
 
-// GOOD - Use slices/maps package (Go 1.21+)
-import (
-  "maps"
-  "slices"
-)
-
-copy := slices.Clone(original)
-slices.Sort(items)
-m2 := maps.Clone(m)
-```
-
-### Manual Context Cancellation in Tests
-```go
-// BAD
-ctx, cancel := context.WithCancel(context.Background())
-defer cancel()
-
-// GOOD (Go 1.24+)
-ctx := t.Context()
-```
-
-### time.Sleep in Tests (Should Use testing/synctest)
-```go
-// BAD - Slow test
-func TestTimeout(t *testing.T) {
-  time.Sleep(5 * time.Second)  // Slow!
+// GOOD - Explicit delegation
+type ConcreteList struct {
+  list *AbstractList  // Private field
 }
 
-// GOOD - Use synctest (Go 1.25+)
-import "testing/synctest"
-
-func TestTimeout(t *testing.T) {
-  synctest.Run(func() {
-    time.Sleep(5 * time.Second)  // Instant
-  })
+func (c *ConcreteList) Add(e Entity) {
+  c.list.Add(e)  // Explicit method
 }
 ```
 
-### Manual b.N Loop (Should Use b.Loop())
+**Why**: Embedding in public structs couples API to implementation, preventing evolution. Use composition with explicit methods.
+
+---
+
+#### os.Exit or log.Fatal Outside main()
 ```go
-// BAD - Manual loop management
-func BenchmarkOp(b *testing.B) {
-  setup()
-  b.ResetTimer()  // Easy to forget
-  for i := 0; i < b.N; i++ {
-    operation()
+// BAD - Library function
+func SaveConfig(cfg Config) {
+  if err := write(cfg); err != nil {
+    log.Fatal(err)  // Bypasses caller's defers!
   }
 }
 
-// GOOD - Use b.Loop() (Go 1.24+)
-func BenchmarkOp(b *testing.B) {
-  setup()
-  for b.Loop() {
-    operation()
+// GOOD - Return error
+func SaveConfig(cfg Config) error {
+  if err := write(cfg); err != nil {
+    return fmt.Errorf("save config: %w", err)
+  }
+  return nil
+}
+
+func main() {
+  if err := SaveConfig(cfg); err != nil {
+    log.Fatal(err)  // Only in main()
   }
 }
 ```
 
-### t.Fatal in Goroutines (Critical Safety Issue)
+**Why**: `log.Fatal()` and `os.Exit()` bypass `defer` statements and prevent callers from cleanup. Only use in `main()`.
+
+---
+
+### Error Handling
+
+#### Handling Errors Multiple Times
 ```go
-// BAD - Will panic
-go func() {
+// BAD - Logs AND returns (doubles observability)
+func processFile(path string) error {
+  data, err := os.ReadFile(path)
   if err != nil {
-    t.Fatal(err)  // Unsafe from goroutine!
+    log.Printf("read failed: %v", err)  // Logged here
+    return fmt.Errorf("read %s: %w", path, err)  // AND returned
   }
-}()
+  return process(data)
+}
 
-// GOOD - Use t.Error
-go func() {
+// GOOD - Return with context, let caller decide
+func processFile(path string) error {
+  data, err := os.ReadFile(path)
   if err != nil {
-    t.Error(err)  // Safe from goroutine
+    return fmt.Errorf("read %s: %w", path, err)  // Caller logs if needed
   }
-}()
+  return process(data)
+}
+
+// Caller handles observability
+if err := processFile(path); err != nil {
+  log.Printf("process failed: %v", err)  // Logged once, at boundary
+}
 ```
 
-### Manual Error Aggregation (Should Use errors.Join)
+**Why**: Handling errors at multiple levels creates redundant logging and makes observability boundaries unclear.
+
+**Judgment required**: Decide observability boundaries - where to log vs where to wrap and return.
+
+---
+
+#### Manual Error Aggregation
 ```go
-// BAD - Manual aggregation
+// BAD - Manual collection
 var errs []error
 for _, item := range items {
   if err := process(item); err != nil {
@@ -539,48 +330,223 @@ if len(errs) > 0 {
 var errs []error
 for _, item := range items {
   if err := process(item); err != nil {
-    errs = append(errs, err)
+    errs = append(errs, fmt.Errorf("process %s: %w", item.ID, err))
   }
 }
 return errors.Join(errs...)  // Returns nil if empty
 ```
 
-### Map/Slice Reallocation (Should Use clear())
+**Why**: `errors.Join()` handles nil slices correctly and enables `errors.Is`/`errors.As` on joined errors.
+
+**Judgment required**: Decide when to aggregate (batch processing) vs fail-fast (validation).
+
+---
+
+### Testing
+
+#### Complex Table Tests
 ```go
-// BAD - Loses capacity
-m = make(map[string]int)
+// BAD - Too many conditionals
+tests := []struct{
+  name        string
+  input       string
+  shouldErr   bool
+  shouldCall1 bool
+  shouldCall2 bool
+  check1      func()
+  check2      func()
+}{
+  // Complex branching logic in test table
+}
 
-// GOOD - Retains capacity (Go 1.21+)
-clear(m)
-```
+// GOOD - Split into focused tests
+func TestSuccess(t *testing.T) {
+  // Simple, clear success case
+}
 
-### Atomic Package Import (Should Use sync/atomic)
-```go
-// BAD - External dependency
-import "go.uber.org/atomic"
+func TestError(t *testing.T) {
+  // Simple, clear error case
+}
 
-// GOOD - Standard library (Go 1.19+)
-import "sync/atomic"
-
-type Counter struct {
-  n atomic.Int64
+func TestEdgeCase(t *testing.T) {
+  // Specific edge case
 }
 ```
 
+**Why**: Table tests with excessive conditionals are hard to understand and maintain.
+
+**Judgment required**: When to use table-driven vs separate tests depends on test similarity and complexity.
+
+---
+
+#### time.Sleep in Tests
+```go
+// BAD - Slow, flaky test
+func TestTimeout(t *testing.T) {
+  done := make(chan bool)
+  go func() {
+    time.Sleep(5 * time.Second)  // Slow! Flaky!
+    done <- true
+  }()
+
+  select {
+  case <-done:
+    // success
+  case <-time.After(6 * time.Second):
+    t.Fatal("timeout")
+  }
+}
+
+// GOOD - Deterministic with synctest (Go 1.25+)
+import "testing/synctest"
+
+func TestTimeout(t *testing.T) {
+  synctest.Run(func() {
+    done := make(chan bool)
+    go func() {
+      time.Sleep(5 * time.Second)  // Executes instantly
+      done <- true
+    }()
+
+    synctest.Wait()  // Wait for goroutines to block
+    <-done           // Completes instantly
+  })
+}
+```
+
+**Why**: `time.Sleep()` in tests makes them slow and timing-dependent (flaky).
+
+**Judgment required**: When to use `synctest` vs real time depends on whether you're testing timing behavior or business logic.
+
+---
+
+#### Manual b.N Loop
+```go
+// BAD - Easy to forget timer management
+func BenchmarkOperation(b *testing.B) {
+  data := setupExpensive()
+
+  b.ResetTimer()  // Easy to forget!
+
+  for i := 0; i < b.N; i++ {
+    operation(data)
+  }
+
+  b.StopTimer()  // Also easy to forget
+  cleanup()
+}
+
+// GOOD - Automatic timer management (Go 1.24+)
+func BenchmarkOperation(b *testing.B) {
+  data := setupExpensive()  // Not timed
+
+  for b.Loop() {
+    operation(data)  // Automatically timed
+  }
+
+  cleanup()  // Not timed
+}
+```
+
+**Why**: `b.Loop()` handles timer management automatically and prevents measurement errors.
+
+---
+
+### Modernization (High-Value)
+
+#### Unsafe Path Joining
+```go
+// BAD - Path traversal vulnerability
+func serveFile(dir, name string) (*os.File, error) {
+  path := filepath.Join(dir, name)  // User can pass "../../../etc/passwd"
+  return os.Open(path)
+}
+
+// GOOD - Safe filesystem root (Go 1.24+)
+func serveFile(dir, name string) (*os.File, error) {
+  root, err := os.OpenRoot(dir)
+  if err != nil {
+    return nil, err
+  }
+  return root.Open(name)  // Enforces dir boundary
+}
+```
+
+**Why**: `filepath.Join()` doesn't prevent path traversal. `os.Root` provides filesystem-level safety.
+
+**Judgment required**: Use `os.Root` for security-critical file serving, not general path manipulation.
+
+---
+
+#### Manual Slice and Map Operations
+```go
+// BAD - Manual operations when stdlib provides
+// Slice copy
+copied := make([]int, len(original))
+copy(copied, original)
+
+// Map copy
+m2 := make(map[string]int, len(m))
+for k, v := range m {
+  m2[k] = v
+}
+
+// GOOD - Use slices/maps package (Go 1.21+)
+import (
+  "maps"
+  "slices"
+)
+
+copied := slices.Clone(original)
+slices.Sort(items)
+m2 := maps.Clone(m)
+```
+
+**Why**: `slices`/`maps` packages provide tested, optimized operations.
+
+**Judgment required**: Use when it improves clarity. Manual operations are fine for performance-critical code with profiling justification.
+
+---
+
+#### Map/Slice Reallocation
+```go
+// BAD - Reallocates, loses capacity
+for i := 0; i < iterations; i++ {
+  m = make(map[string]int)  // Allocates every iteration
+  // use m
+}
+
+// GOOD - Clear in place, retains capacity (Go 1.21+)
+m := make(map[string]int)
+for i := 0; i < iterations; i++ {
+  clear(m)  // Clears but keeps allocated capacity
+  // use m
+}
+```
+
+**Why**: `clear()` avoids allocation overhead when reusing containers.
+
+**Judgment required**: Only optimize when profiling shows allocation pressure.
+
+---
+
 ## Review Workflow
 
-1. **Critical Issues First**: Scan for panics, unhandled errors, race conditions
-2. **Important Issues**: Check error handling, boundaries, lifecycle management
-3. **Pattern Recognition**: Look for repeated violations in the checklist
-4. **Context Matters**: Some patterns are acceptable in specific contexts (e.g., panic in tests)
+1. **Critical Issues First**: Goroutine lifecycle, race conditions, panics in libraries
+2. **Important Issues**: Error handling strategy, data ownership, API design
+3. **Context Matters**: Some patterns are acceptable in specific contexts (panic in `main()`, global constants)
+4. **Defer to Linters**: Don't report issues that `golangci-lint` catches (unhandled errors, type assertions, formatting)
 
 ## Common False Positives
 
 - `init()` for database driver registration (acceptable)
-- Panic in test code using `t.Fatal` (acceptable)
-- Global constants (acceptable)
+- Panic in test code using `t.Fatal()` (acceptable)
+- Global constants (acceptable - only mutable globals are problematic)
 - Embedding in private structs for composition (sometimes acceptable)
+- Shared slices when explicitly documented (acceptable with justification)
 
 ## When in Doubt
 
-Reference the full style guide in `uber-go-style-guide.md` for detailed explanations and additional patterns.
+Reference the full style guide in `uber-go-style-guide.md` for detailed explanations and architectural context.
+
+**Remember**: Focus on design decisions that require understanding of intent, ownership, lifecycle, and architecture. Let linters handle syntax and common bugs.
