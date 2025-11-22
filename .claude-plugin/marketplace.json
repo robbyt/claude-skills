@@ -44,6 +44,18 @@
       "license": "MIT",
       "keywords": ["python", "black", "formatter", "hooks"],
       "strict": true
+    },
+    {
+      "name": "uber-go-style-guide",
+      "description": "Review Go code for adherence to Uber's Go Style Guide. Use when the user requests a code review of completed work, pull requests, or feature branches in Go projects.",
+      "source": "./plugins/uber-go-style-guide",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": ["go", "golang", "style-guide", "code-review", "uber"],
+      "strict": true
     }
   ]
 }
