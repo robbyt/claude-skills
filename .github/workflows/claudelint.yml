@@ -10,7 +10,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     env:
-      CLAUDELINT_VERSION: "0.1.0"
+      CLAUDELINT_VERSION: "0.3.3"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
