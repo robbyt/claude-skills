@@ -37,71 +37,6 @@ Recommended linting tools: `staticcheck`, `golangci-lint`, and `go vet`.
 
 ## Interface & Type Handling
 
-### Use any instead of interface{}
-
-Use the `any` alias (Go 1.18+) for empty interfaces.
-
-**Bad**:
-```go
-func log(v interface{}) {
-  // ...
-}
-```
-
-**Good**:
-```go
-func log(v any) {
-  // ...
-}
-```
-
----
-
-### Pointers to Interfaces
-
-**Bad**:
-```go
-type F interface {
-  f()
-}
-
-type S1 struct{}
-func (s S1) f() {}
-
-type S2 struct{}
-func (s *S2) f() {}
-
-func bad() {
-  s1Val := S1{}
-  s1Ptr := &S1{}
-  s2Val := S2{}
-  s2Ptr := &S2{}
-
-  var i F
-  i = s1Val
-  i = s1Ptr
-  i = s2Ptr
-
-  // Won't compile - s2Val is not addressable
-  i = s2Val
-}
-```
-
-**Good**:
-```go
-// Use interface directly, not pointer to interface
-func good() {
-  var i F
-  i = &S1{}  // Pointer works
-  i = S1{}   // Value works for value receiver methods
-  i = &S2{}  // Pointer works for pointer receiver methods
-}
-```
-
-**Why**: Interfaces already contain type information and data pointers. Passing them as pointers is redundant and can cause confusion.
-
----
-
 ### Verify Interface Compliance
 
 **Bad**:
@@ -182,36 +117,6 @@ mu.Lock()
 ```
 
 **Why**: `sync.Mutex` and `sync.RWMutex` have valid zero values. Use `var` declaration for clarity.
-
-**Never embed mutexes**:
-
-**Bad**:
-```go
-type SMap struct {
-  sync.Mutex  // Exposes Lock/Unlock publicly
-  data map[string]string
-}
-
-func NewSMap() *SMap {
-  return &SMap{
-    data: make(map[string]string),
-  }
-}
-```
-
-**Good**:
-```go
-type SMap struct {
-  mu   sync.Mutex  // Private, unexported field
-  data map[string]string
-}
-
-func NewSMap() *SMap {
-  return &SMap{
-    data: make(map[string]string),
-  }
-}
-```
 
 ---
 
@@ -319,40 +224,6 @@ defer root.Close()
 // Safe: errors if path escapes root
 f, err := root.Open(filename)
 ```
-
----
-
-### Defer for Cleanup
-
-**Bad**:
-```go
-p.Lock()
-if p.count < 10 {
-  p.Unlock()
-  return p.count
-}
-
-p.count++
-newCount := p.count
-p.Unlock()
-
-return newCount
-```
-
-**Good**:
-```go
-p.Lock()
-defer p.Unlock()
-
-if p.count < 10 {
-  return p.count
-}
-
-p.count++
-return p.count
-```
-
-**Why**: Defer ensures cleanup happens regardless of control flow. The performance overhead is negligible.
 
 ---
 
@@ -646,27 +517,6 @@ if errors.Is(err, ErrNotFound) {
 
 ---
 
-### Type Assertions
-
-Always use the comma-ok idiom.
-
-**Bad**:
-```go
-t := i.(string)  // Panics if assertion fails
-```
-
-**Good**:
-```go
-t, ok := i.(string)
-if !ok {
-  // Handle gracefully
-}
-```
-
-**Why**: Production code should never panic due to type assertions.
-
----
-
 ### Don't Panic
 
 Production code must avoid panics. Return errors instead and let callers decide handling strategy.
@@ -773,31 +623,6 @@ func New() (*Config, error) {
 ```
 
 **Why**: Dependency injection improves testability by allowing mock substitution.
-
----
-
-### Loop Variable Scoping
-
-Do not manually capture loop variables. Go 1.22+ handles this automatically.
-
-**Bad**:
-```go
-for _, v := range values {
-  v := v // Unnecessary!
-  go func() {
-    process(v)
-  }()
-}
-```
-
-**Good**:
-```go
-for _, v := range values {
-  go func() {
-    process(v)
-  }()
-}
-```
 
 ---
 
@@ -931,30 +756,6 @@ func (c *ConcreteList) Add(e Entity) {
 
 ---
 
-### Avoid Built-in Names
-
-Don't shadow predeclared identifiers.
-
-**Bad**:
-```go
-func handleError(error string) {
-  // Shadows built-in 'error' type
-}
-
-var string = "foo"  // Shadows built-in 'string'
-```
-
-**Good**:
-```go
-func handleError(errorMsg string) {
-  // Clear and doesn't shadow
-}
-
-var msg = "foo"
-```
-
----
-
 ### Avoid init()
 
 Make code deterministic and testable. Only use `init()` for:
@@ -1052,28 +853,6 @@ func run() error {
 
 ## Performance Guidelines
 
-### Prefer strconv
-
-For primitive-to-string conversions, `strconv` is ~2x faster than `fmt`.
-
-**Bad**:
-```go
-s := fmt.Sprint(123)
-```
-
-**Good**:
-```go
-s := strconv.Itoa(123)
-```
-
-**Benchmark**:
-```
-BenchmarkFmtSprint-4    143 ns/op    2 allocs/op
-BenchmarkStrconv-4       64.2 ns/op  1 allocs/op
-```
-
----
-
 ### Avoid Repeated String-to-Byte Conversions
 
 **Bad**:
@@ -1089,37 +868,6 @@ data := []byte("Hello world")
 for i := 0; i < b.N; i++ {
   w.Write(data)  // Convert once
 }
-```
-
----
-
-### Specify Container Capacity
-
-Specify capacity hints when initializing maps and slices to avoid reallocation.
-
-**Bad**:
-```go
-m := make(map[string]os.FileInfo)
-for _, f := range files {
-  m[f.Name()] = f
-}
-```
-
-**Good**:
-```go
-m := make(map[string]os.FileInfo, len(files))
-for _, f := range files {
-  m[f.Name()] = f
-}
-```
-
-**Slices**:
-```go
-// Append-only: specify capacity
-files := make([]string, 0, len(input))
-
-// Exact size known: specify length
-files := make([]string, len(input))
 ```
 
 ---
@@ -1165,28 +913,6 @@ Target 99 characters as a soft limit. Horizontal scrolling reduces readability.
 ### Consistency
 
 Maintain uniform style within packages. Apply conventions at package level or larger.
-
----
-
-### Import Grouping
-
-Two groups only:
-1. Standard library
-2. Everything else
-
-Separated by blank line. Use `goimports` for automatic formatting.
-
-**Example**:
-```go
-import (
-  "fmt"
-  "os"
-  "sync/atomic"
-
-  "golang.org/x/sync/errgroup"
-  "google.golang.org/protobuf/proto"
-)
-```
 
 ---
 
@@ -1277,28 +1003,6 @@ result := process()  // Explicit assignment
 
 ---
 
-### nil is a Valid Slice
-
-Return `nil` for empty slices, not `[]T{}`.
-
-**Bad**:
-```go
-if len(results) == 0 {
-  return []Result{}
-}
-```
-
-**Good**:
-```go
-if len(results) == 0 {
-  return nil
-}
-```
-
-Check emptiness with `len(s) == 0`, not `s == nil`.
-
----
-
 ### Reduce Nesting
 
 Handle error cases first, returning early.
@@ -1335,62 +1039,6 @@ if !yetAnother {
 
 ---
 
-### Unnecessary Else
-
-If both branches set the same variable, eliminate else.
-
-**Bad**:
-```go
-var a int
-if b {
-  a = 100
-} else {
-  a = 10
-}
-```
-
-**Good**:
-```go
-a := 10
-if b {
-  a = 100
-}
-```
-
----
-
-### Struct Initialization
-
-Always use field names.
-
-**Bad**:
-```go
-user := User{"John", "Doe", 30}  // Fragile
-```
-
-**Good**:
-```go
-user := User{
-  FirstName: "John",
-  LastName:  "Doe",
-  Age:       30,
-}
-```
-
-Omit zero-value fields unless they provide context.
-
-**Zero-value structs**:
-```go
-var user User  // All fields zero-valued
-```
-
-**Pointer initialization**:
-```go
-user := &User{}  // Prefer over new(User)
-```
-
----
-
 ### Map Initialization
 
 - Use `make(map[T1]T2)` for empty maps
@@ -1406,24 +1054,6 @@ m := map[string]int{
   "a": 1,
   "b": 2,
 }
-```
-
----
-
-### Format Strings as const
-
-Declare Printf format strings as `const` for static analysis.
-
-**Bad**:
-```go
-msg := "values %v, %v\n"
-fmt.Printf(msg, x, y)
-```
-
-**Good**:
-```go
-const msg = "values %v, %v\n"
-fmt.Printf(msg, x, y)
 ```
 
 ---
@@ -1537,27 +1167,6 @@ for _, tt := range tests {
     t.Parallel()
     // tt is automatically per-iteration in Go 1.22+
   })
-}
-```
-
-**Critical**: Never call `t.Fatal()` or `t.FailNow()` from goroutines other than the test goroutine - use `t.Error()` instead:
-
-```go
-func TestConcurrent(t *testing.T) {
-  done := make(chan bool)
-
-  go func() {
-    if err := someOperation(); err != nil {
-      t.Error(err)  // NOT t.Fatal - would panic
-      done <- false
-      return
-    }
-    done <- true
-  }()
-
-  if !<-done {
-    t.Fatal("operation failed") // Only in main test goroutine
-  }
 }
 ```
 
