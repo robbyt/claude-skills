@@ -132,11 +132,9 @@ elif ! gemini "test" -o text >/dev/null 2>&1; then
 else
     mkdir -p "$TEST_DIR/tmp"
     TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
+    TEST_PROMPT="Ask Gemini to use the GoogleSearch to find the current world record holder for the largest domestic cat. After Gemini is finished with it's research, report back what it found."
 
-    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print \
-        "Ask Gemini to use Google Search to find the current world record holder for the largest domestic cat. Use the gemini CLI with -o text flag. Just report back what Gemini found." \
-        2>&1 | tee "$TEST_OUTPUT"; then
-
+    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
             pass_test
         else
