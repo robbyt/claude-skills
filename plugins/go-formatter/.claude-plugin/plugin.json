@@ -7,6 +7,5 @@
     "email": "robbyt@robbyt.net"
   },
   "license": "MIT",
-  "keywords": ["go", "golang", "formatter", "gofmt", "hooks"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["go", "golang", "formatter", "gofmt", "hooks"]
 }

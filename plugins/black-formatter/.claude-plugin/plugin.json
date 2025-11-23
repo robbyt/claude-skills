@@ -7,6 +7,5 @@
     "email": "robbyt@robbyt.net"
   },
   "license": "MIT",
-  "keywords": ["python", "black", "formatter", "hooks"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["python", "black", "formatter", "hooks"]
 }
