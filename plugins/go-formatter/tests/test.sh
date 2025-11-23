@@ -170,7 +170,13 @@ TEST_FILE="$TEST_DIR/tmp/test-$$.go"
 cp "$TEST_DIR/fixtures/malformed.go" "$TEST_FILE"
 
 # Use claude CLI to read and write the file (triggers hook)
-if ! "$CLAUDE_CMD" --permission-mode acceptEdits --tools "Read,Write" --print  "This is an automated test of the go-formatter post-write hook. Please read the Go file at $TEST_FILE using the Read tool, then write it back unchanged using the Write tool. The post-write hook will automatically format the file with gofmt after the write operation. Do not modify the file content yourself."; then
+TEST_PROMPT="This is an automated test of the go-formatter post-write hook. Please read the Go \
+file at $TEST_FILE using the Read tool, then write it back unchanged using the Write tool. The \
+post-write hook will automatically format the file with gofmt after the write operation. Leave \
+the intentionally malformed file content untouched so we can confirm the post-write hook tool is \
+working correctly."
+
+if ! "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode acceptEdits --tools "Read,Write" --print "$TEST_PROMPT"; then
     fail_test "claude CLI execution failed"
     rm -f "$TEST_FILE"
     exit 1
