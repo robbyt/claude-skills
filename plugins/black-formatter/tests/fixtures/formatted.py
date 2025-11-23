@@ -1,0 +1,25 @@
+def calculate_sum(a, b, c):
+    result = a + b + c
+    return result
+
+
+class MyClass:
+    def __init__(self, name, age):
+        self.name = name
+        self.age = age
+
+    def get_info(self):
+        return f"{self.name} is {self.age} years old"
+
+
+numbers = [1, 2, 3, 4, 5]
+doubled = [x * 2 for x in numbers]
+
+
+if True:
+    print("This has bad spacing")
+    x = 1 + 2 + 3
+    y = x * 2
+
+
+dictionary = {"key1": "value1", "key2": "value2", "key3": "value3"}

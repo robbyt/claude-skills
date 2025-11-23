@@ -30,21 +30,12 @@ These plugins require the following tools to be installed:
 
 ### Tool Versions
 
-For security and reproducibility, external tools are version-pinned.
+External formatters are called directly from your PATH:
+- `black` - Python formatter (install via `uv sync`)
+- `gofmt` - Go formatter (version matches your installed Go)
+- `claudelint` - Plugin linter (if using linting features)
 
-Override versions by setting environment variables:
-
-```bash
-export BLACK_VERSION="24.8.0"
-export CLAUDELINT_VERSION="0.1.1"
-```
-
-Available environment variables:
-- `BLACK_VERSION` - Black Python formatter
-- `CLAUDELINT_VERSION` - Plugin linter
-- `gofmt` - Version matches your installed Go (no env var needed)
-
-See individual plugin READMEs for details.
+For reproducible formatting, consider pinning tool versions in your project's dependency files (`pyproject.toml`, `go.mod`, etc.).
 
 ## Security
 

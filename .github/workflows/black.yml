@@ -9,14 +9,14 @@ on:
 jobs:
   black:
     runs-on: ubuntu-latest
-    env:
-      BLACK_VERSION: "24.10.0"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       - name: Run Black
-        run: uv tool run "black@${BLACK_VERSION}" --check --diff .
+        run: uv run black --check --diff --extend-exclude 'tests/fixtures/' .
