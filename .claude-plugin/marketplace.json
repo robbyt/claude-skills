@@ -56,6 +56,18 @@
       "license": "MIT",
       "keywords": ["go", "golang", "style-guide", "code-review", "uber"],
       "strict": true
+    },
+    {
+      "name": "gemini-cli-skill",
+      "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
+      "source": "./plugins/gemini-cli",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": ["gemini", "ai", "code-review", "web-search", "architecture"],
+      "strict": true
     }
   ]
 }

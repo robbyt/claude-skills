@@ -1,0 +1,11 @@
+{
+  "name": "gemini-cli-skill",
+  "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
+  "version": "1.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["gemini", "ai", "code-review", "web-search", "architecture"]
+}
