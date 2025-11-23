@@ -19,4 +19,4 @@ jobs:
           enable-cache: true
 
       - name: Run Black
-        run: uv run black --check --diff --exclude 'tests/fixtures/' .
+        run: uv run black --check --diff --extend-exclude 'tests/fixtures/' .
