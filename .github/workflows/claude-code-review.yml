@@ -1,8 +1,6 @@
 name: Claude Code Review
 
 on:
-  pull_request:
-    types: [opened, synchronize]
   issue_comment:
     types: [created]
   pull_request_review_comment:
@@ -10,11 +8,12 @@ on:
 
 jobs:
   claude-review:
-    # Only run for robbyt's PRs or when @claude is mentioned in PR comments
+    # Only run when robbyt mentions @claude-security in PR comments
     if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.user.login == 'robbyt') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude'))
+      github.actor == 'robbyt' && (
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request != null && contains(github.event.comment.body, '@claude-security')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude-security'))
+      )
 
     runs-on: ubuntu-latest
     permissions:
