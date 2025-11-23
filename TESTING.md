@@ -69,10 +69,7 @@ plugin-name/
 ├── tests/
 │   ├── test.sh          # Hook integration tests
 │   ├── tmp/             # Test artifacts (gitignored)
-│   ├── input/           # Test input files
-│   │   └── malformed.*  # Unformatted code
-│   └── expected/        # Expected output files
-│       └── formatted.*  # Formatted code
+│   └── fixtures/
 ```
 
 ### For Skill Plugins:
