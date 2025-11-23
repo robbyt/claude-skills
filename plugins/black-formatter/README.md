@@ -2,6 +2,16 @@
 
 Automatically formats Python files with `black` after Write/Edit/MultiEdit operations.
 
+## Setup
+
+Install dependencies (including the Black formatter):
+
+```bash
+uv sync
+```
+
+This installs Black into a uv-managed virtualenv. The hook will use whatever `black` is in your PATH.
+
 ## Usage
 
 Runs automatically as a PostToolUse hook - no manual invocation needed.
@@ -10,7 +20,7 @@ Runs automatically as a PostToolUse hook - no manual invocation needed.
 
 - Watches for Write/Edit/MultiEdit tool usage
 - Detects when .py files are modified
-- Automatically runs `uv tool run black` on the file
+- Automatically runs `black` on the file
 - Formats code to Black's opinionated style
 
 ## How it works
@@ -19,17 +29,7 @@ The plugin uses a PostToolUse hook that:
 1. Receives tool execution data via stdin
 2. Extracts the file path using `jq`
 3. Checks if the file ends with `.py`
-4. Runs `uv tool run black` to format the file
-
-## Version Configuration
-
-Black's version is pinned in the plugin script (`scripts/format-python.sh`).
-
-To use a different version, set the `BLACK_VERSION` environment variable:
-
-```bash
-export BLACK_VERSION="24.8.0"
-```
+4. Runs `black` to format the file
 
 ## Black configuration
 
