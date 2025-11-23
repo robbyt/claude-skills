@@ -1,7 +1,7 @@
 {
   "name": "uber-go-style-guide",
   "description": "Review Go code for adherence to Uber's Go Style Guide",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "robbyt",
     "email": "robbyt@robbyt.net"
