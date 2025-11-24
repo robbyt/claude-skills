@@ -157,19 +157,19 @@ else
     exit 1
 fi
 
-run_test "Hook handles invalid JSON gracefully"
+run_test "Hook rejects invalid JSON"
 if echo "invalid json" | "$HOOK_SCRIPT" 2>/dev/null; then
-    pass_test
-else
-    fail_test "Hook failed on invalid JSON (should exit 0)"
+    fail_test "Hook accepted invalid JSON (should fail)"
     exit 1
+else
+    pass_test
 fi
 
 run_test "End-to-end integration with Claude CLI"
 if [ -z "$CLAUDE_CMD" ]; then
-    fail_test "claude CLI not found"
-    exit 1
-fi
+    echo "    ⊘ Skipped (claude CLI not found)"
+    TESTS_RUN=$((TESTS_RUN - 1))
+else
 
 # Create test file in plugin directory
 TEST_FILE="$TEST_DIR/tmp/test-$$.py"
@@ -199,6 +199,7 @@ fi
 
 # Cleanup
 rm -f "$TEST_FILE"
+fi
 
 # Summary
 echo

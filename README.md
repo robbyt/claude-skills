@@ -44,20 +44,6 @@ Consider enabling the sandbox feature in Claude Code: `/sandbox` (see [sandboxin
 
 ## Available Plugins
 
-### [python-formatter-black](plugins/python-formatter-black/)
-
-Automatically formats Python files with `black` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
-
-[Read more →](plugins/python-formatter-black/README.md)
-
-### [python-formatter-ruff](plugins/python-formatter-ruff/)
-
-Automatically formats Python files with `ruff` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook. This is the recommended Python formatter.
-
-**Note:** Do not enable both `python-formatter-ruff` and `python-formatter-black` simultaneously, as both will attempt to format the same files.
-
-[Read more →](plugins/python-formatter-ruff/README.md)
-
 ### [claude-md-reflect](plugins/claude-md-reflect/)
 
 Analyzes chat history to identify improvements for CLAUDE.md instruction files. Use the phrase `reflect on CLAUDE.md` to trigger this skill.
@@ -91,6 +77,20 @@ Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operation
 Reviews Go code for adherence to the Go Style Guide (which is my personal combo of the Google and Uber style guides.) It identifies issues that are not typically found by static analysis. Trigger this action with phrases like `review this Go code` or `review my PR`.
 
 [Read more →](plugins/go-style-guide/README.md)
+
+### [python-formatter-black](plugins/python-formatter-black/)
+
+Automatically formats Python files with `black` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
+
+[Read more →](plugins/python-formatter-black/README.md)
+
+### [python-formatter-ruff](plugins/python-formatter-ruff/)
+
+Automatically formats Python files with `ruff` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook. Ruff provides faster formatting than Black.
+
+**Note:** Do not enable both `python-formatter-ruff` and `python-formatter-black` simultaneously, as both will attempt to format the same files.
+
+[Read more →](plugins/python-formatter-ruff/README.md)
 
 ## Development
 
