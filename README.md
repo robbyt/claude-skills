@@ -52,7 +52,9 @@ Automatically formats Python files with `black` after Write/Edit/MultiEdit opera
 
 ### [python-formatter-ruff](plugins/python-formatter-ruff/)
 
-Automatically formats Python files with `ruff` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook. Recommended Python formatter.
+Automatically formats Python files with `ruff` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook. This is the recommended Python formatter.
+
+**Note:** Do not enable both `python-formatter-ruff` and `python-formatter-black` simultaneously, as both will attempt to format the same files.
 
 [Read more →](plugins/python-formatter-ruff/README.md)
 
