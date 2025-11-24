@@ -1,5 +1,5 @@
 {
-  "name": "black-formatter",
+  "name": "python-formatter-black",
   "description": "Automatically format Python files with Black after Write/Edit/MultiEdit operations",
   "version": "1.0.1",
   "author": {

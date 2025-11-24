@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Test script for black-formatter post-write hook
+# Test script for python-formatter-black post-write hook
 # This script should be run from the plugin root directory
 
 set -euo pipefail  # Exit on error, undefined variable, or pipe failure
@@ -56,7 +56,7 @@ fail_test() {
 }
 
 # Main test execution
-echo "Running tests for black-formatter hook..."
+echo "Running tests for python-formatter-black hook..."
 echo
 
 run_test "Validate hooks.json schema"
@@ -176,7 +176,7 @@ TEST_FILE="$TEST_DIR/tmp/test-$$.py"
 cp "$TEST_DIR/fixtures/malformed.py" "$TEST_FILE"
 
 # Use claude CLI to read and write the file (triggers hook)
-TEST_PROMPT="This is an automated test of the black-formatter post-write hook. Please read the \
+TEST_PROMPT="This is an automated test of the python-formatter-black post-write hook. Please read the \
 Python file at $TEST_FILE using the Read tool, then write it back unchanged using the Write tool. \
 The post-write hook will automatically format the file with Black after the write operation. Leave \
 the intentionally malformed file content untouched so we can confirm the post-write hook tool is \

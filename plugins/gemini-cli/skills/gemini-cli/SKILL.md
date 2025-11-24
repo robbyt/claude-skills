@@ -123,7 +123,7 @@ gemini "Review plugins/foo/test.sh for bash best practices" -o text
 
 **Multi-file analysis:**
 ```bash
-gemini "Compare the test patterns in plugins/black-formatter/tests/test.sh and plugins/go-formatter/tests/test.sh" -o text
+gemini "Compare the test patterns in plugins/python-formatter-black/tests/test.sh and plugins/go-formatter/tests/test.sh" -o text
 ```
 
 **Directory analysis:**
