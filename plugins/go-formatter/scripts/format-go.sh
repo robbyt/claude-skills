@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Format Go files with gofmt after Write/Edit/MultiEdit operations
 #
 # Note: gofmt is bundled with Go, so its version matches your installed Go version.
