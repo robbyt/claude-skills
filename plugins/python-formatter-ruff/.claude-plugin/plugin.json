@@ -1,0 +1,11 @@
+{
+  "name": "python-formatter-ruff",
+  "description": "Automatically format Python files with Ruff after Write/Edit/MultiEdit operations",
+  "version": "1.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["python", "ruff", "formatter", "hooks"]
+}
