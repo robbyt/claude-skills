@@ -23,7 +23,7 @@ Updating skills:
 
 ## Requirements
 
-These plugins require the following tools to be installed:
+Many of these plugins require the following tools to be installed:
 
 - `uv` - Python package installer and runner ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
 - `jq` - JSON processor for parsing tool input
@@ -33,7 +33,6 @@ These plugins require the following tools to be installed:
 External formatters are called directly from your PATH:
 - `black` - Python formatter (install via `uv sync`)
 - `gofmt` - Go formatter (version matches your installed Go)
-- `claudelint` - Plugin linter (if using linting features)
 
 For reproducible formatting, consider pinning tool versions in your project's dependency files (`pyproject.toml`, `go.mod`, etc.).
 
@@ -44,23 +43,39 @@ Consider enabling the sandbox feature in Claude Code: `/sandbox` (see [sandboxin
 
 ## Available Plugins
 
+### [black-formatter](plugins/black-formatter/)
+
+Automatically formats Python files with `black` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
+
+[Read more →](plugins/black-formatter/README.md)
+
 ### [claude-md-reflect](plugins/claude-md-reflect/)
 
 Analyzes chat history to identify improvements for CLAUDE.md instruction files. Trigger with `reflect on CLAUDE.md`.
 
 [Read more →](plugins/claude-md-reflect/README.md)
 
+### [gemini-cli-skill](plugins/gemini-cli/)
+
+Orchestrates Gemini CLI for tasks requiring current web information via Google Search, deep codebase analysis, second AI opinions on code quality, or parallel task processing. Trigger with `use Gemini` or when needing capabilities unique to Gemini.
+
+**Requirements:** Gemini CLI v0.17.0+ ([installation guide](https://github.com/google-gemini/gemini-cli)) with authentication configured before use.
+
+[Read more →](plugins/gemini-cli/README.md)
+
+### [gh-cli](plugins/gh-cli/)
+
+Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. Triggers on explicit `gh` mentions or natural language GitHub operations.
+
+**Requirements:** GitHub CLI ([installation guide](https://cli.github.com/)) with authentication configured (`gh auth login`) before use.
+
+[Read more →](plugins/gh-cli/README.md)
+
 ### [go-formatter](plugins/go-formatter/)
 
 Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
 
 [Read more →](plugins/go-formatter/README.md)
-
-### [black-formatter](plugins/black-formatter/)
-
-Automatically formats Python files with `black` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
-
-[Read more →](plugins/black-formatter/README.md)
 
 ### [go-style-guide](plugins/go-style-guide/)
 
