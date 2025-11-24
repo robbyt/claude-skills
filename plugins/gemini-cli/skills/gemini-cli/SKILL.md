@@ -37,6 +37,62 @@ Key flags:
 - `-o json`: Structured output with token/tool stats
 - `-m [model]`: Model selection (e.g., `gemini-2.5-flash` for faster tasks)
 
+## Troubleshooting
+
+### Command Approval Issue
+
+**Problem**: Gemini hangs with no output when asked to execute commands.
+
+**Cause**: Gemini requires explicit user permission for any command it runs. When Claude asks Gemini to "run X command", Gemini waits for user approval and appears to hang.
+
+**Solution**: Run commands via Claude's Bash tool first, then pass the output or file paths to Gemini.
+
+**Bad Pattern** (hangs waiting for approval):
+```bash
+gemini "Run git diff --cached and review the changes" -o text
+```
+
+**Good Pattern** (runs commands first, then passes to Gemini):
+```bash
+# 1. Get the diff using Bash tool
+git diff --cached > /tmp/claude/changes.diff
+
+# 2. Pass file path to Gemini
+gemini "Review the git diff at /tmp/claude/changes.diff and provide feedback" -o text
+```
+
+**Alternative** (pass content directly):
+```bash
+# 1. Get output via Bash
+diff_output=$(git diff --cached)
+
+# 2. Save to file and reference it
+echo "$diff_output" > /tmp/claude/diff.txt
+gemini "Review /tmp/claude/diff.txt for code quality issues" -o text
+```
+
+### Sandbox Permission Error (EPERM)
+
+**Problem**: Error when running gemini commands from Claude Code:
+```
+Error: EPERM: operation not permitted, mkdir '/Users/[user]/.gemini/tmp/...'
+```
+
+**Cause**: Gemini CLI needs write access to `~/.gemini/tmp/` for chat recording. Claude Code's sandbox blocks this by default.
+
+**Solution 1** (Recommended): Use `dangerouslyDisableSandbox: true` when calling gemini via Bash tool:
+```bash
+# In Claude Code, when using Bash tool to run gemini:
+dangerouslyDisableSandbox: true
+```
+
+**Solution 2**: Add `~/.gemini/tmp` to sandbox allowlist:
+1. Run `/sandbox` command in Claude Code
+2. Add `~/.gemini/tmp` to the filesystem write allowlist
+3. Restart Claude Code
+
+**Note**: This error only affects Claude Code's sandboxed execution. Running `gemini` directly from your terminal works without these workarounds.
+
 ## Working with Files
 
 **Gemini can read files directly from disk.** Tell Gemini the file path instead of embedding file content in the prompt.

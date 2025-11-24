@@ -579,6 +579,6 @@ This guide synthesizes both Google and Uber Go style guides. Note these differen
 
 ## When in Doubt
 
-Reference the full style guide in `uber-go-style-guide.md` for detailed explanations and architectural context.
+Reference the full style guide in `go-style-guide.md` for detailed explanations and architectural context.
 
 **Remember**: Focus on design decisions that require understanding of intent, ownership, lifecycle, and architecture. Let linters handle syntax and common bugs.

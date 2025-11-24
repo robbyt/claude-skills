@@ -62,11 +62,11 @@ Automatically formats Python files with `black` after Write/Edit/MultiEdit opera
 
 [Read more →](plugins/black-formatter/README.md)
 
-### [uber-go-style-guide](plugins/uber-go-style-guide/)
+### [go-style-guide](plugins/go-style-guide/)
 
-Reviews Go code for adherence to Uber's Go Style Guide. Focuses on critical bugs and important maintainability issues. Trigger with `review this Go code` or `review my PR`.
+Reviews Go code for adherence to Go Style Guide (synthesizing Google and Uber style guides). Focuses on critical bugs and important maintainability issues. Trigger with `review this Go code` or `review my PR`.
 
-[Read more →](plugins/uber-go-style-guide/README.md)
+[Read more →](plugins/go-style-guide/README.md)
 
 ## Development
 

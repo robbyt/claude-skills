@@ -1,6 +1,6 @@
-# uber-go-style-guide
+# go-style-guide
 
-Reviews Go code for adherence to Uber's Go Style Guide.
+Reviews Go code for adherence to Go Style Guide.
 
 ## Requirements
 
@@ -14,7 +14,7 @@ Reviews Go code for adherence to Uber's Go Style Guide.
 
 Trigger the skill by requesting a code review:
 - "review this Go code"
-- "check against Uber style guide"
+- "check against style guide"
 - "review my PR"
 - "review the work done so far"
 
@@ -30,12 +30,12 @@ Trigger the skill by requesting a code review:
 The skill uses a 3-phase workflow:
 
 1. **Scope Identification** - Determines what to review (PR diff, specific files, recent commits)
-2. **Code Analysis** - Reviews against bundled Uber Go Style Guide
+2. **Code Analysis** - Reviews against bundled Go Style Guide
 3. **Report Findings** - Structured output with Critical and Important issues
 
 ## Bundled Resources
 
-- `references/uber-go-style-guide.md` - Complete Uber Go Style Guide for offline reference
+- `references/go-style-guide.md` - Complete Go Style Guide for offline reference
 - `references/review-checklist.md` - Quick reference of common violations
 
 ## Focus Areas
@@ -76,4 +76,4 @@ Works alongside golangci-lint. The skill focuses on semantic issues while linter
 
 ## Source
 
-Based on the [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
+Based on the [Google Go Style Guide](https://google.github.io/styleguide/go/) and [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md).
