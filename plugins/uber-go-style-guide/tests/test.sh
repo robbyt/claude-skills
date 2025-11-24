@@ -9,7 +9,8 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
-PLUGIN_DIR="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 PLUGIN_NAME=$(basename "$PLUGIN_DIR")
 SKILL_DIR="$PLUGIN_DIR/skills/$PLUGIN_NAME"
 

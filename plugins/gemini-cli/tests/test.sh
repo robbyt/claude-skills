@@ -10,10 +10,17 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-PLUGIN_DIR="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 PLUGIN_NAME=$(basename "$PLUGIN_DIR")
 SKILL_DIR="$PLUGIN_DIR/skills/gemini-cli"
 TEST_DIR="$PLUGIN_DIR/tests"
+
+# Ensure cleanup on exit
+cleanup() {
+    rm -f "$TEST_DIR/tmp/integration-test-"*.txt
+}
+trap cleanup EXIT
 
 # Resolve claude CLI path
 if command -v claude >/dev/null 2>&1; then
@@ -57,7 +64,6 @@ skip_test() {
     local reason="$1"
     echo -e "    ${YELLOW}⊘${NC} Skipped: $reason"
     TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
-    TESTS_PASSED=$((TESTS_PASSED + 1))  # Count skipped as passed for overall success
 }
 
 echo "Running validation tests for $PLUGIN_NAME..."
@@ -132,7 +138,7 @@ elif ! gemini "test" -o text >/dev/null 2>&1; then
 else
     mkdir -p "$TEST_DIR/tmp"
     TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
-    TEST_PROMPT="Ask Gemini to use the GoogleSearch to find the current world record holder for the largest domestic cat. After Gemini is finished with it's research, report back what it found."
+    TEST_PROMPT="Ask Gemini to use the GoogleSearch to find the current world record holder for the largest domestic cat. After Gemini is finished with its research, report back what it found."
 
     if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
@@ -152,9 +158,14 @@ else
 fi
 
 echo
-if [ "$TESTS_SKIPPED" -gt 0 ]; then
-    echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN, $TESTS_SKIPPED skipped)"
+if [ "$((TESTS_PASSED + TESTS_SKIPPED))" -eq "$TESTS_RUN" ]; then
+    if [ "$TESTS_SKIPPED" -gt 0 ]; then
+        echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN, $TESTS_SKIPPED skipped)"
+    else
+        echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN)"
+    fi
+    exit 0
 else
-    echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN)"
+    echo -e "${RED}Some tests failed.${NC} ($TESTS_PASSED/$TESTS_RUN passed, $TESTS_SKIPPED skipped)"
+    exit 1
 fi
-exit 0

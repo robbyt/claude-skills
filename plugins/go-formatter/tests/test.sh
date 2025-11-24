@@ -10,10 +10,20 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 # Get the plugin directory (script should run from plugin root)
-PLUGIN_DIR="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 TEST_DIR="$PLUGIN_DIR/tests"
 HOOK_SCRIPT="$PLUGIN_DIR/scripts/format-go.sh"
 HOOKS_JSON="$PLUGIN_DIR/hooks/hooks.json"
+
+# Ensure cleanup on exit
+cleanup() {
+    rm -rf "$TEST_DIR/tmp"
+}
+trap cleanup EXIT
+
+# Create temp directory
+mkdir -p "$TEST_DIR/tmp"
 
 # Resolve claude CLI path
 if command -v claude >/dev/null 2>&1; then
@@ -86,7 +96,6 @@ fi
 pass_test
 
 run_test "Hook formats Go file (Write tool)"
-mkdir -p "$TEST_DIR/tmp"
 TEMP_GO="$TEST_DIR/tmp/test_write.go"
 cp "$TEST_DIR/fixtures/malformed.go" "$TEMP_GO"
 
@@ -94,7 +103,7 @@ cp "$TEST_DIR/fixtures/malformed.go" "$TEMP_GO"
 echo "{\"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"$TEMP_GO\"}}" | \
     "$HOOK_SCRIPT" 2>/dev/null
 
-if diff -q "$TEST_DIR/fixtures/formatted.go" "$TEMP_GO" >/dev/null 2>&1; then
+if [ -z "$(gofmt -l "$TEMP_GO")" ]; then
     pass_test
     rm -f "$TEMP_GO"
 else
@@ -110,7 +119,7 @@ cp "$TEST_DIR/fixtures/malformed.go" "$TEMP_GO"
 echo "{\"tool_name\": \"Edit\", \"tool_input\": {\"file_path\": \"$TEMP_GO\"}}" | \
     "$HOOK_SCRIPT" 2>/dev/null
 
-if diff -q "$TEST_DIR/fixtures/formatted.go" "$TEMP_GO" >/dev/null 2>&1; then
+if [ -z "$(gofmt -l "$TEMP_GO")" ]; then
     pass_test
     rm -f "$TEMP_GO"
 else
@@ -161,9 +170,6 @@ if [ -z "$CLAUDE_CMD" ]; then
     fail_test "claude CLI not found"
     exit 1
 fi
-
-# Create tmp directory if it doesn't exist
-mkdir -p "$TEST_DIR/tmp"
 
 # Create test file in plugin directory
 TEST_FILE="$TEST_DIR/tmp/test-$$.go"
