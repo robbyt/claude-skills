@@ -19,4 +19,4 @@ jobs:
           enable-cache: true
 
       - name: Run Ruff
-        run: uv run ruff format --check --diff --exclude 'tests/fixtures/' .
+        run: uv run ruff format --check --diff --exclude '**/tests/fixtures/**' .
