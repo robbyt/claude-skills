@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Collection of Claude Code skills for developer workflows",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "plugins": [
     {
       "name": "claude-md-reflect",
       "description": "Analyze chat history to identify areas for improving CLAUDE.md instruction files. Use when the user says 'reflect on CLAUDE.md', 'improve CLAUDE.md', or requests analysis of instruction files after a work session. Reviews recent conversation for misunderstandings, inconsistencies, or areas where instructions could be clearer.",
       "source": "./plugins/claude-md-reflect",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "robbyt"
       },
@@ -25,7 +25,7 @@
       "name": "go-formatter",
       "description": "Automatically format Go files with gofmt after Write/Edit/MultiEdit operations",
       "source": "./plugins/go-formatter",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "robbyt"
       },
@@ -37,7 +37,7 @@
       "name": "black-formatter",
       "description": "Automatically format Python files with Black after Write/Edit/MultiEdit operations",
       "source": "./plugins/black-formatter",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "robbyt"
       },
@@ -49,7 +49,7 @@
       "name": "uber-go-style-guide",
       "description": "Review Go code for adherence to Uber's Go Style Guide. Use when the user requests a code review of completed work, pull requests, or feature branches in Go projects.",
       "source": "./plugins/uber-go-style-guide",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "robbyt"
       },
@@ -61,7 +61,7 @@
       "name": "gemini-cli-skill",
       "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
       "source": "./plugins/gemini-cli",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "robbyt"
       },

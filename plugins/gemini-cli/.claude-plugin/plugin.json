@@ -1,7 +1,7 @@
 {
   "name": "gemini-cli-skill",
   "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "robbyt",
     "email": "robbyt@robbyt.net"

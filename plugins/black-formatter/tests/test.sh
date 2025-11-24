@@ -10,10 +10,20 @@ GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 # Get the plugin directory (script should run from plugin root)
-PLUGIN_DIR="$(pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 TEST_DIR="$PLUGIN_DIR/tests"
 HOOK_SCRIPT="$PLUGIN_DIR/scripts/format-python.sh"
 HOOKS_JSON="$PLUGIN_DIR/hooks/hooks.json"
+
+# Ensure cleanup on exit
+cleanup() {
+    rm -rf "$TEST_DIR/tmp"
+}
+trap cleanup EXIT
+
+# Create temp directory
+mkdir -p "$TEST_DIR/tmp"
 
 # Resolve claude CLI path
 if command -v claude >/dev/null 2>&1; then
@@ -86,7 +96,6 @@ fi
 pass_test
 
 run_test "Hook formats Python file (Write tool)"
-mkdir -p "$TEST_DIR/tmp"
 TEMP_PY="$TEST_DIR/tmp/test_write.py"
 cp "$TEST_DIR/fixtures/malformed.py" "$TEMP_PY"
 
@@ -94,7 +103,7 @@ cp "$TEST_DIR/fixtures/malformed.py" "$TEMP_PY"
 echo "{\"tool_name\": \"Write\", \"tool_input\": {\"file_path\": \"$TEMP_PY\"}}" | \
     "$HOOK_SCRIPT" 2>/dev/null
 
-if diff -q "$TEST_DIR/fixtures/formatted.py" "$TEMP_PY" >/dev/null 2>&1; then
+if black --check "$TEMP_PY" >/dev/null 2>&1; then
     pass_test
     rm -f "$TEMP_PY"
 else
@@ -110,7 +119,7 @@ cp "$TEST_DIR/fixtures/malformed.py" "$TEMP_PY"
 echo "{\"tool_name\": \"Edit\", \"tool_input\": {\"file_path\": \"$TEMP_PY\"}}" | \
     "$HOOK_SCRIPT" 2>/dev/null
 
-if diff -q "$TEST_DIR/fixtures/formatted.py" "$TEMP_PY" >/dev/null 2>&1; then
+if black --check "$TEMP_PY" >/dev/null 2>&1; then
     pass_test
     rm -f "$TEMP_PY"
 else
@@ -162,15 +171,18 @@ if [ -z "$CLAUDE_CMD" ]; then
     exit 1
 fi
 
-# Create tmp directory if it doesn't exist
-mkdir -p "$TEST_DIR/tmp"
-
 # Create test file in plugin directory
 TEST_FILE="$TEST_DIR/tmp/test-$$.py"
 cp "$TEST_DIR/fixtures/malformed.py" "$TEST_FILE"
 
 # Use claude CLI to read and write the file (triggers hook)
-if ! "$CLAUDE_CMD" --permission-mode acceptEdits --tools "Read,Write" --print  "This is an automated test of the black-formatter post-write hook. Please read the Python file at $TEST_FILE using the Read tool, then write it back unchanged using the Write tool. The post-write hook will automatically format the file with Black after the write operation. Do not modify the file content yourself."; then
+TEST_PROMPT="This is an automated test of the black-formatter post-write hook. Please read the \
+Python file at $TEST_FILE using the Read tool, then write it back unchanged using the Write tool. \
+The post-write hook will automatically format the file with Black after the write operation. Leave \
+the intentionally malformed file content untouched so we can confirm the post-write hook tool is \
+working correctly."
+
+if ! "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode acceptEdits --tools "Read,Write" --print "$TEST_PROMPT"; then
     fail_test "claude CLI execution failed"
     rm -f "$TEST_FILE"
     exit 1
