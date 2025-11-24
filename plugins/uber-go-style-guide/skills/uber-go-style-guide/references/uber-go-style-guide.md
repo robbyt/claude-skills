@@ -9,12 +9,17 @@ This is the complete Uber Go Style Guide, bundled for offline reference during c
 ## Table of Contents
 
 - [Overview](#overview)
+- [Core Principles](#core-principles)
 - [Interface & Type Handling](#interface--type-handling)
+- [Interface Design Principles](#interface-design-principles)
+- [Function Design](#function-design)
 - [Data Management](#data-management)
 - [Error Handling](#error-handling)
 - [Concurrency Best Practices](#concurrency-best-practices)
 - [Struct & Type Organization](#struct--type-organization)
+- [Documentation Standards](#documentation-standards)
 - [Program Initialization & Exit](#program-initialization--exit)
+- [Logging and Configuration](#logging-and-configuration)
 - [Performance Guidelines](#performance-guidelines)
 - [Code Style Standards](#code-style-standards)
 - [Testing Patterns](#testing-patterns)
@@ -31,9 +36,35 @@ The Uber Go Style Guide establishes conventions for writing Go code at Uber. It 
 - Go Code Review Comments
 - Google Go Style Guide
 
-**This guide requires Go 1.25.0 or later** and leverages modern language features including generics, automatic loop variable scoping, range functions, and testing improvements.
+**This guide requires Go 1.25.0 or later** and leverages modern language features including generics, automatic loop variable scoping, range functions, and testing improvements. **This guide does not consider backwards compatibility** - all patterns use current Go best practices.
 
 Recommended linting tools: `staticcheck`, `golangci-lint`, and `go vet`.
+
+## Core Principles
+
+When writing Go code, apply these five principles in hierarchical order. Earlier principles take precedence over later ones:
+
+1. **Clarity**: Code should be understandable. The purpose and rationale should be clear to readers.
+2. **Simplicity**: Code should accomplish its goals in the most straightforward way possible.
+3. **Concision**: Code should have a high signal-to-noise ratio with minimal redundancy.
+4. **Maintainability**: Code should be easy for future programmers to modify correctly and safely.
+5. **Consistency**: Code should align with broader patterns in the codebase and ecosystem.
+
+### Using These Principles
+
+These principles form a decision-making framework for situations not explicitly covered by the guide:
+
+- When code patterns conflict, apply these principles in order to determine the better approach
+- When multiple valid implementations exist, choose the one that best satisfies these principles
+- When making trade-offs, explain which principle takes precedence and why
+
+**Example**: A function could be made more concise by using clever shortcuts, but doing so would reduce clarity. In this case, **clarity takes precedence** - write the clearer version even if it's slightly longer.
+
+**Example**: Code could be made more consistent with outdated patterns in an old codebase, but modern Go has better approaches. Here **simplicity and maintainability** (using modern patterns) may outweigh strict consistency with legacy code.
+
+These principles guide all specific recommendations in this style guide.
+
+---
 
 ## Interface & Type Handling
 
@@ -117,6 +148,294 @@ mu.Lock()
 ```
 
 **Why**: `sync.Mutex` and `sync.RWMutex` have valid zero values. Use `var` declaration for clarity.
+
+---
+
+## Interface Design Principles
+
+### Interfaces Belong in Consumer Packages
+
+Interfaces generally belong in packages that consume interface values, not packages that implement them.
+
+**Bad - producer defines interface**:
+```go
+package producer
+
+// Wrong - interface defined where it's implemented
+type Reader interface {
+  Read() []byte
+}
+
+type FileReader struct{}
+
+func (f *FileReader) Read() []byte {
+  // implementation
+}
+```
+
+**Good - consumer defines interface**:
+```go
+package consumer
+
+// Interface defined where it's needed
+type Reader interface {
+  Read() []byte
+}
+
+func Process(r Reader) {
+  data := r.Read()
+  // use data
+}
+```
+
+```go
+package producer
+
+// Returns concrete type
+type FileReader struct{}
+
+func (f *FileReader) Read() []byte {
+  // implementation
+}
+```
+
+**Why**: This pattern:
+- Allows adding new implementations without modifying the original package
+- Keeps interfaces minimal (only methods actually needed)
+- Prevents premature abstraction
+- Enables better API evolution
+
+**Exceptions exist**: Sometimes producer-defined interfaces make sense (e.g., `io.Reader`, plugin systems). Use judgment based on your use case.
+
+---
+
+### Return Concrete Types
+
+Functions should return concrete types, not interfaces, unless there's a compelling reason to hide the implementation.
+
+**Bad**:
+```go
+func NewUserStore() UserStore {
+  return &userStoreImpl{}
+}
+```
+
+**Good**:
+```go
+func NewUserStore() *UserStore {
+  return &UserStore{}
+}
+```
+
+**Why**: Returning concrete types allows adding methods later without breaking callers. Only return interfaces when you need to enforce abstraction boundaries.
+
+---
+
+### Avoid Premature Interface Definitions
+
+Don't define interfaces before you have realistic usage. Interfaces should emerge from actual needs.
+
+**Bad**:
+```go
+// No consumers yet - premature abstraction
+type DataProcessor interface {
+  Process(data []byte) error
+  Validate() bool
+  Transform() Result
+}
+```
+
+**Good**:
+```go
+// Start with concrete implementation
+type DataProcessor struct {
+  // fields
+}
+
+func (d *DataProcessor) Process(data []byte) error {
+  // implementation
+}
+
+// Later, when you have multiple implementations, extract interface
+```
+
+**Why**: Interfaces defined without real usage tend to be too large or poorly designed. Let usage patterns guide interface design.
+
+---
+
+### Don't Create Custom Context Types
+
+Always use `context.Context` from the standard library. Custom context types fragment the ecosystem.
+
+**Bad**:
+```go
+type AppContext struct {
+  context.Context
+  UserID string
+}
+
+func ProcessRequest(ctx AppContext) {
+  // ...
+}
+```
+
+**Good**:
+```go
+func ProcessRequest(ctx context.Context) {
+  userID := ctx.Value(userIDKey).(string)
+  // ...
+}
+```
+
+**Why**: Custom context types prevent interoperability with standard library functions and third-party code expecting `context.Context`.
+
+---
+
+## Function Design
+
+### Prefer Synchronous Functions
+
+Prefer synchronous functions over asynchronous ones. Keep goroutine management localized to callers.
+
+**Bad**:
+```go
+func ProcessData(data []byte) {
+  go func() {
+    // Hidden concurrency - caller can't control it
+    result := process(data)
+    store(result)
+  }()
+}
+```
+
+**Good**:
+```go
+func ProcessData(data []byte) Result {
+  result := process(data)
+  return result
+}
+
+// Caller controls concurrency
+go func() {
+  result := ProcessData(data)
+  store(result)
+}()
+```
+
+**Why**: Synchronous functions give callers control over concurrency, making goroutine lifetimes clear and testability easier.
+
+---
+
+### Make Goroutine Lifetimes Clear
+
+When functions do spawn goroutines, make it obvious when or whether they exit.
+
+**Bad**:
+```go
+func StartMonitor() {
+  go monitor()  // When does this stop? How?
+}
+```
+
+**Good**:
+```go
+type Monitor struct {
+  stop chan struct{}
+  done chan struct{}
+}
+
+func (m *Monitor) Start() {
+  go m.run()
+}
+
+func (m *Monitor) Stop() {
+  close(m.stop)
+  <-m.done  // Wait for completion
+}
+```
+
+**Why**: Clear goroutine lifetimes prevent leaks and enable graceful shutdown.
+
+---
+
+### Context Should Be First Parameter
+
+Context should be the first parameter of functions (except HTTP handlers and streaming RPC methods where it's implicit).
+
+**Good**:
+```go
+func FetchUser(ctx context.Context, userID string) (*User, error) {
+  // ...
+}
+
+func ProcessBatch(ctx context.Context, items []Item, opts *Options) error {
+  // ...
+}
+```
+
+**Exception - HTTP handlers**:
+```go
+func HandleRequest(w http.ResponseWriter, r *http.Request) {
+  ctx := r.Context()  // Context from request
+  // ...
+}
+```
+
+**Why**: Consistent parameter order improves API discoverability and follows ecosystem conventions.
+
+---
+
+### Pass Values, Not Pointers (Usually)
+
+Pass values unless the function needs to mutate the argument or the type is non-copyable.
+
+**Prefer values**:
+```go
+func FormatTimestamp(t time.Time) string {
+  return t.Format(time.RFC3339)
+}
+```
+
+**Use pointers when**:
+```go
+// 1. Function mutates the argument
+func UpdateUser(u *User) {
+  u.LastModified = time.Now()
+}
+
+// 2. Type contains non-copyable fields (sync.Mutex, etc.)
+type Config struct {
+  mu sync.Mutex
+  data map[string]string
+}
+
+func LoadConfig(c *Config) error {
+  // Must use pointer - Config contains mutex
+}
+
+// 3. Type is very large and copying would be expensive (profile first!)
+```
+
+**Why**: Value parameters prevent accidental mutations and make data flow clearer. Only use pointers when necessary for correctness.
+
+---
+
+### Receiver Type Choice
+
+Choose receiver types based on correctness, not performance optimization.
+
+**Use pointer receivers when**:
+- Method mutates the receiver
+- Receiver contains non-copyable fields (mutexes, channels)
+- Receiver is very large (but profile first)
+- Some methods already have pointer receivers (consistency)
+
+**Use value receivers when**:
+- Method doesn't mutate receiver
+- Receiver is a small struct or primitive type
+- Receiver is a copyable value type (like `time.Time`)
+
+**Mixing**: Avoid mixing pointer and value receivers for the same type (except for specific performance needs identified through profiling).
 
 ---
 
@@ -430,6 +749,47 @@ return fmt.Errorf("new store: %w", err)
 
 **Why**: Avoid redundant "failed to" phrases. Error chains already show the failure path.
 
+#### Error Chain Structure
+
+Place `%w` at the end of error strings to mirror the error chain structure (newest to oldest):
+
+```go
+// Good - %w at end mirrors chain structure
+return fmt.Errorf("read config: %w", err)
+// Error chain: "read config: open file: permission denied"
+//              [newest]    [middle]   [oldest/root cause]
+```
+
+Error chains form newest-to-oldest hierarchies. Placing `%w` at the end makes the chain structure clear when reading error messages.
+
+#### Error Translation at Boundaries
+
+At system boundaries (RPC, IPC, storage), use `%v` instead of `%w` to translate errors into your canonical error space:
+
+```go
+// At RPC boundary - translate to gRPC status
+func (s *Server) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.User, error) {
+  user, err := s.db.FindUser(req.Id)
+  if err != nil {
+    // Use %v to prevent exposing internal error types across RPC
+    return nil, status.Errorf(codes.NotFound, "user %s: %v", req.Id, err)
+  }
+  return user, nil
+}
+
+// Within service - preserve error chain with %w
+func (db *DB) FindUser(id string) (*User, error) {
+  user, err := db.query(id)
+  if err != nil {
+    // Use %w to maintain error chain for internal inspection
+    return nil, fmt.Errorf("query user %s: %w", id, err)
+  }
+  return user, nil
+}
+```
+
+**Why**: System boundaries need canonical error representations. Internal code preserves error chains for debugging.
+
 ---
 
 ### Error Naming
@@ -448,6 +808,37 @@ var (
 type ValidationError struct {
   Field string
 }
+```
+
+---
+
+### Error String Format
+
+Error strings should not be capitalized (unless beginning with proper nouns or acronyms) and should not end with punctuation. Errors typically appear within larger context where they're interpolated into other messages.
+
+**Bad**:
+```go
+return errors.New("Something bad happened.")
+return errors.New("Configuration failed")
+```
+
+**Good**:
+```go
+return errors.New("something bad happened")
+return errors.New("configuration failed")
+```
+
+**Why**: Error messages appear in larger context:
+```go
+fmt.Printf("operation failed: %v", err)
+// Produces: "operation failed: something bad happened"
+// Not: "operation failed: Something bad happened."
+```
+
+**Exception**: Proper nouns and acronyms maintain their casing:
+```go
+return errors.New("GitHub API unavailable")
+return fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 ```
 
 ---
@@ -549,6 +940,55 @@ func main() {
   }
 }
 ```
+
+---
+
+### Must Functions
+
+Reserve the `MustXYZ` naming pattern for setup helpers that terminate the program on failure. These functions should only be called early in program startup, never in library code or at runtime.
+
+**Acceptable - program initialization**:
+```go
+var defaultConfig = MustLoadConfig("config.yaml")
+
+func MustLoadConfig(path string) *Config {
+  cfg, err := LoadConfig(path)
+  if err != nil {
+    log.Fatalf("failed to load config: %v", err)
+  }
+  return cfg
+}
+
+func main() {
+  // defaultConfig available here
+}
+```
+
+**Bad - library function**:
+```go
+package parser
+
+// Wrong - library functions shouldn't panic
+func MustParseJSON(data []byte) *Object {
+  obj, err := ParseJSON(data)
+  if err != nil {
+    panic(err)  // Forces panic on caller
+  }
+  return obj
+}
+```
+
+**Good - library function**:
+```go
+package parser
+
+// Return error - let caller decide how to handle
+func ParseJSON(data []byte) (*Object, error) {
+  // ...
+}
+```
+
+**Why**: `MustXYZ` functions are appropriate only for initialization code where failure prevents meaningful execution. Library code should always return errors.
 
 ---
 
@@ -718,6 +1158,45 @@ func (m *Monitor) Close() error {
 
 ---
 
+### Specify Channel Direction
+
+Always specify channel direction (`<-chan`, `chan<-`) in function signatures to prevent accidental misuse and document intent.
+
+**Bad** (bidirectional allows misuse):
+```go
+func process(ch chan int) {
+  // Could accidentally send when should only receive
+  val := <-ch
+}
+```
+
+**Good** (direction constraints):
+```go
+// Send-only parameter
+func produce(ch chan<- int) {
+  ch <- 42
+}
+
+// Receive-only parameter
+func consume(ch <-chan int) {
+  val := <-ch
+}
+
+// Bidirectional only when truly needed
+func bridge(in <-chan int, out chan<- int) {
+  for v := range in {
+    out <- v
+  }
+}
+```
+
+**Why**: Channel direction constraints:
+- Prevent accidental misuse (sending on receive-only channel)
+- Document function intent clearly
+- Enable compile-time safety
+
+---
+
 ## Struct & Type Organization
 
 ### Avoid Embedding in Public Structs
@@ -756,24 +1235,122 @@ func (c *ConcreteList) Add(e Entity) {
 
 ---
 
+### Don't Copy Types with Sync Primitives
+
+Don't copy types containing synchronization primitives (`sync.Mutex`, `sync.Cond`, etc.) or types with pointer-only methods.
+
+**Bad**:
+```go
+type Counter struct {
+  mu    sync.Mutex
+  count int
+}
+
+func (c Counter) Inc() {  // Value receiver copies mutex!
+  c.mu.Lock()
+  defer c.mu.Unlock()
+  c.count++
+}
+
+// Copying the struct copies the mutex
+c1 := Counter{}
+c2 := c1  // Bug - copies mutex in locked/unlocked state
+```
+
+**Good**:
+```go
+type Counter struct {
+  mu    sync.Mutex
+  count int
+}
+
+func (c *Counter) Inc() {  // Pointer receiver - no copy
+  c.mu.Lock()
+  defer c.mu.Unlock()
+  c.count++
+}
+```
+
+**Why**: Copying a `sync.Mutex` or similar types breaks synchronization guarantees and causes undefined behavior.
+
+---
+
+### Struct Literal Field Names
+
+Use field names in struct literals for types from other packages. Omitting names is fragile.
+
+**Bad**:
+```go
+// Fragile - breaks if fields reordered
+user := User{"alice", 30, "alice@example.com"}
+```
+
+**Good**:
+```go
+user := User{
+  Name:  "alice",
+  Age:   30,
+  Email: "alice@example.com",
+}
+```
+
+**Exception**: Field names optional for same-package types when field order is stable (e.g., test tables).
+
+---
+
+### Type Alias vs Type Definition
+
+Use type definitions (`type T1 T2`) for creating new types. Reserve type aliases (`type T1 = T2`) only for migration scenarios.
+
+**Type definition** (creates new type):
+```go
+type UserID int  // New type - not assignable to int
+
+var id UserID = 42
+var n int = id  // Compile error - different types
+```
+
+**Type alias** (same type, different name):
+```go
+type StringAlias = string  // Alias - same type as string
+
+var s StringAlias = "hello"
+var str string = s  // OK - same type
+```
+
+**When to use aliases**:
+```go
+// During API migration only
+package oldpkg
+
+import "newpkg"
+
+// Temporary alias during migration period
+type OldUserID = newpkg.UserID
+
+// Deprecated: Use newpkg.UserID instead
+```
+
+**Why**: Type definitions provide type safety. Aliases are rarely needed and create confusion.
+
+---
+
 ### Avoid init()
 
-Make code deterministic and testable. Only use `init()` for:
-- Complex expressions that can't be single assignments
-- Pluggable hooks (database drivers)
-- Deterministic precomputation
+Make code deterministic and testable. Only use `init()` for specific scenarios. Most initialization should happen explicitly.
 
 **Avoid** in init():
 - I/O operations
 - Environment variable access
 - Global state manipulation
+- Anything that can fail
 
 **Bad**:
 ```go
 var config Config
 
 func init() {
-  config = loadConfig()  // I/O in init
+  config = loadConfig()  // I/O in init - can fail, hard to test
 }
 ```
 
@@ -784,7 +1361,206 @@ var defaultConfig = Config{
 }
 
 func NewConfig() (*Config, error) {
-  return loadConfig()
+  return loadConfig()  // Explicit, testable, can handle errors
+}
+```
+
+---
+
+#### Acceptable init() Uses
+
+**1. Database driver registration** (pluggable hooks):
+```go
+package postgres
+
+import (
+  "database/sql"
+  _ "github.com/lib/pq"  // Registers postgres driver in init()
+)
+
+// The imported package's init() registers the driver:
+// func init() {
+//   sql.Register("postgres", &Driver{})
+// }
+```
+
+**2. Deterministic precomputation** (no I/O, no failures):
+```go
+package math
+
+var powersOfTwo [64]int
+
+func init() {
+  // Pure computation, deterministic, cannot fail
+  for i := range powersOfTwo {
+    powersOfTwo[i] = 1 << i
+  }
+}
+```
+
+**3. Complex expressions requiring loops**:
+```go
+package constants
+
+var httpStatusText = map[int]string{}
+
+func init() {
+  // Can't use map literal for computed values
+  for code := 200; code < 600; code++ {
+    httpStatusText[code] = computeStatusText(code)
+  }
+}
+```
+
+**Why these are acceptable**: Deterministic, cannot fail, no external dependencies, improve performance by computing once at startup.
+
+**Reference**: [Google Go Style Guide - init](https://google.github.io/styleguide/go/best-practices#init)
+
+---
+
+## Documentation Standards
+
+### Document Non-Obvious Behavior
+
+Document error-prone or non-obvious fields and behaviors. Don't restate what's already clear from the code.
+
+**Bad** (restates obvious):
+```go
+// Name is the user's name
+Name string
+```
+
+**Good** (documents non-obvious behavior):
+```go
+// Name is the user's display name. May be empty if user hasn't set one.
+// In that case, use Email as fallback for display purposes.
+Name string
+```
+
+---
+
+### Document Concurrent Safety
+
+Explicitly document whether types or functions are safe for concurrent use.
+
+**Good**:
+```go
+// Cache is safe for concurrent use by multiple goroutines.
+type Cache struct {
+  mu sync.RWMutex
+  data map[string]interface{}
+}
+
+// Get retrieves a value. Safe for concurrent use.
+func (c *Cache) Get(key string) interface{} {
+  c.mu.RLock()
+  defer c.mu.RUnlock()
+  return c.data[key]
+}
+```
+
+**Also good** (documenting NOT safe):
+```go
+// Buffer is NOT safe for concurrent use. Callers must synchronize access.
+type Buffer struct {
+  data []byte
+}
+```
+
+---
+
+### Document Resource Cleanup
+
+Explicitly document cleanup requirements for resources.
+
+**Good**:
+```go
+// Open returns a connection to the database.
+// Callers must call Close() when done to release resources.
+func Open(dsn string) (*DB, error) {
+  // ...
+}
+
+// Close releases database resources.
+// It's safe to call Close multiple times.
+func (db *DB) Close() error {
+  // ...
+}
+```
+
+---
+
+### Document Error Conditions
+
+Specify what error types are returned and under what conditions.
+
+**Bad**:
+```go
+// Parse parses the input.
+func Parse(input string) (*Result, error)
+```
+
+**Good**:
+```go
+// Parse parses the input string.
+// Returns ErrInvalidSyntax if input has syntax errors.
+// Returns ErrTooLarge if input exceeds maximum size.
+func Parse(input string) (*Result, error)
+```
+
+**When using errors.Is**:
+```go
+// FetchUser retrieves a user by ID.
+// Returns ErrNotFound if user doesn't exist (use errors.Is to check).
+// Returns ErrPermission if caller lacks access (use errors.Is to check).
+func FetchUser(ctx context.Context, id string) (*User, error)
+```
+
+---
+
+### Context Cancellation Semantics
+
+Context cancellation semantics are usually implied. Only document non-standard behavior.
+
+**Don't document** (standard behavior):
+```go
+// Fetch retrieves data. Respects ctx cancellation.
+func Fetch(ctx context.Context) (*Data, error)
+```
+
+**Do document** (non-standard behavior):
+```go
+// Fetch retrieves data. Even if ctx is canceled, the fetch completes
+// and resources are cleaned up before returning ctx.Err().
+func Fetch(ctx context.Context) (*Data, error)
+```
+
+---
+
+### Comments Should Explain WHY
+
+Comments should explain why code does something, not what it does. The code itself shows what.
+
+**Bad** (explains what):
+```go
+// Loop through users
+for _, user := range users {
+  // Check if user is active
+  if user.Active {
+    // Process the user
+    process(user)
+  }
+}
+```
+
+**Good** (explains why):
+```go
+// Only process active users to avoid sending notifications
+// to users who have disabled their accounts
+for _, user := range users {
+  if user.Active {
+    process(user)
+  }
 }
 ```
 
@@ -851,6 +1627,81 @@ func run() error {
 
 ---
 
+## Logging and Configuration
+
+### Logging Best Practices
+
+Use `log.Info(v)` over formatting functions when no string manipulation is needed.
+
+**Good**:
+```go
+log.Info("processing started")  // No formatting needed
+log.Infof("processing %d items", count)  // Formatting needed
+```
+
+Use `log.V()` levels for development tracing that should be disabled in production.
+
+**Example**:
+```go
+if log.V(2) {
+  log.Info("detailed debug information")
+}
+```
+
+Avoid calling expensive functions when verbose logging is disabled:
+
+**Bad**:
+```go
+log.V(2).Infof("state: %s", expensiveDebugString())  // Always calls function
+```
+
+**Good**:
+```go
+if log.V(2) {
+  log.Infof("state: %s", expensiveDebugString())  // Only calls when enabled
+}
+```
+
+---
+
+### Configuration Flags
+
+Define flags only in `package main`. Don't export flags as package side effects.
+
+**Bad**:
+```go
+package config
+
+import "flag"
+
+// Bad - package exports flags as side effect
+var Port = flag.Int("port", 8080, "server port")
+```
+
+**Good**:
+```go
+package main
+
+import "flag"
+
+func main() {
+  port := flag.Int("port", 8080, "server port")
+  flag.Parse()
+  // use *port
+}
+```
+
+**Flag naming**: Use `snake_case` for flag names, `camelCase` for variable names.
+
+```go
+var (
+  maxConnections = flag.Int("max_connections", 100, "maximum connections")
+  readTimeout    = flag.Duration("read_timeout", 30*time.Second, "read timeout")
+}
+```
+
+---
+
 ## Performance Guidelines
 
 ### Avoid Repeated String-to-Byte Conversions
@@ -906,7 +1757,70 @@ clear(s)  // All elements now zero
 
 ### Line Length
 
-Target 99 characters as a soft limit. Horizontal scrolling reduces readability.
+No fixed maximum line length exists. If a line feels too long, prefer refactoring the code instead of mechanically splitting it.
+
+Long lines often indicate that code is doing too much:
+- Extract complex expressions into well-named variables
+- Break large functions into smaller, focused ones
+- Simplify nested logic
+
+**When line breaks are necessary**, indent continuation lines clearly to distinguish them from subsequent lines of code.
+
+---
+
+###Switch and Break
+
+Don't use `break` at the end of switch clauses - Go automatically breaks. Use comments for empty clauses.
+
+**Good**:
+```go
+switch x {
+case 1:
+  doSomething()
+  // No break needed - automatic
+case 2:
+  doOtherThing()
+case 3:
+  // Intentionally empty
+default:
+  doDefault()
+}
+```
+
+---
+
+### Variable Shadowing
+
+Distinguish between "stomping" (reassigning) and "shadowing" (creating new variable in inner scope). Prefer clear names over implicit shadowing.
+
+**Shadowing** (new variable in inner scope):
+```go
+func process() error {
+  err := firstOperation()
+
+  if err != nil {
+    // This 'err' shadows outer 'err'
+    err := wrapError(err)
+    log.Print(err)
+  }
+
+  return err  // Returns outer err, not wrapped one!
+}
+```
+
+**Better** (clear names):
+```go
+func process() error {
+  err := firstOperation()
+
+  if err != nil {
+    wrappedErr := wrapError(err)
+    log.Print(wrappedErr)
+  }
+
+  return err
+}
+```
 
 ---
 
@@ -930,6 +1844,86 @@ Maintain uniform style within packages. Apply conventions at package level or la
 
 - Use `MixedCaps`
 - Tests may contain underscores for grouping: `TestFunc_Condition`
+- Don't use `Get` prefix for getters unless the concept inherently uses "get"
+
+**Good**:
+```go
+func Count() int { }       // Not GetCount()
+func User(id string) *User { }  // Not GetUser()
+```
+
+**Acceptable** (concept inherently uses "get"):
+```go
+func GetPage(url string) (*Page, error) { }  // HTTP GET
+```
+
+---
+
+### Receiver Names
+
+Receiver names should be short (1-2 letters), abbreviate the type, and be consistent across all methods.
+
+**Good**:
+```go
+type Client struct{}
+
+func (c *Client) Connect() { }
+func (c *Client) Disconnect() { }
+```
+
+**Bad**:
+```go
+type Client struct{}
+
+func (client *Client) Connect() { }  // Too long
+func (cl *Client) Disconnect() { }   // Inconsistent
+```
+
+**Convention**: Use first letter(s) of type name, always the same across all methods.
+
+---
+
+### Variable Names
+
+Variable name length should scale with scope size and inverse to usage frequency:
+- **Short names** for small scopes and frequently used variables: `i`, `c`, `buf`
+- **Longer names** for large scopes and infrequently used variables: `requestTimeout`, `maxRetryAttempts`
+
+**Good**:
+```go
+// Short scope, frequent use
+for i, v := range items {
+  process(v)
+}
+
+// Large scope, infrequent use
+var requestTimeout = 30 * time.Second
+```
+
+---
+
+### Initialism Casing
+
+Initialisms should maintain consistent casing - all uppercase or all lowercase, never mixed.
+
+**Good**:
+```go
+var url string              // All lowercase
+var userID int             // ID all uppercase
+type URLParser struct { }  // URL all uppercase
+type HTTPClient struct { } // HTTP all uppercase
+```
+
+**Bad**:
+```go
+var Url string             // Never Url
+var userId int             // Never Id
+type UrlParser struct { }  // Never Url
+```
+
+**Special cases** - preserve standard prose formatting:
+- iOS not IOS or Ios
+- gRPC not GRPC or Grpc
 
 ---
 
@@ -991,15 +1985,38 @@ var (
 
 ### Local Variables
 
-- Use `:=` for explicit assignments
-- Use `var` when zero values are clearer
+Choose declaration form based on clarity and intent.
 
-**Example**:
+**Prefer `:=`** with non-zero values:
 ```go
-var filtered []int  // Clear: empty slice
-
-result := process()  // Explicit assignment
+name := "Alice"
+count := 42
+result := process()
 ```
+
+**Use `var`** for zero-value initialization when values are "ready for later use":
+```go
+var filtered []int  // Will be populated later
+var buf bytes.Buffer  // Zero value is ready to use
+var mu sync.Mutex  // Zero value is ready to use
+```
+
+**Prefer `new()`** over empty composite literals for pointer-to-zero-value:
+```go
+// When you need *T with zero value
+p := new(Person)  // Clearer than &Person{}
+```
+
+**Size hints**: Preallocate capacity only when final size is known through empirical analysis (profiling):
+```go
+// Don't guess
+items := make([]Item, 0)  // Let it grow
+
+// Only if profiling shows benefit AND size is known
+items := make([]Item, 0, expectedSize)
+```
+
+**Reference**: [Google Go Style Guide - Variable Declarations](https://google.github.io/styleguide/go/best-practices#variable-declarations)
 
 ---
 
@@ -1075,6 +2092,65 @@ msg := `unknown error:"test"`
 ---
 
 ## Testing Patterns
+
+### CRITICAL: Don't Call t.Fatal from Goroutines
+
+Calling `t.Fatal()`, `t.FailNow()`, or `t.Skip()` from goroutines causes immediate panic and corrupted test state. These functions must only be called from the goroutine running the test function.
+
+**CRITICAL BUG - causes panic**:
+```go
+func TestConcurrent(t *testing.T) {
+  go func() {
+    result, err := fetchData()
+    if err != nil {
+      t.Fatal(err)  // PANIC! Called from wrong goroutine
+    }
+  }()
+}
+```
+
+**Correct - use t.Error and coordinate with main goroutine**:
+```go
+func TestConcurrent(t *testing.T) {
+  errCh := make(chan error, 1)
+
+  go func() {
+    result, err := fetchData()
+    if err != nil {
+      errCh <- err  // Send error to main goroutine
+      return
+    }
+    errCh <- nil
+  }()
+
+  if err := <-errCh; err != nil {
+    t.Fatalf("fetchData failed: %v", err)  // Called from test goroutine
+  }
+}
+```
+
+**Alternative - use t.Error from goroutine**:
+```go
+func TestConcurrent(t *testing.T) {
+  var wg sync.WaitGroup
+  wg.Add(1)
+
+  go func() {
+    defer wg.Done()
+    result, err := fetchData()
+    if err != nil {
+      t.Error(err)  // Safe - doesn't terminate immediately
+      return
+    }
+  }()
+
+  wg.Wait()
+}
+```
+
+**Why**: `t.Fatal()` calls `runtime.Goexit()`, which is only safe from the test's main goroutine. From other goroutines, it causes panics and prevents proper test cleanup.
+
+---
 
 ### Table-Driven Tests
 
@@ -1291,6 +2367,144 @@ func BenchmarkOperation(b *testing.B) {
 
 ---
 
+### Test Helper Patterns
+
+Test helpers should call `t.Helper()` to improve failure line reporting. Helpers take `testing.T` as a parameter, allowing them to report failures directly.
+
+**Pattern**:
+```go
+func setupUser(t *testing.T, name string) *User {
+  t.Helper()  // Failure reports point to caller, not this line
+
+  user, err := createUser(name)
+  if err != nil {
+    t.Fatalf("failed to setup user: %v", err)
+  }
+  return user
+}
+
+func TestUserWorkflow(t *testing.T) {
+  user := setupUser(t, "alice")  // Failure points here, not inside helper
+  // ... test logic
+}
+```
+
+**Why**: `t.Helper()` marks the function as a test helper, causing failure messages to report the caller's location instead of the line inside the helper.
+
+**Benefits**:
+- Clear failure locations in test output
+- Helpers can fail tests directly
+- Simplified test code
+
+---
+
+### Test Failure Messages
+
+Format test failure messages to include function name, inputs, actual value, and expected value.
+
+**Pattern**: `FunctionName(inputs) = actual, want expected`
+
+**Good**:
+```go
+func TestParseInt(t *testing.T) {
+  got, err := ParseInt("invalid")
+  if err == nil {
+    t.Errorf("ParseInt(%q) succeeded, want error", "invalid")
+  }
+
+  got, err = ParseInt("42")
+  want := 42
+  if got != want {
+    t.Errorf("ParseInt(%q) = %d, want %d", "42", got, want)
+  }
+}
+```
+
+**Conventions**:
+- Include function name
+- Include inputs if short
+- Show actual value BEFORE expected value
+- Use "got" for actual, "want" for expected
+- Be specific about what failed
+
+**Bad**:
+```go
+t.Errorf("wrong value")  // What value? What was it? What was expected?
+t.Errorf("expected %d but got %d", want, got)  // Backwards (expected first)
+```
+
+**Why**: Consistent, informative failure messages make test output easier to parse and debug.
+
+---
+
+### t.Error vs t.Fatal Choice
+
+Choose between `t.Error` and `t.Fatal` based on whether subsequent checks are meaningful.
+
+**Prefer t.Error** to reveal all failures in one run:
+```go
+func TestValidation(t *testing.T) {
+  result := Validate(input)
+
+  if result.Name == "" {
+    t.Error("Name should not be empty")  // Continue checking
+  }
+
+  if result.Email == "" {
+    t.Error("Email should not be empty")  // Shows both failures
+  }
+}
+```
+
+**Use t.Fatal** when subsequent checks would panic or be meaningless:
+```go
+func TestDatabase(t *testing.T) {
+  db, err := OpenDB()
+  if err != nil {
+    t.Fatalf("OpenDB failed: %v", err)  // Can't continue without DB
+  }
+  defer db.Close()
+
+  // These would panic if db is nil
+  result := db.Query("SELECT * FROM users")
+}
+```
+
+**In table-driven tests**:
+- Use `t.Fatal()` in subtests (per-entry failures)
+- Use `t.Error()` + `continue` in non-subtest loops
+
+**Why**: `t.Error` reveals multiple issues; `t.Fatal` prevents cascading failures.
+
+---
+
+### Test Assertions
+
+**Simple rule**: If the codebase already uses an assertion library (testify, etc.), continue using it for consistency. For new projects, use standard library testing patterns unless an assertion library is explicitly requested.
+
+**Standard library pattern**:
+```go
+func TestAdd(t *testing.T) {
+  got := Add(2, 3)
+  want := 5
+  if got != want {
+    t.Errorf("Add(2, 3) = %d, want %d", got, want)
+  }
+}
+```
+
+**With assertion library** (if already in codebase):
+```go
+func TestAdd(t *testing.T) {
+  got := Add(2, 3)
+  assert.Equal(t, 5, got)
+}
+```
+
+**Why**: Consistency within a project matters more than the specific assertion style. Avoid adding dependencies to new projects without explicit need.
+
+---
+
 ## Advanced Patterns
 
 ### Functional Options
@@ -1336,6 +2550,71 @@ func Open(addr string, opts ...Option) (*Connection, error) {
 - Optional parameters only when needed
 - Future extensibility without breaking changes
 - Self-documenting API
+
+---
+
+### Option Struct Pattern
+
+For functions with many optional parameters where most have sensible defaults, consider option structs as a simpler alternative to functional options.
+
+**When to use**:
+- Many optional parameters (3+)
+- Most fields have sensible defaults
+- Callers typically specify only 1-2 options
+- Simpler than functional options for straightforward cases
+
+**Pattern**:
+```go
+type ClientOptions struct {
+  Timeout     time.Duration
+  Retries     int
+  Logger      *log.Logger
+  EnableCache bool
+}
+
+func NewClient(addr string, opts *ClientOptions) (*Client, error) {
+  // Apply defaults for nil options
+  if opts == nil {
+    opts = &ClientOptions{
+      Timeout:     30 * time.Second,
+      Retries:     3,
+      Logger:      log.Default(),
+      EnableCache: true,
+    }
+  }
+
+  // Use opts fields
+  return &Client{
+    addr:    addr,
+    timeout: opts.Timeout,
+    retries: opts.Retries,
+    logger:  opts.Logger,
+    cache:   opts.EnableCache,
+  }, nil
+}
+```
+
+**Usage**:
+```go
+// Use defaults
+client, _ := NewClient("localhost:8080", nil)
+
+// Override specific options
+client, _ := NewClient("localhost:8080", &ClientOptions{
+  Retries: 5,  // Other fields use defaults
+})
+```
+
+**Comparison with Functional Options**:
+
+| Aspect | Option Struct | Functional Options |
+|--------|--------------|-------------------|
+| Simplicity | Simpler, less code | More complex |
+| Extensibility | Requires version management | Seamlessly extensible |
+| Discovery | IDE autocomplete shows all options | Must know function names |
+| Best for | Stable APIs, many defaults | Evolving APIs, few overrides |
+
+**Reference**: [Google Go Style Guide - Option Structs](https://google.github.io/styleguide/go/best-practices#option-structure)
 
 ---
 
@@ -1395,6 +2674,61 @@ func BuildAll[T any, B Builder[T]](builders []B) []T {
 - Eliminates `interface{}` and type assertions
 - Compile-time type safety
 - Clearer API contracts
+
+---
+
+## Package Organization
+
+### Group Related Types
+
+Group related types in the same package when client code typically needs both. Use godoc grouping as a guide for package boundaries.
+
+**Good**:
+```go
+package user
+
+// Related types together
+type User struct { }
+type UserRepository interface { }
+type UserService struct { }
+```
+
+**Consider splitting when**:
+- Package has thousands of lines in a single file
+- Types have distinct responsibilities with separate clients
+- Clear separation improves testability
+
+---
+
+### Package Size
+
+Avoid single-file packages with thousands of lines. Split into multiple files by:
+- Responsibility (handlers.go, models.go, repository.go)
+- Type groupings (user.go, account.go, payment.go)
+
+No strict line limits, but consider splitting when navigation becomes difficult.
+
+---
+
+### Package Names as Context
+
+Package names provide context. Don't repeat package name in type names.
+
+**Bad**:
+```go
+package user
+
+type UserService struct { }  // Redundant
+```
+
+**Good**:
+```go
+package user
+
+type Service struct { }  // Used as user.Service
+```
+
+**Reference**: [Google Go Style Guide - Package Names](https://google.github.io/styleguide/go/decisions#package-names)
 
 ---
 

@@ -7,6 +7,8 @@ description: Review Go code for adherence to Uber's Go Style Guide. Use when the
 
 Review Go code against Uber's comprehensive style guide, focusing on critical bugs and important maintainability issues.
 
+**This guide assumes Go 1.25+ and does not consider backwards compatibility.** All patterns use modern Go best practices.
+
 ## Review Process
 
 Follow this 3-phase workflow for systematic code review:
@@ -165,22 +167,37 @@ golangci-lint run
 - API design (embedding, evolution, encapsulation)
 - Testing strategy (table-driven, parallel, time mocking)
 
-### Skip (Handled by Linters)
+### Skip (Handled by Linters or Out of Scope)
+
+**Linter-Caught Issues**:
 - Unhandled errors (errcheck)
 - Type assertions without checks (staticcheck)
 - Missing struct field names (govet)
 - Import grouping (goimports/gci)
 - Formatting issues (gofmt)
 - Common bugs (staticcheck, govet)
-- Performance nitpicks without profiling data
+
+**Subjective Preferences (Do Not Flag)**:
+- **Assertion library choice**: Use what codebase uses; don't add to new projects unless requested. Both manual checks and assertion libraries (testify, assert) are valid.
+- **Line length variations**: Focus on refactoring opportunities, not mechanical line breaking
+- **Test helper patterns**: Either `testing.T` parameter or returning errors acceptable; ensure `t.Helper()` used
+- **Performance nitpicks**: Only flag when profiling data shows actual impact
 
 ## Review Principles
 
+When evaluating code, apply Google's Core Principles in order (from `uber-go-style-guide.md`):
+1. **Clarity**: Is the purpose and rationale clear?
+2. **Simplicity**: Does it accomplish goals in the straightforward manner?
+3. **Concision**: High signal-to-noise ratio?
+4. **Maintainability**: Can future programmers modify it correctly?
+5. **Consistency**: Aligns with broader codebase patterns?
+
+Then apply specific review guidance:
 1. **Be specific**: Quote exact code, provide exact fixes
 2. **Cite guidelines**: Reference specific sections of the style guide
 3. **Explain impact**: Why does this matter? (correctness, maintainability, performance)
 4. **Prioritize**: Critical issues first, important second
-5. **Acknowledge good code**: Recognize proper patterns
+5. **Acknowledge good code**: Recognize patterns that follow the core principles
 
 ## When to Load Full Style Guide
 

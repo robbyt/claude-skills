@@ -30,6 +30,8 @@ Basic pattern:
 gemini "[prompt]" -o text 2>&1
 ```
 
+⏱️ **Response Time**: Gemini may take several minutes to respond, especially for complex tasks involving file analysis, web search, or codebase investigation. **Allow up to 10 minutes** for responses before assuming a timeout. The CLI will show no output while processing.
+
 Key flags:
 - `-o text`: Human-readable output
 - `-o json`: Structured output with token/tool stats
