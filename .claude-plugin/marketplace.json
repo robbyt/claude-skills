@@ -68,6 +68,18 @@
       "license": "MIT",
       "keywords": ["gemini", "ai", "code-review", "web-search", "architecture"],
       "strict": true
+    },
+    {
+      "name": "gh-cli",
+      "description": "Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub files",
+      "source": "./plugins/gh-cli",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": ["github", "gh", "cli", "pull-requests", "issues", "actions", "api"],
+      "strict": true
     }
   ]
 }
