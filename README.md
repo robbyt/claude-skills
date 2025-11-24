@@ -31,6 +31,7 @@ Many of these plugins require the following tools to be installed:
 ### Tool Versions
 
 External formatters are called directly from your PATH:
+- `ruff` - Python formatter (install via `uv sync`)
 - `black` - Python formatter (install via `uv sync`)
 - `gofmt` - Go formatter (version matches your installed Go)
 
@@ -49,6 +50,12 @@ Automatically formats Python files with `black` after Write/Edit/MultiEdit opera
 
 [Read more →](plugins/python-formatter-black/README.md)
 
+### [python-formatter-ruff](plugins/python-formatter-ruff/)
+
+Automatically formats Python files with `ruff` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook. Recommended Python formatter.
+
+[Read more →](plugins/python-formatter-ruff/README.md)
+
 ### [claude-md-reflect](plugins/claude-md-reflect/)
 
 Analyzes chat history to identify improvements for CLAUDE.md instruction files. Use the phrase `reflect on CLAUDE.md` to trigger this skill.
@@ -57,7 +64,7 @@ Analyzes chat history to identify improvements for CLAUDE.md instruction files. 
 
 ### [gemini-cli](plugins/gemini-cli/)
 
-Orchestrates Gemini CLI for tasks requiring current web information via Google Search, deep codebase analysis, second AI opinions on code quality, or parallel task processing. Use the phrase `use Gemini` to trigger this skill, or it will activate when needing capabilities unique to Gemini.
+Uses the Gemini CLI for a "second opinion" on code reviews, debugging, web search via Google Search, or planning. Triggers with `use gemini to ...`, or `ask gemini ...`.
 
 **Requirements:** Gemini CLI v0.17.0+ ([installation guide](https://github.com/google-gemini/gemini-cli)) with authentication configured before use.
 
@@ -65,7 +72,7 @@ Orchestrates Gemini CLI for tasks requiring current web information via Google S
 
 ### [gh-cli](plugins/gh-cli/)
 
-Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. This skill triggers on explicit `gh` mentions or natural language GitHub operations.
+Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. This skill triggers on explicit `gh` mentions, or other implied GitHub operations such as viewing a file from a `github.com` link, or viewing a patch from a PR.
 
 **Requirements:** GitHub CLI ([installation guide](https://cli.github.com/)) with authentication configured (`gh auth login`) before use.
 
@@ -79,7 +86,7 @@ Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operation
 
 ### [go-style-guide](plugins/go-style-guide/)
 
-Reviews Go code for adherence to Go Style Guide (synthesizing Google and Uber style guides), identifies bugs, race conditions, and maintainability issues, and triggers with phrases like `review this Go code` or `review my PR`.
+Reviews Go code for adherence to the Go Style Guide (which is my personal combo of the Google and Uber style guides.) It identifies issues that are not typically found by static analysis. Trigger this action with phrases like `review this Go code` or `review my PR`.
 
 [Read more →](plugins/go-style-guide/README.md)
 

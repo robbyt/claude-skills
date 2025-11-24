@@ -1,4 +1,4 @@
-name: Black Code Formatter
+name: Ruff Code Formatter
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  black:
+  ruff:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,5 +18,5 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Run Black
-        run: uv run black --check --diff --extend-exclude 'tests/fixtures/' .
+      - name: Run Ruff
+        run: uv run ruff format --check --diff --exclude 'tests/fixtures/' .
