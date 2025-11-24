@@ -53,7 +53,7 @@ Hook plugins include an integration test that requires the `claude` CLI:
 
 ### For Skill Plugins
 
-See `plugins/claude-md-reflect/tests/test.sh` or `plugins/uber-go-style-guide/tests/test.sh` for complete examples.
+See `plugins/claude-md-reflect/tests/test.sh` or `plugins/go-style-guide/tests/test.sh` for complete examples.
 
 These tests validate plugin structure:
 1. Verify SKILL.md exists and has required frontmatter

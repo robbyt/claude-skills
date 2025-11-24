@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Test script for uber-go-style-guide skill plugin
+# Test script for go-style-guide skill plugin
 # This script should be run from the plugin root directory
 
 set -e  # Exit on first error
@@ -75,10 +75,10 @@ fi
 
 # Test 5: Verify reference files exist
 echo "  Checking reference files..."
-if [ -f "$SKILL_DIR/references/uber-go-style-guide.md" ]; then
-    echo -e "    ${GREEN}✓${NC} uber-go-style-guide.md exists"
+if [ -f "$SKILL_DIR/references/go-style-guide.md" ]; then
+    echo -e "    ${GREEN}✓${NC} go-style-guide.md exists"
 else
-    echo -e "    ${RED}✗${NC} uber-go-style-guide.md missing"
+    echo -e "    ${RED}✗${NC} go-style-guide.md missing"
     exit 1
 fi
 

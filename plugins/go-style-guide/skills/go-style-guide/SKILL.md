@@ -1,11 +1,13 @@
 ---
-name: uber-go-style-guide
-description: Review Go code for adherence to Uber's Go Style Guide. Use when the user requests a code review of completed work, pull requests, or feature branches in Go projects. Focuses on critical bugs, race conditions, and important maintainability issues. Trigger phrases include "review this Go code", "check against Uber style guide", "review my PR", or "review the work done so far".
+name: go-style-guide
+description: Review Go code for adherence to Go Style Guide. Use when the user requests a code review of completed work, pull requests, or feature branches in Go projects. Focuses on critical bugs, race conditions, and important maintainability issues. Trigger phrases include "review this Go code", "check against style guide", "review my PR", or "review the work done so far".
 ---
 
-# Uber Go Style Guide Reviewer
+# Go Style Guide Reviewer
 
-Review Go code against Uber's comprehensive style guide, focusing on critical bugs and important maintainability issues.
+Review Go code against comprehensive style guide, focusing on critical bugs and important maintainability issues.
+
+**This guide assumes Go 1.25+ and does not consider backwards compatibility.** All patterns use modern Go best practices.
 
 ## Review Process
 
@@ -58,7 +60,7 @@ Review the code systematically using the bundled references:
    - Concurrency lifecycle (goroutine management)
    - Exit handling (os.Exit only in main)
 
-3. **Consult full guide as needed** (load `references/uber-go-style-guide.md`):
+3. **Consult full guide as needed** (load `references/go-style-guide.md`):
    - For detailed explanations of specific patterns
    - When encountering unfamiliar idioms
    - To verify best practices for specific scenarios
@@ -165,28 +167,43 @@ golangci-lint run
 - API design (embedding, evolution, encapsulation)
 - Testing strategy (table-driven, parallel, time mocking)
 
-### Skip (Handled by Linters)
+### Skip (Handled by Linters or Out of Scope)
+
+**Linter-Caught Issues**:
 - Unhandled errors (errcheck)
 - Type assertions without checks (staticcheck)
 - Missing struct field names (govet)
 - Import grouping (goimports/gci)
 - Formatting issues (gofmt)
 - Common bugs (staticcheck, govet)
-- Performance nitpicks without profiling data
+
+**Subjective Preferences (Do Not Flag)**:
+- **Assertion library choice**: Use what codebase uses; don't add to new projects unless requested. Both manual checks and assertion libraries (testify, assert) are valid.
+- **Line length variations**: Focus on refactoring opportunities, not mechanical line breaking
+- **Test helper patterns**: Either `testing.T` parameter or returning errors acceptable; ensure `t.Helper()` used
+- **Performance nitpicks**: Only flag when profiling data shows actual impact
 
 ## Review Principles
 
+When evaluating code, apply Google's Core Principles in order (from `go-style-guide.md`):
+1. **Clarity**: Is the purpose and rationale clear?
+2. **Simplicity**: Does it accomplish goals in the straightforward manner?
+3. **Concision**: High signal-to-noise ratio?
+4. **Maintainability**: Can future programmers modify it correctly?
+5. **Consistency**: Aligns with broader codebase patterns?
+
+Then apply specific review guidance:
 1. **Be specific**: Quote exact code, provide exact fixes
 2. **Cite guidelines**: Reference specific sections of the style guide
 3. **Explain impact**: Why does this matter? (correctness, maintainability, performance)
 4. **Prioritize**: Critical issues first, important second
-5. **Acknowledge good code**: Recognize proper patterns
+5. **Acknowledge good code**: Recognize patterns that follow the core principles
 
 ## When to Load Full Style Guide
 
 Load `references/review-checklist.md` first for quick architectural patterns - it focuses on semantic issues requiring judgment.
 
-Load `references/uber-go-style-guide.md` when:
+Load `references/go-style-guide.md` when:
 - Need detailed rationale for architectural decisions
 - Encountering unfamiliar patterns (functional options, generic interfaces)
 - User asks about specific style guide sections

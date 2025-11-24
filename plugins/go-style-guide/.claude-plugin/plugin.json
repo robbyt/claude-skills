@@ -1,0 +1,11 @@
+{
+  "name": "go-style-guide",
+  "description": "Review Go code for adherence to Go Style Guide",
+  "version": "1.0.1",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["go", "golang", "style-guide", "code-review"]
+}

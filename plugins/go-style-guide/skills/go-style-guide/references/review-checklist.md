@@ -545,8 +545,40 @@ for i := 0; i < iterations; i++ {
 - Embedding in private structs for composition (sometimes acceptable)
 - Shared slices when explicitly documented (acceptable with justification)
 
+## Google vs Uber Style Differences
+
+This guide synthesizes both Google and Uber Go style guides. Note these differences:
+
+### Assertion Libraries
+- **Our approach**: Use what codebase uses; don't add to new projects unless requested
+- **Google**: Recommends against assertion libraries (prefer manual checks)
+- **Uber**: Examples use assertion libraries (testify)
+- **Review guidance**: Don't flag either approach; focus on test logic, not assertion style
+
+### Line Length
+- **Our approach**: No fixed maximum; prefer refactoring over mechanical breaking
+- **Google**: No fixed maximum; prefer refactoring
+- **Uber (historically)**: 99 character soft limit
+- **Review guidance**: Focus on whether code could be refactored, not line counts
+
+### Test Helpers
+- **Our approach**: Helpers take `testing.T` and call `t.Helper()`
+- **Google**: Recommends helpers return errors instead of taking `testing.T`
+- **Uber**: Helpers take `testing.T`
+- **Review guidance**: Either pattern acceptable; ensure `t.Helper()` is used when taking `testing.T`
+
+### Interface Placement
+- **Both agree**: Interfaces generally belong in consumer packages
+- **Review guidance**: Flag only when interface placement prevents evolution; exceptions exist
+
+**Reference**:
+- [Google Go Style Guide](https://google.github.io/styleguide/go/)
+- [Uber Go Style Guide](https://github.com/uber-go/guide/blob/master/style.md)
+
+---
+
 ## When in Doubt
 
-Reference the full style guide in `uber-go-style-guide.md` for detailed explanations and architectural context.
+Reference the full style guide in `go-style-guide.md` for detailed explanations and architectural context.
 
 **Remember**: Focus on design decisions that require understanding of intent, ownership, lifecycle, and architecture. Let linters handle syntax and common bugs.
