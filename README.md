@@ -43,11 +43,11 @@ Consider enabling the sandbox feature in Claude Code: `/sandbox` (see [sandboxin
 
 ## Available Plugins
 
-### [black-formatter](plugins/black-formatter/)
+### [python-formatter-black](plugins/python-formatter-black/)
 
 Automatically formats Python files with `black` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
 
-[Read more →](plugins/black-formatter/README.md)
+[Read more →](plugins/python-formatter-black/README.md)
 
 ### [claude-md-reflect](plugins/claude-md-reflect/)
 

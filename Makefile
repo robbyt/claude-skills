@@ -10,7 +10,7 @@ help: Makefile
 	@sed -n 's/^##//p' $< | column -t -s ':' | sed -e 's/^/ /'
 	@echo
 
-## test-plugin: Run tests for a specific plugin (make test-plugin PLUGIN=black-formatter)
+## test-plugin: Run tests for a specific plugin (make test-plugin PLUGIN=python-formatter-black)
 .PHONY: test-plugin
 test-plugin:
 	@cd "plugins/$(PLUGIN)" && bash tests/test.sh

@@ -1,4 +1,4 @@
-# black-formatter
+# python-formatter-black
 
 Automatically formats Python files with `black` after Write/Edit/MultiEdit operations.
 

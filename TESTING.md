@@ -11,7 +11,7 @@ This repository uses an automated test discovery system. All plugins must use a 
 make test
 
 # Run tests for a specific plugin
-make test-plugin PLUGIN=black-formatter
+make test-plugin PLUGIN=python-formatter-black
 
 # List plugins with/without tests
 make list-tests
@@ -34,7 +34,7 @@ make clean
 
 ### For Formatter/Hook Plugins
 
-See `plugins/black-formatter/tests/test.sh` for a complete example.
+See `plugins/python-formatter-black/tests/test.sh` for a complete example.
 
 These tests validate that post-write hooks work correctly by:
 1. Validating hook configuration (`hooks.json` schema)
@@ -84,7 +84,7 @@ plugin-name/
 Test scripts produce clear pass/fail output:
 
 ```
-Running tests for black-formatter hook...
+Running tests for python-formatter-black hook...
 
   Running: Validate hooks.json schema
     ✓ Passed
