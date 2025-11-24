@@ -4,7 +4,7 @@ Reviews Go code for adherence to Go Style Guide.
 
 ## Requirements
 
-**Go 1.25.0 or later required.** This style guide uses modern Go features including:
+Requires Go 1.25.0 or later. This style guide uses Go features from versions 1.22-1.25 including:
 - Automatic loop variable scoping (Go 1.22+)
 - Generic slice/map functions and iterators (Go 1.21-1.23)
 - JSON `omitzero` and `os.Root` filesystem safety (Go 1.24)
@@ -21,7 +21,7 @@ Trigger the skill by requesting a code review:
 ## What it does
 
 - **Focuses on Architecture**: Concurrency patterns, data ownership, and API design
-- **Ignores Linting**: Skips formatting, import ordering, and syntax nitpicks covered by `golangci-lint`
+- **Ignores Linting**: Skips formatting, import ordering, and formatting details covered by `golangci-lint`
 - **Modernization**: Suggests architectural refactors like `testing/synctest` and `os.Root` adoption
 - **Safety**: Checks for race conditions and goroutine leaks that static analysis misses
 
@@ -35,8 +35,8 @@ The skill uses a 3-phase workflow:
 
 ## Bundled Resources
 
-- `references/go-style-guide.md` - Complete Go Style Guide for offline reference
-- `references/review-checklist.md` - Quick reference of common violations
+- `references/go-style-guide.md` - Go Style Guide for offline reference
+- `references/review-checklist.md` - Reference of common violations
 
 ## Focus Areas
 

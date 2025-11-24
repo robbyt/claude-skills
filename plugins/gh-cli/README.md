@@ -10,7 +10,7 @@ This plugin enables Claude Code to work with GitHub through the `gh` CLI tool, s
 - **Issues**: Create, list, update, and manage issues
 - **Repository Operations**: View, clone, fork repositories
 - **GitHub Actions**: Monitor workflow runs, view logs, trigger re-runs
-- **File Viewing**: Fetch raw file content from GitHub URLs without HTML clutter
+- **File Viewing**: Fetch raw file content from GitHub URLs without HTML markup
 
 The plugin includes helper scripts for common tasks:
 - `view_github_file.py`: Fetch raw file content from GitHub URLs
@@ -18,7 +18,7 @@ The plugin includes helper scripts for common tasks:
 
 ## Prerequisites
 
-**GitHub CLI (`gh`) must be installed and authenticated before using this plugin.**
+Install and authenticate the GitHub CLI (`gh`) before using this plugin.
 
 ### Installation
 
@@ -127,7 +127,7 @@ The helper scripts handle GitHub-specific tasks:
 - Parses GitHub URLs to extract owner, repo, ref, and file path
 - Uses `gh api` to fetch content from GitHub's REST API
 - Decodes base64-encoded content
-- Returns clean source code without HTML
+- Returns source code without HTML
 
 **view_pr_files.py**: Analyzes files changed in pull requests
 - Lists all files changed in a PR

@@ -4,13 +4,20 @@ Automatically formats Python files with `black` after Write/Edit/MultiEdit opera
 
 ## Setup
 
-Install dependencies (including the Black formatter):
+Ensure `black` is installed and available in your PATH:
 
 ```bash
+# Using pip
+pip install black
+
+# Using uv
+uv tool install black
+
+# For this repository (plugin development)
 uv sync
 ```
 
-This installs Black into a uv-managed virtualenv. The hook will use whatever `black` is in your PATH.
+The hook will use whatever `black` is in your PATH.
 
 ## Usage
 
@@ -21,7 +28,7 @@ Runs automatically as a PostToolUse hook - no manual invocation needed.
 - Watches for Write/Edit/MultiEdit tool usage
 - Detects when .py files are modified
 - Automatically runs `black` on the file
-- Formats code to Black's opinionated style
+- Formats code according to Black's style
 
 ## How it works
 

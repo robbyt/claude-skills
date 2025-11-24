@@ -1,6 +1,6 @@
 # Claude Skills Marketplace
 
-Collection of Claude Code skills and plugins that I use.
+A collection of Claude Code skills and plugins.
 
 ## Installation
 
@@ -8,7 +8,7 @@ Collection of Claude Code skills and plugins that I use.
 /plugin marketplace add robbyt/claude-skills
 ```
 
-Once that marketplace is added, you may need to run `/exit` and restart it with `claude --continue`.
+Once that marketplace is added, you may need to run `/exit` and restart Claude Code with `claude --continue`.
 
 Then install individual skills:
 1. Run `/plugin plugins`
@@ -38,26 +38,26 @@ For reproducible formatting, consider pinning tool versions in your project's de
 
 ## Security
 
-**Important:** Claude Code plugins can contain scripts that run on your local computer. Only install plugins from sources you trust!
+**Note:** Claude Code plugins can contain scripts that run on your local computer. Only install plugins from sources you trust!
 Consider enabling the sandbox feature in Claude Code: `/sandbox` (see [sandboxing docs](https://docs.claude.com/en/docs/claude-code/sandboxing))
 
 ## Available Plugins
 
 ### [black-formatter](plugins/black-formatter/)
 
-Automatically formats Python files with `black` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
+Automatically formats Python files with `black` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
 
 [Read more →](plugins/black-formatter/README.md)
 
 ### [claude-md-reflect](plugins/claude-md-reflect/)
 
-Analyzes chat history to identify improvements for CLAUDE.md instruction files. Trigger with `reflect on CLAUDE.md`.
+Analyzes chat history to identify improvements for CLAUDE.md instruction files. Use the phrase `reflect on CLAUDE.md` to trigger this skill.
 
 [Read more →](plugins/claude-md-reflect/README.md)
 
-### [gemini-cli-skill](plugins/gemini-cli/)
+### [gemini-cli](plugins/gemini-cli/)
 
-Orchestrates Gemini CLI for tasks requiring current web information via Google Search, deep codebase analysis, second AI opinions on code quality, or parallel task processing. Trigger with `use Gemini` or when needing capabilities unique to Gemini.
+Orchestrates Gemini CLI for tasks requiring current web information via Google Search, deep codebase analysis, second AI opinions on code quality, or parallel task processing. Use the phrase `use Gemini` to trigger this skill, or it will activate when needing capabilities unique to Gemini.
 
 **Requirements:** Gemini CLI v0.17.0+ ([installation guide](https://github.com/google-gemini/gemini-cli)) with authentication configured before use.
 
@@ -65,7 +65,7 @@ Orchestrates Gemini CLI for tasks requiring current web information via Google S
 
 ### [gh-cli](plugins/gh-cli/)
 
-Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. Triggers on explicit `gh` mentions or natural language GitHub operations.
+Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. This skill triggers on explicit `gh` mentions or natural language GitHub operations.
 
 **Requirements:** GitHub CLI ([installation guide](https://cli.github.com/)) with authentication configured (`gh auth login`) before use.
 
@@ -73,13 +73,13 @@ Interact with GitHub using the gh CLI for PR management, issues, repository oper
 
 ### [go-formatter](plugins/go-formatter/)
 
-Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
+Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
 
 [Read more →](plugins/go-formatter/README.md)
 
 ### [go-style-guide](plugins/go-style-guide/)
 
-Reviews Go code for adherence to Go Style Guide (synthesizing Google and Uber style guides). Focuses on critical bugs and important maintainability issues. Trigger with `review this Go code` or `review my PR`.
+Reviews Go code for adherence to Go Style Guide (synthesizing Google and Uber style guides), identifies bugs, race conditions, and maintainability issues, and triggers with phrases like `review this Go code` or `review my PR`.
 
 [Read more →](plugins/go-style-guide/README.md)
 

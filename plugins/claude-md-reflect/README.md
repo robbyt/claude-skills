@@ -12,13 +12,13 @@ reflect on CLAUDE.md
 
 - Reviews session history for misunderstandings and issues
 - Proposes specific CLAUDE.md improvements
-- Presents changes with checkboxes for approval
+- Presents changes for user approval
 - Updates CLAUDE.md files with approved changes
 
 ## How it works
 
 1. **Analysis Phase**: Uses an agent to analyze the entire session history and find all CLAUDE.md files in the repository
-2. **Interaction Phase**: Presents findings with checkboxes for user approval
+2. **Interaction Phase**: Presents findings for user approval
 3. **Implementation Phase**: Updates approved changes to the appropriate CLAUDE.md files
 
 ## Resources
