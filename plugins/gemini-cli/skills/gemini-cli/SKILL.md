@@ -35,6 +35,44 @@ Key flags:
 - `-o json`: Structured output with token/tool stats
 - `-m [model]`: Model selection (e.g., `gemini-2.5-flash` for faster tasks)
 
+## Working with Files
+
+**Gemini can read files directly from disk.** Tell Gemini the file path instead of embedding file content in the prompt.
+
+### Preferred Pattern (File Path)
+```bash
+gemini "Please review the bash script at path/to/file.sh for syntax errors" -o text
+```
+
+### Avoid This Pattern (Embedding Content)
+```bash
+# DON'T: Shell escaping can corrupt file content
+gemini "Review this script: $(cat path/to/file.sh)" -o text
+```
+
+**Why file paths are better:**
+- Avoids shell escaping issues (spaces in `[@]` become `[ @]`, quotes get mangled)
+- Preserves exact file content without interpretation
+- More efficient for large files
+- Clearer intent in prompts
+
+### File Operation Examples
+
+**Single file review:**
+```bash
+gemini "Review plugins/foo/test.sh for bash best practices" -o text
+```
+
+**Multi-file analysis:**
+```bash
+gemini "Compare the test patterns in plugins/black-formatter/tests/test.sh and plugins/go-formatter/tests/test.sh" -o text
+```
+
+**Directory analysis:**
+```bash
+gemini "Analyze all Python files in src/ directory for security issues" -o text
+```
+
 ## Core Workflows
 
 ### 1. Code Generation
@@ -44,7 +82,8 @@ gemini "Create [description] with [features]. Output complete file content." -o 
 
 ### 2. Code Review
 ```bash
-gemini "Review [file] for: 1) features, 2) bugs/security issues, 3) improvements" -o text
+# Provide file path - Gemini will read it directly
+gemini "Review path/to/file.js for: 1) features, 2) bugs/security issues, 3) improvements" -o text
 ```
 
 ### 3. Test Generation
