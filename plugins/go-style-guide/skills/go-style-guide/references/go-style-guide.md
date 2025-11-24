@@ -1158,6 +1158,168 @@ func (m *Monitor) Close() error {
 
 ---
 
+### Closure Variable Capture
+
+Closures capture variables from their enclosing scope by reference. When multiple goroutines write to the same captured variable, this causes a data race.
+
+**Bad** (captures outer variable):
+```go
+func Run() error {
+  err := setup()
+  if err != nil {
+    return err
+  }
+
+  var wg sync.WaitGroup
+  wg.Go(func() {
+    err = taskA()  // Race: writes to captured outer err
+  })
+  wg.Go(func() {
+    err = taskB()  // Race: writes to captured outer err
+  })
+  wg.Wait()
+  return err
+}
+```
+
+**Good** (local variable):
+```go
+wg.Go(func() {
+  err := taskA()  // New local variable
+  // handle err locally
+})
+```
+
+**Good** (named return):
+```go
+wg.Go(func() (err error) {
+  err = taskA()  // Named return is local to closure
+  return
+})
+```
+
+**Why**: The one-character difference between `err =` and `err :=` determines whether a closure captures an outer variable or creates a new local one.
+
+**Debugging**: Use `go build -gcflags='-d closure=1'` to print captured variables.
+
+**Note**: Go 1.22+ fixed range loop variable capture, but general closure capture remains a manual concern.
+
+---
+
+### Stdlib Concurrent Safety Caveats
+
+Types documented as "safe for concurrent use" (like `http.Client`) typically mean **some methods** are safe - not that all fields or operations are thread-safe. Modifying struct fields concurrently causes data races.
+
+**Bad** (modifying shared client fields concurrently):
+```go
+type Fetcher struct {
+  client *http.Client
+}
+
+func (f *Fetcher) FetchWithRedirects(ctx context.Context, url string) (*http.Response, error) {
+  f.client.CheckRedirect = customPolicy  // Race if called concurrently!
+  return f.client.Get(url)
+}
+
+func (f *Fetcher) FetchNoRedirects(ctx context.Context, url string) (*http.Response, error) {
+  f.client.CheckRedirect = nil  // Race!
+  return f.client.Get(url)
+}
+```
+
+**Good** (inject pre-configured clients):
+```go
+type Fetcher struct {
+  clientWithRedirects *http.Client
+  clientNoRedirects   *http.Client
+}
+
+func NewFetcher() *Fetcher {
+  return &Fetcher{
+    clientWithRedirects: &http.Client{CheckRedirect: customPolicy},
+    clientNoRedirects:   &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+      return http.ErrUseLastResponse
+    }},
+  }
+}
+
+func (f *Fetcher) FetchWithRedirects(ctx context.Context, url string) (*http.Response, error) {
+  return f.clientWithRedirects.Get(url)
+}
+
+func (f *Fetcher) FetchNoRedirects(ctx context.Context, url string) (*http.Response, error) {
+  return f.clientNoRedirects.Get(url)
+}
+```
+
+**Why**: "Safe for concurrent use" means method calls (Get, Do) are synchronized internally. Field modification is not protected and requires external synchronization or separate instances.
+
+**Common types affected**: `http.Client`, `http.Transport`, `sql.DB` configuration fields
+
+**Rule**: Configure stdlib types at construction time. If goroutines need different configurations, inject separate pre-configured instances.
+
+**Note**: Most stdlib types (`bytes.Buffer`, slices, maps) are NOT thread-safe. When passing `io.Writer`/`io.Reader` to libraries you don't control, wrap with a synchronized adapter that locks in `Write()`/`Read()`.
+
+---
+
+### Mutex and Data Scope Mismatch
+
+A mutex only synchronizes access when all goroutines share the **same** mutex instance. Creating a new mutex per-request while sharing the underlying data provides no synchronization.
+
+**Bad** (per-request mutex, shared data):
+```go
+var globalData = map[string]int{"a": 1}
+
+type Service struct {
+  data map[string]int
+  mu   sync.Mutex
+}
+
+func NewService() *Service {
+  return &Service{
+    data: globalData,  // Shallow copy - shares underlying map!
+    mu:   sync.Mutex{},  // New mutex per call - no shared synchronization
+  }
+}
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+  svc := NewService()  // Each request gets own mutex
+  svc.mu.Lock()
+  defer svc.mu.Unlock()
+  svc.data["key"] = 42  // Race! Different mutexes, same map
+}
+```
+
+**Good** (Option 1 - global mutex for global data):
+```go
+var (
+  globalData = map[string]int{"a": 1}
+  globalMu   sync.Mutex
+)
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+  globalMu.Lock()
+  defer globalMu.Unlock()
+  globalData["key"] = 42  // All handlers share same mutex
+}
+```
+
+**Good** (Option 2 - deep copy for per-request isolation):
+```go
+func NewService() *Service {
+  return &Service{
+    data: maps.Clone(globalData),  // Deep copy - isolated data
+    mu:   sync.Mutex{},  // Own mutex for own data
+  }
+}
+```
+
+**Why**: Go's struct assignment is shallow - maps and slices copy the pointer, not the data. The mutex and data must have matching scope.
+
+**Rule**: Mutex scope must match data scope. 1 mutex for N goroutines accessing shared data, or N mutexes for N isolated copies.
+
+---
+
 ### Specify Channel Direction
 
 Always specify channel direction (`<-chan`, `chan<-`) in function signatures to prevent accidental misuse and document intent.
@@ -2729,49 +2891,3 @@ type Service struct { }  // Used as user.Service
 ```
 
 **Reference**: [Google Go Style Guide - Package Names](https://google.github.io/styleguide/go/decisions#package-names)
-
----
-
-## Linting & Tools
-
-### Recommended Linters
-
-- **errcheck**: Error handling verification
-- **goimports**: Code formatting and import management
-- **golint**: Common style issues
-- **govet**: Common mistakes
-- **staticcheck**: Static analysis
-
-### golangci-lint
-
-Recommended runner for large codebases. Offers performance and multi-linter configuration.
-
-**Configuration**:
-```yaml
-linters:
-  enable:
-    - errcheck
-    - goimports
-    - golint
-    - govet
-    - staticcheck
-```
-
-### Editor Setup
-
-Configure editors to:
-- Run `goimports` on save
-- Validate with `golint` and `go vet`
-- Show inline linter warnings
-
----
-
-## Summary
-
-This guide emphasizes that style conventions go beyond formatting—they encompass:
-- Error handling patterns
-- Concurrency safety
-- API design principles
-- Maintainability practices
-
-These are essential for productive Go development at scale.
