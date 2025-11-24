@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Format Python files with Ruff after Write/Edit/MultiEdit operations
 
 # Read JSON from stdin and extract Python file path
