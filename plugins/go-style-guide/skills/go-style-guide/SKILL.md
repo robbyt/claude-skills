@@ -9,6 +9,32 @@ Review Go code against comprehensive style guide, focusing on critical bugs and 
 
 **This guide assumes Go 1.25+ and does not consider backwards compatibility.** All patterns use modern Go best practices.
 
+## Reference Files
+
+Load references based on code patterns found during review:
+
+| Code Pattern | Reference File |
+|--------------|----------------|
+| `go func()`, `sync.Mutex`, `sync.`, channels, atomic | `references/concurrency.md` |
+| `err`, `error`, `panic`, `Must` functions | `references/errors.md` |
+| `interface`, embedding, receivers, `func New`, `init()` | `references/api-design.md` |
+| slice/map return, `slices.Clone`, `maps.Clone` | `references/api-design.md` |
+| `_test.go`, `t.`, `b.` | `references/testing.md` |
+| naming, comments, logging | `references/style.md` |
+
+**Quick reference**: `references/review-checklist.md` - critical patterns with code examples
+
+**Note**: "Copying at boundaries" lives in api-design.md but relates to concurrency safety - check both when ownership/encapsulation is the concern.
+
+## Quick Style Reference
+
+Basic rules that don't need a file lookup:
+
+- **Package names**: lowercase, no underscores, singular (`net/url` not `net/urls`)
+- **Receiver names**: 1-2 letters, consistent across all methods (`func (c *Client) Connect()`)
+- **Error strings**: lowercase, no punctuation (`errors.New("connection failed")`)
+- **Variable names**: short for small scopes (`i`, `v`), longer for large scopes (`requestTimeout`)
+
 ## Review Process
 
 Follow this 3-phase workflow for systematic code review:
@@ -60,7 +86,7 @@ Review the code systematically using the bundled references:
    - Concurrency lifecycle (goroutine management)
    - Exit handling (os.Exit only in main)
 
-3. **Consult full guide as needed** (load `references/go-style-guide.md`):
+3. **Consult topic files as needed** (see Reference Files table above):
    - For detailed explanations of specific patterns
    - When encountering unfamiliar idioms
    - To verify best practices for specific scenarios
@@ -185,7 +211,7 @@ golangci-lint run
 
 ## Review Principles
 
-When evaluating code, apply Google's Core Principles in order (from `go-style-guide.md`):
+When evaluating code, apply Google's Core Principles in order (from `references/style.md`):
 1. **Clarity**: Is the purpose and rationale clear?
 2. **Simplicity**: Does it accomplish goals in the straightforward manner?
 3. **Concision**: High signal-to-noise ratio?
@@ -199,15 +225,16 @@ Then apply specific review guidance:
 4. **Prioritize**: Critical issues first, important second
 5. **Acknowledge good code**: Recognize patterns that follow the core principles
 
-## When to Load Full Style Guide
+## When to Load Reference Files
 
 Load `references/review-checklist.md` first for quick architectural patterns - it focuses on semantic issues requiring judgment.
 
-Load `references/go-style-guide.md` when:
-- Need detailed rationale for architectural decisions
-- Encountering unfamiliar patterns (functional options, generic interfaces)
-- User asks about specific style guide sections
-- Verifying best practices for complex scenarios
+Load topic-specific files based on code patterns (see Reference Files table):
+- `concurrency.md` - goroutines, mutexes, races, channels
+- `errors.md` - error types, wrapping, panic avoidance
+- `api-design.md` - interfaces, function design, data boundaries
+- `testing.md` - table tests, parallel tests, benchmarks
+- `style.md` - naming, documentation, code style
 
 **Important**: Skip reporting issues that golangci-lint would catch. The agent should focus on design, architecture, and context-dependent patterns that require human understanding.
 

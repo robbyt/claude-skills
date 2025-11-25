@@ -720,6 +720,11 @@ This guide synthesizes both Google and Uber Go style guides. Note these differen
 
 ## When in Doubt
 
-Reference the full style guide in `go-style-guide.md` for detailed explanations and architectural context.
+Reference topic-specific files for detailed explanations:
+- `concurrency.md` - goroutines, mutexes, races, channels
+- `errors.md` - error types, wrapping, panic avoidance
+- `api-design.md` - interfaces, function design, data boundaries
+- `testing.md` - table tests, parallel tests, benchmarks
+- `style.md` - naming, documentation, code style
 
 **Remember**: Focus on design decisions that require understanding of intent, ownership, lifecycle, and architecture. Let linters handle syntax and common bugs.
