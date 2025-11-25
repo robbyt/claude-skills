@@ -70,6 +70,147 @@ return s.data
 
 ---
 
+### Closure Variable Capture
+```go
+// BAD - Captures outer variable
+func Run() error {
+  err := setup()
+  if err != nil {
+    return err
+  }
+
+  var wg sync.WaitGroup
+  wg.Go(func() {
+    err = taskA()  // Race: writes to captured outer err
+  })
+  wg.Go(func() {
+    err = taskB()  // Race: writes to captured outer err
+  })
+  wg.Wait()
+  return err
+}
+
+// GOOD - Local variable
+wg.Go(func() {
+  err := taskA()  // New local variable
+  // handle err locally
+})
+
+// GOOD - Named return
+wg.Go(func() (err error) {
+  err = taskA()  // Named return is local to closure
+  return
+})
+```
+
+**Why critical**: The one-character difference between `err =` and `err :=` determines whether a closure captures an outer variable or creates a new local one. Multiple goroutines writing to the same captured variable causes a data race.
+
+**Debugging**: `go build -gcflags='-d closure=1'` prints captured variables.
+
+**Note**: Go 1.22+ fixed range loop variable capture, but general closure capture remains a manual concern.
+
+---
+
+### Stdlib Concurrent Safety Caveats
+
+Types documented as "safe for concurrent use" (like `http.Client`) typically mean **some methods** are safe - not that all fields or operations are thread-safe.
+
+```go
+// BAD - Modifying shared client fields concurrently
+type Fetcher struct {
+  client *http.Client
+}
+
+func (f *Fetcher) FetchWithRedirects(ctx context.Context, url string) (*http.Response, error) {
+  f.client.CheckRedirect = customPolicy  // Race if called concurrently!
+  return f.client.Get(url)
+}
+
+func (f *Fetcher) FetchNoRedirects(ctx context.Context, url string) (*http.Response, error) {
+  f.client.CheckRedirect = nil  // Race!
+  return f.client.Get(url)
+}
+
+// GOOD - Inject pre-configured clients
+type Fetcher struct {
+  clientWithRedirects *http.Client
+  clientNoRedirects   *http.Client
+}
+
+func NewFetcher() *Fetcher {
+  return &Fetcher{
+    clientWithRedirects: &http.Client{CheckRedirect: customPolicy},
+    clientNoRedirects:   &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error {
+      return http.ErrUseLastResponse
+    }},
+  }
+}
+```
+
+**Why critical**: "Safe for concurrent use" means method calls are synchronized internally. Field modification is not protected.
+
+**Common types**: `http.Client`, `http.Transport`, `sql.DB` configuration fields
+
+**Rule**: Configure stdlib types at construction time. If goroutines need different configurations, use separate instances.
+
+**Note**: Most stdlib types (`bytes.Buffer`, slices, maps) are NOT thread-safe. When passing `io.Writer`/`io.Reader` to libraries you don't control, wrap with a synchronized adapter that locks in `Write()`/`Read()`.
+
+---
+
+### Mutex and Data Scope Mismatch
+
+A mutex only synchronizes access when all goroutines share the **same** mutex instance. Creating a new mutex per-request while sharing the underlying data provides no synchronization.
+
+```go
+// BAD - Per-request mutex, shared data
+var globalData = map[string]int{"a": 1}
+
+type Service struct {
+  data map[string]int
+  mu   sync.Mutex
+}
+
+func NewService() *Service {
+  return &Service{
+    data: globalData,  // Shallow copy - shares underlying map!
+    mu:   sync.Mutex{},  // New mutex per call - no shared synchronization
+  }
+}
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+  svc := NewService()  // Each request gets own mutex
+  svc.mu.Lock()
+  defer svc.mu.Unlock()
+  svc.data["key"] = 42  // Race! Different mutexes, same map
+}
+
+// FIX Option 1 - Global mutex for global data
+var (
+  globalData = map[string]int{"a": 1}
+  globalMu   sync.Mutex
+)
+
+func Handler(w http.ResponseWriter, r *http.Request) {
+  globalMu.Lock()
+  defer globalMu.Unlock()
+  globalData["key"] = 42  // All handlers share same mutex
+}
+
+// FIX Option 2 - Deep copy for per-request isolation
+func NewService() *Service {
+  return &Service{
+    data: maps.Clone(globalData),  // Deep copy - isolated data
+    mu:   sync.Mutex{},  // Own mutex for own data
+  }
+}
+```
+
+**Why critical**: Go's struct assignment is shallow - maps and slices copy the pointer, not the data. N mutexes guarding 1 map = no synchronization.
+
+**Rule**: Mutex scope must match data scope. 1 mutex for N goroutines accessing shared data, or N mutexes for N isolated copies.
+
+---
+
 ### Panics in Production Code
 ```go
 // BAD - Library code
@@ -579,6 +720,11 @@ This guide synthesizes both Google and Uber Go style guides. Note these differen
 
 ## When in Doubt
 
-Reference the full style guide in `go-style-guide.md` for detailed explanations and architectural context.
+Reference topic-specific files for detailed explanations:
+- `concurrency.md` - goroutines, mutexes, races, channels
+- `errors.md` - error types, wrapping, panic avoidance
+- `api-design.md` - interfaces, function design, data boundaries
+- `testing.md` - table tests, parallel tests, benchmarks
+- `style.md` - naming, documentation, code style
 
 **Remember**: Focus on design decisions that require understanding of intent, ownership, lifecycle, and architecture. Let linters handle syntax and common bugs.
