@@ -18,7 +18,12 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["claude-md", "reflection", "improvement", "documentation"],
+      "keywords": [
+        "claude-md",
+        "reflection",
+        "improvement",
+        "documentation"
+      ],
       "strict": true
     },
     {
@@ -30,7 +35,13 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["go", "golang", "formatter", "gofmt", "hooks"],
+      "keywords": [
+        "go",
+        "golang",
+        "formatter",
+        "gofmt",
+        "hooks"
+      ],
       "strict": true
     },
     {
@@ -42,7 +53,12 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["python", "black", "formatter", "hooks"],
+      "keywords": [
+        "python",
+        "black",
+        "formatter",
+        "hooks"
+      ],
       "strict": true
     },
     {
@@ -54,7 +70,12 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["python", "ruff", "formatter", "hooks"],
+      "keywords": [
+        "python",
+        "ruff",
+        "formatter",
+        "hooks"
+      ],
       "strict": true
     },
     {
@@ -66,7 +87,12 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["go", "golang", "style-guide", "code-review"],
+      "keywords": [
+        "go",
+        "golang",
+        "style-guide",
+        "code-review"
+      ],
       "strict": true
     },
     {
@@ -78,7 +104,13 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["gemini", "ai", "code-review", "web-search", "architecture"],
+      "keywords": [
+        "gemini",
+        "ai",
+        "code-review",
+        "web-search",
+        "architecture"
+      ],
       "strict": true
     },
     {
@@ -90,7 +122,15 @@
         "name": "robbyt"
       },
       "license": "MIT",
-      "keywords": ["github", "gh", "cli", "pull-requests", "issues", "actions", "api"],
+      "keywords": [
+        "github",
+        "gh",
+        "cli",
+        "pull-requests",
+        "issues",
+        "actions",
+        "api"
+      ],
       "strict": true
     }
   ]
