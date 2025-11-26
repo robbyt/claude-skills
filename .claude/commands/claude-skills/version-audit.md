@@ -1,42 +1,41 @@
-Audit version consistency between marketplace.json and individual plugin.json files, then help reconcile any mismatches.
+Manage plugin versions in marketplace.json using semantic versioning.
 
-## Instructions
+## Read Versions
 
-1. **Discover all plugins** using Glob:
-   ```
-   pattern: plugins/*/.claude-plugin/plugin.json
-   ```
+List all plugin versions:
+```bash
+jq '.plugins[] | {name, version}' .claude-plugin/marketplace.json
+```
 
-2. **Read all plugin.json files** in parallel using the Read tool
+Get specific plugin version:
+```bash
+jq '.plugins[] | select(.name == "PLUGIN_NAME") | .version' .claude-plugin/marketplace.json
+```
 
-3. **Read marketplace.json**:
-   ```
-   file_path: .claude-plugin/marketplace.json
-   ```
+## Bump Versions
 
-4. **Compare versions** for each plugin:
-   - Extract version from each plugin's `.claude-plugin/plugin.json`
-   - Find corresponding entry in `marketplace.json` plugins array
-   - Identify any mismatches
+When asked to bump a version, infer the change type:
+- **Major**: Breaking changes, renames, restructuring → increment first number, reset others
+- **Minor**: New features, new skills → increment second number, reset patch
+- **Patch**: Bug fixes, doc updates → increment third number
 
-5. **Report findings** to the user:
-   - List all plugins with matching versions (✓)
-   - List all plugins with version mismatches (✗) showing both versions
-   - If marketplace metadata version differs from plugin versions, note that too
+Use jq to update (write output to temp file, then move):
+```bash
+# Bump patch (e.g., 1.2.3 → 1.2.4)
+jq '(.plugins[] | select(.name == "PLUGIN_NAME") | .version) |= (split(".") | .[2] = ((.[2] | tonumber) + 1 | tostring) | join("."))' .claude-plugin/marketplace.json > /tmp/claude/marketplace.json && mv /tmp/claude/marketplace.json .claude-plugin/marketplace.json
 
-6. **If mismatches found**, use AskUserQuestion to ask how to reconcile:
-   - Option 1: "Sync from individual plugin.json files" - Update marketplace.json entries to match their plugin.json versions
-   - Option 2: "Sync from marketplace.json entries" - Update individual plugin.json files to match marketplace entries
-   - Option 3: "Bump all to [highest version]" - Synchronize everything to the highest version found
-   - Option 4: "Do nothing" - Just report, don't make changes
+# Bump minor (e.g., 1.2.3 → 1.3.0)
+jq '(.plugins[] | select(.name == "PLUGIN_NAME") | .version) |= (split(".") | .[1] = ((.[1] | tonumber) + 1 | tostring) | .[2] = "0" | join("."))' .claude-plugin/marketplace.json > /tmp/claude/marketplace.json && mv /tmp/claude/marketplace.json .claude-plugin/marketplace.json
 
-7. **Apply the user's choice** by updating the appropriate files
+# Bump major (e.g., 1.2.3 → 2.0.0)
+jq '(.plugins[] | select(.name == "PLUGIN_NAME") | .version) |= (split(".") | .[0] = ((.[0] | tonumber) + 1 | tostring) | .[1] = "0" | .[2] = "0" | join("."))' .claude-plugin/marketplace.json > /tmp/claude/marketplace.json && mv /tmp/claude/marketplace.json .claude-plugin/marketplace.json
+```
 
-## Context
+## Inference Guidelines
 
-The marketplace.json file contains a registry of all plugins with their metadata, including version numbers. Each plugin also has its own `.claude-plugin/plugin.json` file with version information. These should be kept in sync.
-
-Version mismatches can occur when:
-- A plugin is updated locally but marketplace.json isn't updated
-- Marketplace.json is updated but individual plugins aren't
-- New plugins are added without version consistency checks
+When user says "bump version" without specifying type, infer from context:
+- Renamed plugin/skill → major
+- New skill added → minor
+- Fixed bug, updated docs → patch
+- Restructured directories → major
+- Added new feature to existing skill → minor
