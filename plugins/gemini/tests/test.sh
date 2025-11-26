@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Test script for gemini-cli-skill plugin
+# Test script for gemini plugin
 # This script should be run from the plugin root directory
 
 set -eo pipefail  # Exit on first error and catch failures in pipelines
@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 PLUGIN_NAME=$(basename "$PLUGIN_DIR")
-SKILL_DIR="$PLUGIN_DIR/skills/gemini-cli"
+SKILL_DIR="$PLUGIN_DIR/skills/cli"
 TEST_DIR="$PLUGIN_DIR/tests"
 
 # Ensure cleanup on exit

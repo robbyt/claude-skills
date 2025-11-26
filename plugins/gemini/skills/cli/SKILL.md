@@ -1,5 +1,5 @@
 ---
-name: gemini-cli
+name: cli
 description: Orchestrate Gemini CLI (v0.17.0+) for tasks requiring current web information via Google Search, deep codebase analysis with codebase_investigator, second AI opinions on code quality/security, or parallel task processing. Trigger when user explicitly requests Gemini ("use Gemini", "ask Gemini") or when needing capabilities unique to Gemini.
 ---
 

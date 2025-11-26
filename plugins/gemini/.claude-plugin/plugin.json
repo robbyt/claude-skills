@@ -1,5 +1,5 @@
 {
-  "name": "gemini-cli-skill",
+  "name": "gemini",
   "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
   "version": "1.0.1",
   "author": {

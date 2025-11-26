@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Collection of Claude Code skills for developer workflows",
-    "version": "1.0.1"
+    "version": "1.1.0"
   },
   "plugins": [
     {
@@ -70,10 +70,10 @@
       "strict": true
     },
     {
-      "name": "gemini-cli-skill",
+      "name": "gemini",
       "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
-      "source": "./plugins/gemini-cli",
-      "version": "1.0.1",
+      "source": "./plugins/gemini",
+      "version": "2.0.0",
       "author": {
         "name": "robbyt"
       },
