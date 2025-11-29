@@ -23,6 +23,10 @@ Present results in a table format:
 
 ## Notes
 
-- The `version` field in marketplace.json is the plugin package version
+- The `version` field in marketplace.json is the marketplace entry version
+- Each plugin also has its own version in `plugins/<name>/.claude-plugin/plugin.json`
 - Skills within plugins do not have separate version fields
-- Only marketplace.json needs to be checked for version information
+
+## Reference
+
+- [Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)

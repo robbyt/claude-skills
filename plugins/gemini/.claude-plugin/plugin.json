@@ -1,11 +1,18 @@
 {
   "name": "gemini",
-  "description": "Orchestrate Gemini CLI for code review, web research, and architecture analysis",
-  "version": "1.0.2",
+  "description": "Gemini CLI integration with focused skills for web search, plan review, code review, and architecture analysis",
+  "version": "2.0.1",
   "author": {
     "name": "robbyt",
     "email": "robbyt@robbyt.net"
   },
   "license": "MIT",
-  "keywords": ["gemini", "ai", "code-review", "web-search", "architecture"]
+  "keywords": [
+    "gemini",
+    "ai",
+    "code-review",
+    "web-search",
+    "architecture",
+    "plan-review"
+  ]
 }

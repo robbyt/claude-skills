@@ -13,7 +13,6 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 PLUGIN_NAME=$(basename "$PLUGIN_DIR")
-SKILL_DIR="$PLUGIN_DIR/skills/cli"
 TEST_DIR="$PLUGIN_DIR/tests"
 
 # Ensure cleanup on exit
@@ -69,66 +68,51 @@ skip_test() {
 echo "Running validation tests for $PLUGIN_NAME..."
 echo
 
-run_test "Verify SKILL.md exists"
-if [ -f "$SKILL_DIR/SKILL.md" ]; then
-    pass_test
+run_test "Validate plugin with claude CLI"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
 else
-    fail_test "SKILL.md not found"
-    exit 1
-fi
-
-run_test "Verify SKILL.md has 'name' field"
-if head -20 "$SKILL_DIR/SKILL.md" | grep -q "^name:"; then
-    pass_test
-else
-    fail_test "Frontmatter 'name' field missing"
-    exit 1
-fi
-
-run_test "Verify SKILL.md has 'description' field"
-if head -20 "$SKILL_DIR/SKILL.md" | grep -q "^description:"; then
-    pass_test
-else
-    fail_test "Frontmatter 'description' field missing"
-    exit 1
-fi
-
-run_test "Verify plugin.json exists and is valid JSON"
-if [ ! -f "$PLUGIN_DIR/.claude-plugin/plugin.json" ]; then
-    fail_test "plugin.json not found"
-    exit 1
-fi
-
-if jq empty "$PLUGIN_DIR/.claude-plugin/plugin.json" 2>/dev/null; then
-    pass_test
-else
-    fail_test "plugin.json is invalid"
-    exit 1
-fi
-
-REQUIRED_FIELDS=("name" "description" "version")
-for field in "${REQUIRED_FIELDS[@]}"; do
-    run_test "Verify plugin.json has '$field' field"
-    if jq -e ".$field" "$PLUGIN_DIR/.claude-plugin/plugin.json" > /dev/null 2>&1; then
+    if "$CLAUDE_CMD" plugin validate "$PLUGIN_DIR"; then
         pass_test
     else
-        fail_test "Field '$field' missing"
+        fail_test "Plugin validation failed"
+        exit 1
+    fi
+fi
+
+# Verify shared references at plugin root
+SHARED_REFS=("setup.md" "commands.md" "patterns.md")
+for ref_file in "${SHARED_REFS[@]}"; do
+    run_test "Verify shared reference $ref_file exists"
+    if [ -f "$PLUGIN_DIR/references/$ref_file" ]; then
+        pass_test
+    else
+        fail_test "$ref_file missing from references/"
         exit 1
     fi
 done
 
-REFERENCE_FILES=("commands.md" "patterns.md" "templates.md" "tools.md")
-for ref_file in "${REFERENCE_FILES[@]}"; do
-    run_test "Verify reference file $ref_file exists"
-    if [ -f "$SKILL_DIR/references/$ref_file" ]; then
-        pass_test
-    else
-        fail_test "$ref_file missing"
+# Verify all 4 skills exist with proper frontmatter
+SKILLS=("web-search" "plan-review" "diff-review" "codebase-analysis")
+for skill in "${SKILLS[@]}"; do
+    run_test "Verify skill $skill exists with frontmatter"
+    SKILL_FILE="$PLUGIN_DIR/skills/$skill/SKILL.md"
+    if [ ! -f "$SKILL_FILE" ]; then
+        fail_test "$skill/SKILL.md not found"
         exit 1
     fi
+    if ! head -20 "$SKILL_FILE" | grep -q "^name:"; then
+        fail_test "$skill missing 'name' frontmatter"
+        exit 1
+    fi
+    if ! head -20 "$SKILL_FILE" | grep -q "^description:"; then
+        fail_test "$skill missing 'description' frontmatter"
+        exit 1
+    fi
+    pass_test
 done
 
-run_test "End-to-end integration with Claude CLI and Gemini (locating the largest cat)"
+run_test "End-to-end integration with web-search skill (locating the largest cat)"
 if [ -z "$CLAUDE_CMD" ]; then
     skip_test "claude CLI not found"
 elif [ -z "$GEMINI_CMD" ]; then
@@ -138,7 +122,131 @@ elif ! gemini "test" -o text >/dev/null 2>&1; then
 else
     mkdir -p "$TEST_DIR/tmp"
     TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
-    TEST_PROMPT="Ask Gemini to use the GoogleSearch to find the current world record holder for the largest domestic cat. After Gemini is finished with its research, report back what it found."
+    TEST_PROMPT="Use the gemini:web-search skill to find the current world record holder for the largest domestic cat. Report what Gemini found."
+
+    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+        if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
+            pass_test
+        else
+            fail_test "Output doesn't contain expected Gemini response"
+            rm -f "$TEST_OUTPUT"
+            exit 1
+        fi
+    else
+        fail_test "claude CLI execution failed"
+        rm -f "$TEST_OUTPUT"
+        exit 1
+    fi
+
+    rm -f "$TEST_OUTPUT"
+fi
+
+run_test "End-to-end integration with diff-review skill"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
+elif [ -z "$GEMINI_CMD" ]; then
+    skip_test "gemini CLI not found"
+elif ! gemini "test" -o text >/dev/null 2>&1; then
+    skip_test "gemini CLI not authenticated"
+else
+    mkdir -p "$TEST_DIR/tmp"
+    TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
+    TEST_DIFF="$TEST_DIR/tmp/test.diff"
+
+    # Create a test diff file
+    cat > "$TEST_DIFF" << 'DIFF_EOF'
+diff --git a/example.py b/example.py
+--- a/example.py
++++ b/example.py
+@@ -1,5 +1,7 @@
+ def hello():
+-    print("hello")
++    print("hello world")
++
++def goodbye():
++    print("goodbye")
+DIFF_EOF
+
+    TEST_PROMPT="Use the gemini:diff-review skill to review the code changes at tests/tmp/test.diff. Report what Gemini found."
+
+    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+        if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
+            pass_test
+        else
+            fail_test "Output doesn't contain expected Gemini response"
+            rm -f "$TEST_OUTPUT" "$TEST_DIFF"
+            exit 1
+        fi
+    else
+        fail_test "claude CLI execution failed"
+        rm -f "$TEST_OUTPUT" "$TEST_DIFF"
+        exit 1
+    fi
+
+    rm -f "$TEST_OUTPUT" "$TEST_DIFF"
+fi
+
+run_test "End-to-end integration with plan-review skill"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
+elif [ -z "$GEMINI_CMD" ]; then
+    skip_test "gemini CLI not found"
+elif ! gemini "test" -o text >/dev/null 2>&1; then
+    skip_test "gemini CLI not authenticated"
+else
+    mkdir -p "$TEST_DIR/tmp"
+    TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
+    TEST_PLAN="$TEST_DIR/tmp/test-plan.md"
+
+    # Create a test plan file
+    cat > "$TEST_PLAN" << 'PLAN_EOF'
+# Test Implementation Plan
+
+## Goal
+Add user authentication to the application.
+
+## Steps
+1. Create user model with email and password fields
+2. Add login endpoint
+3. Add registration endpoint
+4. Implement JWT token generation
+
+## Risks
+- Password storage security
+- Token expiration handling
+PLAN_EOF
+
+    TEST_PROMPT="Use the gemini:plan-review skill to review the plan at tests/tmp/test-plan.md. Report Gemini's critique."
+
+    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+        if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
+            pass_test
+        else
+            fail_test "Output doesn't contain expected Gemini response"
+            rm -f "$TEST_OUTPUT" "$TEST_PLAN"
+            exit 1
+        fi
+    else
+        fail_test "claude CLI execution failed"
+        rm -f "$TEST_OUTPUT" "$TEST_PLAN"
+        exit 1
+    fi
+
+    rm -f "$TEST_OUTPUT" "$TEST_PLAN"
+fi
+
+run_test "End-to-end integration with codebase-analysis skill"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
+elif [ -z "$GEMINI_CMD" ]; then
+    skip_test "gemini CLI not found"
+elif ! gemini "test" -o text >/dev/null 2>&1; then
+    skip_test "gemini CLI not authenticated"
+else
+    mkdir -p "$TEST_DIR/tmp"
+    TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
+
+    TEST_PROMPT="Use the gemini:codebase-analysis skill to analyze the structure of the plugins/gemini directory. Give a brief summary of what Gemini found."
 
     if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
