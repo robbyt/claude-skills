@@ -1,34 +1,14 @@
 # python-formatter-black
 
-Automatically formats Python files with `black` after Write/Edit/MultiEdit operations.
+Formats Python files with `black` after Write/Edit/MultiEdit operations.
 
 ## Setup
 
-Ensure `black` is installed and available in your PATH:
-
-```bash
-# Using pip
-pip install black
-
-# Using uv
-uv tool install black
-
-# For this repository (plugin development)
-uv sync
-```
-
-The hook will use whatever `black` is in your PATH.
+`black` must be installed and available in your PATH. See main README for installation options.
 
 ## Usage
 
-Runs automatically as a PostToolUse hook - no manual invocation needed.
-
-## What it does
-
-- Watches for Write/Edit/MultiEdit tool usage
-- Detects when .py files are modified
-- Automatically runs `black` on the file
-- Formats code according to Black's style
+Runs as a PostToolUse hook. No manual invocation needed.
 
 ## How it works
 
@@ -38,9 +18,9 @@ The plugin uses a PostToolUse hook that:
 3. Checks if the file ends with `.py`
 4. Runs `black` to format the file
 
-## Black configuration
+## Configuration
 
-To customize Black's formatting behavior, add a config section to your `pyproject.toml`:
+Customize Black's formatting in `pyproject.toml`:
 
 ```toml
 [tool.black]
@@ -48,6 +28,6 @@ line-length = 100
 target-version = ["py311"]
 ```
 
-## Works with other formatters
+## Note
 
-This plugin runs alongside other formatter plugins (like go-formatter). Each plugin filters for its own file types and they execute in parallel without conflicts.
+This plugin runs alongside other formatter plugins (like go-formatter). Each plugin filters for its own file types.

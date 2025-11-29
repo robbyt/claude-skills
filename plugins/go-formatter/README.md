@@ -1,17 +1,10 @@
 # go-formatter
 
-Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations.
+Formats Go files with `gofmt` after Write/Edit/MultiEdit operations.
 
 ## Usage
 
-Runs automatically as a PostToolUse hook - no manual invocation needed.
-
-## What it does
-
-- Watches for Write/Edit/MultiEdit tool usage
-- Detects when .go files are modified
-- Automatically runs `gofmt -w` on the file
-- Formats code to Go's standard style
+Runs as a PostToolUse hook. No manual invocation needed.
 
 ## How it works
 
@@ -21,12 +14,10 @@ The plugin uses a PostToolUse hook that:
 3. Checks if the file ends with `.go`
 4. Runs `gofmt -w` to format the file in-place
 
-## Version Information
+## Version
 
-`gofmt` is bundled with Go, so its version matches your installed Go version. No separate version pinning is needed.
-
-Requires Go 1.16 or later.
+`gofmt` is bundled with Go. No separate version pinning needed.
 
 ## Note
 
-Once this plugin is installed, you can remove the PostToolUse hook from `~/.claude/settings.json` to avoid running gofmt twice.
+Once installed, remove any existing gofmt PostToolUse hooks from `~/.claude/settings.json` to avoid running gofmt twice.
