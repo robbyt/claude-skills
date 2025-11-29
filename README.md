@@ -8,22 +8,22 @@ A collection of Claude Code skills and plugins.
 /plugin marketplace add robbyt/claude-skills
 ```
 
-Once that marketplace is added, you may need to run `/exit` and restart Claude Code with `claude --continue`.
+After adding the marketplace, run `/exit` and restart Claude Code with `claude --continue`.
 
-Then install individual skills:
+To install individual skills:
 1. Run `/plugin plugins`
 2. Select `Browse and install plugins`
 3. Select the `robbyt-claude-skills` marketplace
 
-Updating skills:
+To update skills:
 1. Run `/plugin plugins`
 2. Select `Manage and uninstall plugins`
 3. Select `robbyt-claude-skills`
-4. Select the plugins you wish to update
+4. Select the plugins to update
 
 ## Requirements
 
-Many of these plugins require the following tools to be installed:
+Some plugins require the following tools:
 
 - `uv` - Python package installer and runner ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
 - `jq` - JSON processor for parsing tool input
@@ -35,58 +35,57 @@ External formatters are called directly from your PATH:
 - `black` - Python formatter (install via `uv sync`)
 - `gofmt` - Go formatter (version matches your installed Go)
 
-For reproducible formatting, consider pinning tool versions in your project's dependency files (`pyproject.toml`, `go.mod`, etc.).
+For reproducible formatting, pin tool versions in your project's dependency files (`pyproject.toml`, `go.mod`, etc.).
 
 ## Security
 
-**Note:** Claude Code plugins can contain scripts that run on your local computer. Only install plugins from sources you trust!
-Consider enabling the sandbox feature in Claude Code: `/sandbox` (see [sandboxing docs](https://docs.claude.com/en/docs/claude-code/sandboxing))
+Claude Code plugins can contain scripts that run on your local computer. Only install plugins from sources you trust. Consider enabling the sandbox feature: `/sandbox` (see [sandboxing docs](https://docs.claude.com/en/docs/claude-code/sandboxing))
 
 ## Available Plugins
 
 ### [claude-md-reflect](plugins/claude-md-reflect/)
 
-Analyzes chat history to identify improvements for CLAUDE.md instruction files. Use the phrase `reflect on CLAUDE.md` to trigger this skill.
+Analyzes chat history to identify improvements for CLAUDE.md instruction files. Trigger with `reflect on CLAUDE.md`.
 
 [Read more →](plugins/claude-md-reflect/README.md)
 
-### [gemini-cli](plugins/gemini-cli/)
+### [gemini](plugins/gemini/)
 
-Uses the Gemini CLI for a "second opinion" on code reviews, debugging, web search via Google Search, or planning. Triggers with `use gemini to ...`, or `ask gemini ...`.
+Integrates the Gemini CLI for code reviews, web search via Google Search, plan review, and codebase analysis. Includes four skills: `web-search`, `diff-review`, `plan-review`, and `codebase-analysis`. Trigger with `use gemini to ...` or `ask gemini ...`.
 
-**Requirements:** Gemini CLI v0.17.0+ ([installation guide](https://github.com/google-gemini/gemini-cli)) with authentication configured before use.
+**Requirements:** Gemini CLI v0.17.0+ ([installation guide](https://github.com/google-gemini/gemini-cli)) with authentication configured.
 
-[Read more →](plugins/gemini-cli/README.md)
+[Read more →](plugins/gemini/README.md)
 
 ### [gh-cli](plugins/gh-cli/)
 
-Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. This skill triggers on explicit `gh` mentions, or other implied GitHub operations such as viewing a file from a `github.com` link, or viewing a patch from a PR.
+Interacts with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. Triggers on `gh` mentions or GitHub operations such as viewing a `github.com` link.
 
-**Requirements:** GitHub CLI ([installation guide](https://cli.github.com/)) with authentication configured (`gh auth login`) before use.
+**Requirements:** GitHub CLI ([installation guide](https://cli.github.com/)) with authentication configured (`gh auth login`).
 
 [Read more →](plugins/gh-cli/README.md)
 
 ### [go-formatter](plugins/go-formatter/)
 
-Automatically formats Go files with `gofmt` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
+Formats Go files with `gofmt` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
 
 [Read more →](plugins/go-formatter/README.md)
 
 ### [go-style-guide](plugins/go-style-guide/)
 
-Reviews Go code for adherence to the Go Style Guide (which is my personal combo of the Google and Uber style guides.) It identifies issues that are not typically found by static analysis. Trigger this action with phrases like `review this Go code` or `review my PR`.
+Reviews Go code against a style guide combining Google and Uber Go style guides. Identifies issues not typically found by static analysis. Trigger with `review this Go code` or `review my PR`.
 
 [Read more →](plugins/go-style-guide/README.md)
 
 ### [python-formatter-black](plugins/python-formatter-black/)
 
-Automatically formats Python files with `black` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook.
+Formats Python files with `black` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook.
 
 [Read more →](plugins/python-formatter-black/README.md)
 
 ### [python-formatter-ruff](plugins/python-formatter-ruff/)
 
-Automatically formats Python files with `ruff` after Write/Edit/MultiEdit operations and runs as a PostToolUse hook. Ruff provides faster formatting than Black.
+Formats Python files with `ruff` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook. Ruff formats faster than Black.
 
 **Note:** Do not enable both `python-formatter-ruff` and `python-formatter-black` simultaneously, as both will attempt to format the same files.
 

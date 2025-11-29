@@ -37,3 +37,7 @@ Replace `PLUGIN_NAME` with the actual plugin name.
    ```
 2. Run the appropriate bump command
 3. Confirm new version to user
+
+## Reference
+
+- [Plugin Marketplaces](https://code.claude.com/docs/en/plugin-marketplaces)

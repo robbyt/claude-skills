@@ -7,6 +7,7 @@ set -euo pipefail
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Get paths
@@ -37,6 +38,7 @@ fi
 # Test counter
 TESTS_RUN=0
 TESTS_PASSED=0
+TESTS_SKIPPED=0
 
 run_test() {
     local test_name="$1"
@@ -54,6 +56,12 @@ fail_test() {
     echo -e "    ${RED}✗${NC} $reason"
 }
 
+skip_test() {
+    local reason="$1"
+    echo -e "    ${YELLOW}⊘${NC} Skipped: $reason"
+    TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
+}
+
 echo "Running tests for $PLUGIN_NAME..."
 echo
 
@@ -61,43 +69,17 @@ echo
 # Smoke Tests
 # =============================================================================
 
-run_test "plugin.json is valid JSON with required fields"
-PLUGIN_JSON="$PLUGIN_DIR/.claude-plugin/plugin.json"
-if [ ! -f "$PLUGIN_JSON" ]; then
-    fail_test "plugin.json not found"
-    exit 1
-fi
-
-if ! jq empty "$PLUGIN_JSON" 2>/dev/null; then
-    fail_test "plugin.json is invalid JSON"
-    exit 1
-fi
-
-for field in name description version; do
-    if ! jq -e ".$field" "$PLUGIN_JSON" >/dev/null 2>&1; then
-        fail_test "Missing required field: $field"
+run_test "Validate plugin with claude CLI"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
+else
+    if "$CLAUDE_CMD" plugin validate "$PLUGIN_DIR"; then
+        pass_test
+    else
+        fail_test "Plugin validation failed"
         exit 1
     fi
-done
-pass_test
-
-run_test "SKILL.md exists with required frontmatter"
-SKILL_MD="$SKILL_DIR/SKILL.md"
-if [ ! -f "$SKILL_MD" ]; then
-    fail_test "SKILL.md not found"
-    exit 1
 fi
-
-if ! head -20 "$SKILL_MD" | grep -q "^name:"; then
-    fail_test "Missing frontmatter 'name' field"
-    exit 1
-fi
-
-if ! head -20 "$SKILL_MD" | grep -q "^description:"; then
-    fail_test "Missing frontmatter 'description' field"
-    exit 1
-fi
-pass_test
 
 run_test "All reference files exist and are non-empty"
 REFERENCE_FILES=(
@@ -136,8 +118,7 @@ pass_test
 
 run_test "E2E: Style guide review and fix"
 if [ -z "$CLAUDE_CMD" ]; then
-    echo "    ⊘ Skipped (claude CLI not found)"
-    TESTS_RUN=$((TESTS_RUN - 1))
+    skip_test "claude CLI not found"
 else
     # Setup
     TEST_INPUT="$SCRIPT_DIR/tmp/input-$$.go"
@@ -210,10 +191,14 @@ fi
 # =============================================================================
 
 echo
-if [ $TESTS_PASSED -eq $TESTS_RUN ]; then
-    echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN)"
+if [ "$((TESTS_PASSED + TESTS_SKIPPED))" -eq "$TESTS_RUN" ]; then
+    if [ "$TESTS_SKIPPED" -gt 0 ]; then
+        echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN, $TESTS_SKIPPED skipped)"
+    else
+        echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN)"
+    fi
     exit 0
 else
-    echo -e "${RED}Some tests failed.${NC} ($TESTS_PASSED/$TESTS_RUN passed)"
+    echo -e "${RED}Some tests failed.${NC} ($TESTS_PASSED/$TESTS_RUN passed, $TESTS_SKIPPED skipped)"
     exit 1
 fi

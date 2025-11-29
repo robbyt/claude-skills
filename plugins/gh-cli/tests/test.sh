@@ -81,53 +81,17 @@ echo "Running validation tests for $PLUGIN_NAME..."
 echo
 
 # Basic structure validation
-run_test "Verify SKILL.md exists"
-if [ -f "$SKILL_DIR/SKILL.md" ]; then
-    pass_test
+run_test "Validate plugin with claude CLI"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
 else
-    fail_test "SKILL.md not found"
-    exit 1
-fi
-
-run_test "Verify SKILL.md has 'name' field"
-if head -20 "$SKILL_DIR/SKILL.md" | grep -q "^name:"; then
-    pass_test
-else
-    fail_test "Frontmatter 'name' field missing"
-    exit 1
-fi
-
-run_test "Verify SKILL.md has 'description' field"
-if head -20 "$SKILL_DIR/SKILL.md" | grep -q "^description:"; then
-    pass_test
-else
-    fail_test "Frontmatter 'description' field missing"
-    exit 1
-fi
-
-run_test "Verify plugin.json exists and is valid JSON"
-if [ ! -f "$PLUGIN_DIR/.claude-plugin/plugin.json" ]; then
-    fail_test "plugin.json not found"
-    exit 1
-fi
-
-if jq empty "$PLUGIN_DIR/.claude-plugin/plugin.json" 2>/dev/null; then
-    pass_test
-else
-    fail_test "plugin.json is invalid"
-    exit 1
-fi
-
-REQUIRED_FIELDS=("name" "description" "version")
-for field in "${REQUIRED_FIELDS[@]}"; do
-    run_test "Verify plugin.json has '$field' field"
-    if jq -e ".$field" "$PLUGIN_DIR/.claude-plugin/plugin.json" > /dev/null 2>&1; then
+    if "$CLAUDE_CMD" plugin validate "$PLUGIN_DIR"; then
         pass_test
     else
-        fail_test "Field '$field' missing"
+        fail_test "Plugin validation failed"
         exit 1
     fi
-done
+fi
 
 # Verify helper scripts exist and are executable
 HELPER_SCRIPTS=("view_github_file.py" "view_pr_files.py")

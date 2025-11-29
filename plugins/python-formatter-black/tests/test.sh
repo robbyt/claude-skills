@@ -7,6 +7,7 @@ set -euo pipefail  # Exit on error, undefined variable, or pipe failure
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Get the plugin directory (script should run from plugin root)
@@ -37,6 +38,7 @@ fi
 # Test counter
 TESTS_RUN=0
 TESTS_PASSED=0
+TESTS_SKIPPED=0
 
 # Test function
 run_test() {
@@ -55,32 +57,27 @@ fail_test() {
     echo -e "    ${RED}✗${NC} $reason"
 }
 
+skip_test() {
+    local reason="$1"
+    echo -e "    ${YELLOW}⊘${NC} Skipped: $reason"
+    TESTS_SKIPPED=$((TESTS_SKIPPED + 1))
+}
+
 # Main test execution
 echo "Running tests for python-formatter-black hook..."
 echo
 
-run_test "Validate hooks.json schema"
-if [ ! -f "$HOOKS_JSON" ]; then
-    fail_test "hooks.json not found"
-    exit 1
+run_test "Validate plugin with claude CLI"
+if [ -z "$CLAUDE_CMD" ]; then
+    skip_test "claude CLI not found"
+else
+    if "$CLAUDE_CMD" plugin validate "$PLUGIN_DIR"; then
+        pass_test
+    else
+        fail_test "Plugin validation failed"
+        exit 1
+    fi
 fi
-
-if ! jq empty "$HOOKS_JSON" 2>/dev/null; then
-    fail_test "hooks.json is invalid JSON"
-    exit 1
-fi
-
-if ! jq -e '.hooks.PostToolUse[0].matcher' "$HOOKS_JSON" >/dev/null 2>&1; then
-    fail_test "Missing PostToolUse matcher"
-    exit 1
-fi
-
-if ! jq -e '.hooks.PostToolUse[0].hooks[0].command' "$HOOKS_JSON" >/dev/null 2>&1; then
-    fail_test "Missing hook command"
-    exit 1
-fi
-
-pass_test
 
 run_test "Hook script exists"
 if [ ! -f "$HOOK_SCRIPT" ]; then
@@ -167,8 +164,7 @@ fi
 
 run_test "End-to-end integration with Claude CLI"
 if [ -z "$CLAUDE_CMD" ]; then
-    echo "    ⊘ Skipped (claude CLI not found)"
-    TESTS_RUN=$((TESTS_RUN - 1))
+    skip_test "claude CLI not found"
 else
 
 # Create test file in plugin directory
@@ -203,10 +199,14 @@ fi
 
 # Summary
 echo
-if [ $TESTS_PASSED -eq $TESTS_RUN ]; then
-    echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN)"
+if [ "$((TESTS_PASSED + TESTS_SKIPPED))" -eq "$TESTS_RUN" ]; then
+    if [ "$TESTS_SKIPPED" -gt 0 ]; then
+        echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN, $TESTS_SKIPPED skipped)"
+    else
+        echo -e "${GREEN}All tests passed!${NC} ($TESTS_PASSED/$TESTS_RUN)"
+    fi
     exit 0
 else
-    echo -e "${RED}Some tests failed.${NC} ($TESTS_PASSED/$TESTS_RUN passed)"
+    echo -e "${RED}Some tests failed.${NC} ($TESTS_PASSED/$TESTS_RUN passed, $TESTS_SKIPPED skipped)"
     exit 1
 fi

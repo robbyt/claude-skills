@@ -1,48 +1,37 @@
-# Gemini CLI Plugin for Claude Code
+# Gemini CLI Plugin
 
-A Claude Code plugin that enables orchestration of Google's Gemini CLI as an auxiliary AI tool.
+## Skills
 
-## What This Plugin Provides
+### `gemini:web-search`
 
-**Skill:** `gemini-cli`
+Real-time web research using Gemini's Google Search integration.
 
-Teaches Claude Code how to leverage Gemini CLI for:
-- Code review and security audits
-- Current web information via Google Search
-- Codebase architecture analysis
-- Second AI perspective on code quality
+**Triggers:** "search with Gemini", "find current info about X", "what's the latest on Y"
 
-## Installation
+### `gemini:diff-review`
 
-This plugin is part of the `robbyt-claude-skills` marketplace.
+Code review of git changes for a second perspective.
 
-## Prerequisites
+**Triggers:** "have Gemini review my changes", "get code review from Gemini", "review this diff"
 
-**Required before using this skill:**
+### `gemini:plan-review`
 
-1. [Gemini CLI](https://github.com/google-gemini/gemini-cli) v0.17.0+ installed
-2. Authentication configured **manually** (API key or OAuth)
-3. Verified working: `gemini "test" -o text` succeeds
+Review and critique implementation plans.
 
-⚠️ **Note:** Claude Code will NOT configure authentication. You must complete the one-time setup manually before using this skill. See the skill's `references/commands.md` for detailed setup instructions.
+**Triggers:** "have Gemini review this plan", "get second opinion", "critique this plan"
 
-## Usage
+### `gemini:codebase-analysis`
 
-Once installed, Claude Code automatically uses the skill when appropriate:
+Architectural analysis using Gemini's `codebase_investigator` tool.
 
-```
-"Use Gemini to review this code for security issues"
-"Ask Gemini what's new in TypeScript 5.5"
-"Get Gemini to analyze this codebase architecture"
-"Have Gemini research best practices for React hooks"
-```
+**Triggers:** "analyze this codebase", "map dependencies"
 
-## Gemini's Unique Capabilities
+## Setup
 
-- **google_web_search**: Real-time Google Search grounding
-- **codebase_investigator**: Architectural analysis
-- **save_memory**: Cross-session persistence
+See `references/setup.md` for installation and authentication.
 
-## License
+## Gemini Tools
 
-MIT
+- `google_web_search` - Real-time Google Search
+- `codebase_investigator` - Architectural analysis
+- `save_memory` - Cross-session persistence
