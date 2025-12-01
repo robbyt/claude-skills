@@ -26,5 +26,3 @@ dist/
 *.out
 vendor/
 
-# Gemini review temp files
-.gemini-review.diff
