@@ -116,9 +116,9 @@
     },
     {
       "name": "gh-cli",
-      "description": "Interact with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub files",
+      "description": "GitHub CLI integration with focused skills for pull requests, issues, GitHub Actions, and viewing GitHub file URLs",
       "source": "./plugins/gh-cli",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": {
         "name": "robbyt"
       },
