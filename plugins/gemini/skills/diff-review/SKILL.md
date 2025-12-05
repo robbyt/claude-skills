@@ -13,7 +13,7 @@ Save diff to project root, have Gemini review, then clean up:
 
 ```bash
 git diff --cached > gemini-review.diff
-gemini "Review the code changes at gemini-review.diff for issues" --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+gemini "Review the code changes at gemini-review.diff for issues. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -26,21 +26,22 @@ gemini "Review gemini-review.diff for:
 1. Bugs or logic errors
 2. Security vulnerabilities
 3. Style inconsistencies
-4. Missing error handling" --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+4. Missing error handling
+Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
 **All uncommitted changes:**
 ```bash
 git diff HEAD > gemini-review.diff
-gemini "Review gemini-review.diff" --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+gemini "Review gemini-review.diff. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
 **Specific commit:**
 ```bash
 git show abc123 > gemini-review.diff
-gemini "Review the commit at gemini-review.diff" --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+gemini "Review the commit at gemini-review.diff. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -53,7 +54,8 @@ gemini "Security review of gemini-review.diff. Check for:
 - XSS vulnerabilities
 - SQL/command injection
 - Sensitive data exposure
-- Authentication/authorization issues" --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+- Authentication/authorization issues
+Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -64,7 +66,8 @@ gemini "Performance review of gemini-review.diff. Check for:
 - Inefficient algorithms
 - N+1 queries
 - Memory leaks
-- Blocking operations" --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+- Blocking operations
+Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -77,7 +80,7 @@ git diff --cached > gemini-review.diff
 gemini "Review gemini-review.diff. Also read the full files:
 - src/auth/login.ts
 - src/utils/validate.ts
-to understand the broader context." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+to understand the broader context. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
