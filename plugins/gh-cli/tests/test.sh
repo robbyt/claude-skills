@@ -95,8 +95,8 @@ else
     fi
 fi
 
-# Verify all 4 skills exist
-SKILL_NAMES=("pr" "issues" "actions" "view-file")
+# Verify all 5 skills exist
+SKILL_NAMES=("pr" "issues" "actions" "view-file" "repo")
 for skill in "${SKILL_NAMES[@]}"; do
     run_test "Verify skill $skill exists"
     if [ -f "$SKILLS_DIR/$skill/SKILL.md" ]; then
