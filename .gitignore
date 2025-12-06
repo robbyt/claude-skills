@@ -26,3 +26,4 @@ dist/
 *.out
 vendor/
 
+.env

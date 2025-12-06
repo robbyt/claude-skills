@@ -13,7 +13,9 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
 PLUGIN_NAME=$(basename "$PLUGIN_DIR")
-SKILL_DIR="$PLUGIN_DIR/skills/gh-cli"
+SKILLS_DIR="$PLUGIN_DIR/skills"
+PR_SKILL_DIR="$SKILLS_DIR/pr"
+VIEW_FILE_SKILL_DIR="$SKILLS_DIR/view-file"
 TEST_DIR="$PLUGIN_DIR/tests"
 
 # Ensure cleanup on exit
@@ -93,31 +95,32 @@ else
     fi
 fi
 
-# Verify helper scripts exist and are executable
-HELPER_SCRIPTS=("view_github_file.py" "view_pr_files.py")
-for script in "${HELPER_SCRIPTS[@]}"; do
-    run_test "Verify helper script $script exists"
-    if [ -f "$SKILL_DIR/scripts/$script" ]; then
+# Verify all 5 skills exist
+SKILL_NAMES=("pr" "issues" "actions" "view-file" "repo")
+for skill in "${SKILL_NAMES[@]}"; do
+    run_test "Verify skill $skill exists"
+    if [ -f "$SKILLS_DIR/$skill/SKILL.md" ]; then
         pass_test
     else
-        fail_test "$script missing"
-        exit 1
-    fi
-
-    run_test "Verify $script is executable"
-    if [ -x "$SKILL_DIR/scripts/$script" ]; then
-        pass_test
-    else
-        fail_test "$script is not executable"
+        fail_test "$skill/SKILL.md missing"
         exit 1
     fi
 done
 
-run_test "Verify references directory exists"
-if [ -d "$SKILL_DIR/references" ]; then
+# Verify helper scripts exist
+run_test "Verify view_github_file.py exists"
+if [ -f "$VIEW_FILE_SKILL_DIR/scripts/view_github_file.py" ]; then
     pass_test
 else
-    fail_test "references/ directory missing"
+    fail_test "view-file/scripts/view_github_file.py missing"
+    exit 1
+fi
+
+run_test "Verify view_pr_files.py exists"
+if [ -f "$PR_SKILL_DIR/scripts/view_pr_files.py" ]; then
+    pass_test
+else
+    fail_test "pr/scripts/view_pr_files.py missing"
     exit 1
 fi
 
@@ -130,7 +133,7 @@ elif ! gh auth status >/dev/null 2>&1; then
 else
     TEST_OUTPUT="$TEST_DIR/tmp/readme-test-$$.txt"
 
-    if python3 "$SKILL_DIR/scripts/view_github_file.py" \
+    if python3 "$VIEW_FILE_SKILL_DIR/scripts/view_github_file.py" \
         "https://github.com/robbyt/claude-skills/blob/main/README.md" \
         > "$TEST_OUTPUT" 2>&1; then
 
@@ -160,7 +163,7 @@ elif ! gh auth status >/dev/null 2>&1; then
 else
     TEST_OUTPUT="$TEST_DIR/tmp/invalid-url-test-$$.txt"
 
-    if python3 "$SKILL_DIR/scripts/view_github_file.py" \
+    if python3 "$VIEW_FILE_SKILL_DIR/scripts/view_github_file.py" \
         "https://invalid-url" \
         > "$TEST_OUTPUT" 2>&1; then
         fail_test "Script should have failed with invalid URL"
@@ -188,7 +191,7 @@ elif ! gh auth status >/dev/null 2>&1; then
 else
     TEST_OUTPUT="$TEST_DIR/tmp/pr-list-test-$$.txt"
 
-    if python3 "$SKILL_DIR/scripts/view_pr_files.py" \
+    if python3 "$PR_SKILL_DIR/scripts/view_pr_files.py" \
         "https://github.com/robbyt/claude-skills/pull/1" \
         --list \
         > "$TEST_OUTPUT" 2>&1; then
@@ -219,7 +222,7 @@ elif ! gh auth status >/dev/null 2>&1; then
 else
     TEST_OUTPUT="$TEST_DIR/tmp/pr-diff-test-$$.diff"
 
-    if python3 "$SKILL_DIR/scripts/view_pr_files.py" \
+    if python3 "$PR_SKILL_DIR/scripts/view_pr_files.py" \
         "1" \
         --diff \
         > "$TEST_OUTPUT" 2>&1; then
@@ -250,7 +253,7 @@ elif ! gh auth status >/dev/null 2>&1; then
 else
     TEST_OUTPUT="$TEST_DIR/tmp/invalid-pr-test-$$.txt"
 
-    if python3 "$SKILL_DIR/scripts/view_pr_files.py" \
+    if python3 "$PR_SKILL_DIR/scripts/view_pr_files.py" \
         "999999" \
         --list \
         > "$TEST_OUTPUT" 2>&1; then
@@ -282,7 +285,7 @@ else
 fi
 
 # End-to-end integration test with Claude CLI
-run_test "End-to-end integration with Claude CLI (fetch README via gh-cli)"
+run_test "End-to-end integration with Claude CLI (fetch README via view-file skill)"
 if [ -z "$CLAUDE_CMD" ]; then
     skip_test "claude CLI not found"
 elif [ -z "$GH_CMD" ]; then
@@ -294,12 +297,12 @@ else
     ACTUAL_FILE="$TEST_DIR/tmp/integration-test-$$.txt"
 
     # Get expected content directly from helper script (first 10 lines)
-    if python3 "$SKILL_DIR/scripts/view_github_file.py" \
+    if python3 "$VIEW_FILE_SKILL_DIR/scripts/view_github_file.py" \
         "https://github.com/robbyt/claude-skills/blob/main/README.md" \
         2>/dev/null | head -10 > "$EXPECTED_FILE"; then
 
-        # Get content via Claude CLI with gh-cli skill
-        TEST_PROMPT="Use the gh-cli skill to view the README.md file from https://github.com/robbyt/claude-skills/blob/main/README.md. Just show me the first 10 lines of content."
+        # Get content via Claude CLI with view-file skill
+        TEST_PROMPT="Use the view-file skill to view the README.md file from https://github.com/robbyt/claude-skills/blob/main/README.md. Just show me the first 10 lines of content."
 
         if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" > "$ACTUAL_FILE" 2>&1; then
             # Check if Claude's output contains the expected content
