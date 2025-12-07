@@ -29,9 +29,3 @@ Architectural analysis using Gemini's `codebase_investigator` tool.
 ## Setup
 
 See `references/setup.md` for installation and authentication.
-
-## Gemini Tools
-
-- `google_web_search` - Real-time Google Search
-- `codebase_investigator` - Architectural analysis
-- `save_memory` - Cross-session persistence
