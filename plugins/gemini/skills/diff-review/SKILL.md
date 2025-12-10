@@ -86,6 +86,7 @@ rm gemini-review.diff
 
 ## Notes
 
+- IMPORTANT: This is a read-only review skill invoked from a script. Gemini must NOT make code changes or apply fixes. Only provide feedback as instructed.
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns
 - Gemini can only read files in the workspace directory (project root)
 - Requires `dangerouslyDisableSandbox: true` for Bash calls
