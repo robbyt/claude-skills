@@ -2,6 +2,8 @@
 
 A collection of Claude Code skills and plugins.
 
+> **Note:** This marketplace is under active development and has not yet reached a stable release. Skills may be renamed, reorganized, or change considerably. A stable release is expected soon.
+
 ## Installation
 
 ```bash
