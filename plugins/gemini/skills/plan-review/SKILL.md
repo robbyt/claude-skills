@@ -10,61 +10,83 @@ Have Gemini critique Claude's implementation plans for a second perspective.
 ## Quick Start
 
 ```bash
-gemini "Review the implementation plan at [plan-file-path] and provide critique. Respond with feedback only." --include-directories ~/.claude/plans --allowed-tools read_file -o text 2>&1
+cat ~/.claude/plans/example-plan.md | gemini "Review this implementation plan:
+
+\$(cat)
+
+Provide critique and feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## Pattern
 
-Claude writes plans to `~/.claude/plans/`. Use `--include-directories` to allow Gemini to read them:
+Claude writes plans to `~/.claude/plans/`. Pipe plan content via stdin since Gemini cannot read files outside the project directory:
 
 ```bash
-gemini "Review the plan at ~/.claude/plans/example-plan.md. Consider:
+cat ~/.claude/plans/example-plan.md | gemini "Review this implementation plan:
+
+\$(cat)
+
+Consider:
 1. Are there gaps or missing steps?
 2. Are there risks not addressed?
 3. Is the approach optimal?
 4. What alternatives should be considered?
-Read relevant source files to understand context. Respond with feedback only." --include-directories ~/.claude/plans --allowed-tools read_file -o text 2>&1
+
+Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## With Source Context
 
-Ask Gemini to also read relevant source files:
+Pipe the plan via stdin and let Gemini read source files from the project:
 
 ```bash
-gemini "Review the plan at ~/.claude/plans/auth-refactor.md.
-Also read:
+cat ~/.claude/plans/auth-refactor.md | gemini "Review this implementation plan:
+
+\$(cat)
+
+Also read these source files for context:
 - src/auth/login.ts
 - src/middleware/session.ts
-Evaluate if the plan addresses the actual codebase structure. Respond with feedback only." --include-directories ~/.claude/plans --allowed-tools read_file -o text 2>&1
+
+Evaluate if the plan addresses the actual codebase structure. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## Focused Reviews
 
 **Risk assessment:**
 ```bash
-gemini "Review ~/.claude/plans/migration.md for risks:
+cat ~/.claude/plans/migration.md | gemini "Review this plan for risks:
+
+\$(cat)
+
+Evaluate:
 - Breaking changes
 - Data loss potential
 - Rollback complexity
 - Dependencies that could fail
-Respond with feedback only." --include-directories ~/.claude/plans --allowed-tools read_file -o text
+
+Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 **Completeness check:**
 ```bash
-gemini "Review ~/.claude/plans/feature.md for completeness:
+cat ~/.claude/plans/feature.md | gemini "Review this plan for completeness:
+
+\$(cat)
+
+Evaluate:
 - Are all edge cases covered?
 - Is testing addressed?
 - Are there missing steps?
-Respond with feedback only." --include-directories ~/.claude/plans --allowed-tools read_file -o text
+
+Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## Notes
 
+- Pipe plan content via stdin using `$(cat)` - Gemini cannot read `~/.claude/plans/` directly
+- Gemini can explore the project using `--allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos`
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns
-- Gemini can only read files in its workspace (project root and subdirectories)
-- Use `--include-directories` to add directories outside the workspace (e.g., `~/.claude/plans`)
-- Pass file paths to Gemini instead of embedding content
 - Requires `dangerouslyDisableSandbox: true` for Bash calls
 - May take 2-3 minutes for thorough review with source analysis
 - See `references/setup.md` for troubleshooting
