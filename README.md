@@ -45,11 +45,11 @@ Claude Code plugins can contain scripts that run on your local computer. Only in
 
 ## Available Plugins
 
-### [claude-md-reflect](plugins/claude-md-reflect/)
+### [claude-md](plugins/claude-md/)
 
-Analyzes chat history to identify improvements for CLAUDE.md instruction files. Trigger with `reflect on CLAUDE.md`.
+Tools for managing CLAUDE.md memory files. Includes `reflect` skill for analyzing conversation history to improve memory files. Trigger with `reflect on this session` or `reflect on this conversation`.
 
-[Read more →](plugins/claude-md-reflect/README.md)
+[Read more →](plugins/claude-md/README.md)
 
 ### [gemini](plugins/gemini/)
 
@@ -99,7 +99,7 @@ To use locally during development:
 
 ```bash
 /plugin marketplace add /path/to/claude-skills
-/plugin install claude-md-reflect
+/plugin install claude-md
 ```
 
 ## License

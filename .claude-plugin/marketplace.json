@@ -10,18 +10,18 @@
   },
   "plugins": [
     {
-      "name": "claude-md-reflect",
-      "description": "Analyze chat history to identify areas for improving CLAUDE.md instruction files. Use when the user says 'reflect on CLAUDE.md', 'improve CLAUDE.md', or requests analysis of instruction files after a work session. Reviews recent conversation for misunderstandings, inconsistencies, or areas where instructions could be clearer.",
-      "source": "./plugins/claude-md-reflect",
-      "version": "1.0.1",
+      "name": "claude-md",
+      "description": "Tools for managing CLAUDE.md memory files. Includes reflect skill for analyzing conversation history to improve memory files.",
+      "source": "./plugins/claude-md",
+      "version": "2.0.0",
       "author": {
         "name": "robbyt"
       },
       "license": "MIT",
       "keywords": [
         "claude-md",
+        "memory",
         "reflection",
-        "improvement",
         "documentation"
       ],
       "strict": true

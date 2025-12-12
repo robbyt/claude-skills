@@ -1,0 +1,11 @@
+{
+  "name": "claude-md",
+  "description": "Tools for managing CLAUDE.md memory files",
+  "version": "2.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["claude-md", "memory", "reflection", "documentation"]
+}
