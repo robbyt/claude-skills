@@ -1,6 +1,6 @@
 ---
 name: reflect
-description: Analyze recent conversation to identify improvements for CLAUDE.md memory files. Trigger when user says "reflect on CLAUDE.md", "improve CLAUDE.md", "update my memory", or requests analysis of instruction files after a work session. Reviews conversation for misunderstandings, repeated corrections, or missing context.
+description: Analyze recent conversation to identify improvements for CLAUDE.md memory files. Trigger when user says "reflect on this session", "reflect on this conversation", "reflect on this code", or "improve CLAUDE.md by reflecting on this session". The verb "reflect" combined with a session/conversation/code subject is the key trigger.
 ---
 
 # CLAUDE.md Reflection

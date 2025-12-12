@@ -47,7 +47,7 @@ Claude Code plugins can contain scripts that run on your local computer. Only in
 
 ### [claude-md](plugins/claude-md/)
 
-Tools for managing CLAUDE.md memory files. Includes `reflect` skill for analyzing conversation history to improve memory files. Trigger with `reflect on CLAUDE.md` or `improve CLAUDE.md`.
+Tools for managing CLAUDE.md memory files. Includes `reflect` skill for analyzing conversation history to improve memory files. Trigger with `reflect on this session` or `reflect on this conversation`.
 
 [Read more →](plugins/claude-md/README.md)
 

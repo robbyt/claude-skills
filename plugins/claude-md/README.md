@@ -9,9 +9,10 @@ Tools for managing CLAUDE.md memory files.
 Analyzes recent conversation history to identify improvements for CLAUDE.md memory files.
 
 **Trigger phrases:**
-- "reflect on CLAUDE.md"
-- "improve CLAUDE.md"
-- "update my memory"
+- "reflect on this session"
+- "reflect on this conversation"
+- "reflect on this code"
+- "improve CLAUDE.md by reflecting on this session"
 
 **What it does:**
 1. Finds all CLAUDE.md files in the project
@@ -21,9 +22,9 @@ Analyzes recent conversation history to identify improvements for CLAUDE.md memo
 
 ## Resources
 
-- `references/memory-locations.md` - Memory file hierarchy and placement guide
-- `references/anti-patterns.md` - Common mistakes to avoid
-- `scripts/find_claude_md.py` - Locate all CLAUDE.md files in a directory tree
+- `skills/reflect/references/memory-locations.md` - Memory file hierarchy and placement guide
+- `skills/reflect/references/anti-patterns.md` - Common mistakes to avoid
+- `skills/reflect/scripts/find_claude_md.py` - Locate all CLAUDE.md files in a directory tree
 
 ## Requirements
 
