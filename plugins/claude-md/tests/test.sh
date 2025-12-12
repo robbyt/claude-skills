@@ -79,8 +79,8 @@ else
     fi
 fi
 
-run_test "Verify reflect skill exists"
-SKILL_NAMES=("reflect")
+run_test "Verify all skills exist"
+SKILL_NAMES=("reflect" "condense")
 for skill_name in "${SKILL_NAMES[@]}"; do
     if [ ! -d "$SKILLS_DIR/$skill_name" ]; then
         fail_test "Skill directory missing: $skill_name"

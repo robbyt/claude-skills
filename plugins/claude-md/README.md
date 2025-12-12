@@ -20,6 +20,23 @@ Analyzes recent conversation history to identify improvements for CLAUDE.md memo
 3. Proposes specific changes with user approval
 4. Updates the appropriate memory file
 
+### condense
+
+Deduplicates and consolidates CLAUDE.md memory files to remove redundancy.
+
+**Trigger phrases:**
+- "condense my CLAUDE.md files"
+- "deduplicate CLAUDE.md"
+- "clean up my memory files"
+- "consolidate my instructions"
+
+**What it does:**
+1. Finds all CLAUDE.md files in the project
+2. Identifies duplication within and across files
+3. Detects misplaced instructions (subdirectory content that belongs in root or vice versa)
+4. Proposes consolidation with user approval
+5. Removes duplicates and reorganizes content
+
 ## Resources
 
 - `skills/reflect/references/memory-locations.md` - Memory file hierarchy and placement guide
