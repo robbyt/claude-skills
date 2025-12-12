@@ -79,6 +79,23 @@
       "strict": true
     },
     {
+      "name": "swift-formatter",
+      "description": "Automatically format Swift files with swift-format after Write/Edit/MultiEdit operations",
+      "source": "./plugins/swift-formatter",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "swift",
+        "formatter",
+        "swift-format",
+        "hooks"
+      ],
+      "strict": true
+    },
+    {
       "name": "go-style-guide",
       "description": "Review Go code for adherence to Go Style Guide. Use when the user requests a code review of completed work, pull requests, or feature branches in Go projects.",
       "source": "./plugins/go-style-guide",

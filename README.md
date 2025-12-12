@@ -36,6 +36,7 @@ External formatters are called directly from your PATH:
 - `ruff` - Python formatter (install via `uv sync`)
 - `black` - Python formatter (install via `uv sync`)
 - `gofmt` - Go formatter (version matches your installed Go)
+- `swiftformat` - Swift formatter (install via `brew install swiftformat`)
 
 For reproducible formatting, pin tool versions in your project's dependency files (`pyproject.toml`, `go.mod`, etc.).
 
@@ -92,6 +93,14 @@ Formats Python files with `ruff` after Write/Edit/MultiEdit operations. Runs as 
 **Note:** Do not enable both `python-formatter-ruff` and `python-formatter-black` simultaneously, as both will attempt to format the same files.
 
 [Read more →](plugins/python-formatter-ruff/README.md)
+
+### [swift-formatter](plugins/swift-formatter/)
+
+Formats Swift files with `swiftformat` after Write/Edit/MultiEdit operations. Runs as a PostToolUse hook. Falls back to `swift format` (built-in) if swiftformat is not installed.
+
+**Requirements:** `swiftformat` (install via `brew install swiftformat`) or Swift toolchain
+
+[Read more →](plugins/swift-formatter/README.md)
 
 ## Development
 
