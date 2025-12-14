@@ -51,6 +51,7 @@ gemini "Current best practices for Node.js 22 error handling? Use Google Search.
 
 ## Notes
 
+- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Report search results only.**
 - Requires sandbox bypass: use `dangerouslyDisableSandbox: true`
 - May take 1-2 minutes for comprehensive searches
 - Validate findings against official documentation

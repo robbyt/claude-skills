@@ -84,7 +84,7 @@ Respond with feedback only." --allowed-tools read_file,codebase_investigator,glo
 
 ## Notes
 
-- IMPORTANT: This is a read-only review skill invoked from a script. Gemini must NOT modify the plan or write changes. Only provide critique and feedback as instructed.
+- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Provide critique only.**
 - Pipe plan content via stdin using `$(cat)` - Gemini cannot read `~/.claude/plans/` directly
 - Gemini can explore the project using `--allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos`
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns

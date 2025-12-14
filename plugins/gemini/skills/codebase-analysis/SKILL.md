@@ -76,7 +76,7 @@ echo "Are there security concerns with that pattern? Respond with analysis only.
 
 ## Notes
 
-- IMPORTANT: This is a read-only analysis skill invoked from a script. Gemini must NOT suggest code changes, write files, or modify anything. Only report findings and analysis.
+- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Report findings only.**
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns
 - Can take 5-10 minutes for large codebases
 - Requires sandbox bypass: use `dangerouslyDisableSandbox: true`
