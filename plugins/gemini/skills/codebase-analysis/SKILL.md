@@ -10,7 +10,7 @@ Use Gemini's `codebase_investigator` tool for deep architectural analysis.
 ## Quick Start
 
 ```bash
-gemini "Use codebase_investigator to analyze this project. Respond with analysis only." --allowed-tools codebase_investigator -o text 2>&1
+gemini "Use codebase_investigator to analyze this project. Do not make any changes. Respond with analysis only." --allowed-tools codebase_investigator -o text 2>&1
 ```
 
 ## When to Use
@@ -31,12 +31,12 @@ gemini "Use codebase_investigator to analyze this project. Report on:
 - Key dependencies
 - Component relationships
 - Potential issues
-Respond with analysis only." --allowed-tools codebase_investigator -o text
+Do not make any changes. Respond with analysis only." --allowed-tools codebase_investigator -o text
 ```
 
 **Flow mapping:**
 ```bash
-gemini "Use codebase_investigator to map the authentication flow. Identify all components involved. Respond with analysis only." --allowed-tools codebase_investigator -o text
+gemini "Use codebase_investigator to map the authentication flow. Identify all components involved. Do not make any changes. Respond with analysis only." --allowed-tools codebase_investigator -o text
 ```
 
 **Dependency analysis:**
@@ -46,7 +46,7 @@ gemini "Use codebase_investigator to analyze dependencies:
 - Outdated packages
 - Circular dependencies
 - Bundle size impact
-Respond with analysis only." --allowed-tools codebase_investigator -o text
+Do not make any changes. Respond with analysis only." --allowed-tools codebase_investigator -o text
 ```
 
 **Technical debt:**
@@ -56,7 +56,7 @@ gemini "Use codebase_investigator to identify technical debt:
 - Inconsistent conventions
 - Missing documentation
 - Complex dependency chains
-Respond with analysis only." --allowed-tools codebase_investigator -o text
+Do not make any changes. Respond with analysis only." --allowed-tools codebase_investigator -o text
 ```
 
 ## Iterative Analysis
@@ -65,18 +65,18 @@ Use sessions for multi-turn investigation:
 
 ```bash
 # Initial analysis
-gemini "Use codebase_investigator to analyze this project. Respond with analysis only." --allowed-tools codebase_investigator -o text
+gemini "Use codebase_investigator to analyze this project. Do not make any changes. Respond with analysis only." --allowed-tools codebase_investigator -o text
 
 # Follow-up (continues session)
-echo "What patterns did you find in the auth module? Respond with analysis only." | gemini --allowed-tools codebase_investigator -r 1 -o text
+echo "What patterns did you find in the auth module? Do not make any changes. Respond with analysis only." | gemini --allowed-tools codebase_investigator -r 1 -o text
 
 # Deeper dive
-echo "Are there security concerns with that pattern? Respond with analysis only." | gemini --allowed-tools codebase_investigator -r 1 -o text
+echo "Are there security concerns with that pattern? Do not make any changes. Respond with analysis only." | gemini --allowed-tools codebase_investigator -r 1 -o text
 ```
 
 ## Notes
 
-- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Report findings only.**
+- **Gemini must not make any changes, provide feedback ONLY.**
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns
 - Can take 5-10 minutes for large codebases
 - Requires sandbox bypass: use `dangerouslyDisableSandbox: true`

@@ -10,12 +10,12 @@ Use Gemini's `google_web_search` tool for real-time internet research.
 ## Quick Start
 
 ```bash
-gemini "Use Google Search to find [topic]. Respond with the results only." --allowed-tools google_web_search -o text 2>&1
+gemini "Use Google Search to find [topic]. Do not make any changes. Respond with the results only." --allowed-tools google_web_search -o text 2>&1
 ```
 
 Use `-m gemini-2.5-flash` for faster searches:
 ```bash
-gemini "Latest version of React? Respond with the results only." --allowed-tools google_web_search -m gemini-2.5-flash -o text 2>&1
+gemini "Latest version of React? Do not make any changes. Respond with the results only." --allowed-tools google_web_search -m gemini-2.5-flash -o text 2>&1
 ```
 
 ## When to Use
@@ -31,27 +31,27 @@ gemini "Latest version of React? Respond with the results only." --allowed-tools
 
 **Current info:**
 ```bash
-gemini "What are the latest Next.js 15 features? Use Google Search. Respond with the results only." --allowed-tools google_web_search -o text
+gemini "What are the latest Next.js 15 features? Use Google Search. Do not make any changes. Respond with the results only." --allowed-tools google_web_search -o text
 ```
 
 **Vulnerability research:**
 ```bash
-gemini "What are known CVEs for lodash 4.x? Use Google Search. Respond with the results only." --allowed-tools google_web_search -o text
+gemini "What are known CVEs for lodash 4.x? Use Google Search. Do not make any changes. Respond with the results only." --allowed-tools google_web_search -o text
 ```
 
 **Comparison:**
 ```bash
-gemini "Compare Zustand vs Jotai for React state management. Use Google Search for recent benchmarks. Respond with the results only." --allowed-tools google_web_search -o text
+gemini "Compare Zustand vs Jotai for React state management. Use Google Search for recent benchmarks. Do not make any changes. Respond with the results only." --allowed-tools google_web_search -o text
 ```
 
 **Best practices:**
 ```bash
-gemini "Current best practices for Node.js 22 error handling? Use Google Search. Respond with the results only." --allowed-tools google_web_search -o text
+gemini "Current best practices for Node.js 22 error handling? Use Google Search. Do not make any changes. Respond with the results only." --allowed-tools google_web_search -o text
 ```
 
 ## Notes
 
-- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Report search results only.**
+- **Gemini must not make any changes, provide feedback ONLY.**
 - Requires sandbox bypass: use `dangerouslyDisableSandbox: true`
 - May take 1-2 minutes for comprehensive searches
 - Validate findings against official documentation

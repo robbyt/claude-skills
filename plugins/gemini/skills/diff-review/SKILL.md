@@ -13,7 +13,7 @@ Save diff to project root, have Gemini review, then clean up:
 
 ```bash
 git diff --cached > gemini-review.diff
-gemini "Review the code changes at gemini-review.diff for issues. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+gemini "Review the code changes at gemini-review.diff for issues. Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -27,21 +27,21 @@ gemini "Review gemini-review.diff for:
 2. Security vulnerabilities
 3. Style inconsistencies
 4. Missing error handling
-Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
 **All uncommitted changes:**
 ```bash
 git diff HEAD > gemini-review.diff
-gemini "Review gemini-review.diff. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+gemini "Review gemini-review.diff. Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
 **Specific commit:**
 ```bash
 git show abc123 > gemini-review.diff
-gemini "Review the commit at gemini-review.diff. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+gemini "Review the commit at gemini-review.diff. Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -55,7 +55,7 @@ gemini "Security review of gemini-review.diff. Check for:
 - SQL/command injection
 - Sensitive data exposure
 - Authentication/authorization issues
-Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -67,7 +67,7 @@ gemini "Performance review of gemini-review.diff. Check for:
 - N+1 queries
 - Memory leaks
 - Blocking operations
-Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
@@ -80,13 +80,13 @@ git diff --cached > gemini-review.diff
 gemini "Review gemini-review.diff. Also read the full files:
 - src/auth/login.ts
 - src/utils/validate.ts
-to understand the broader context. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+to understand the broader context. Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 rm gemini-review.diff
 ```
 
 ## Notes
 
-- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Provide feedback only.**
+- **Gemini must not make any changes, provide feedback ONLY.**
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns
 - Gemini can only read files in the workspace directory (project root)
 - Requires `dangerouslyDisableSandbox: true` for Bash calls

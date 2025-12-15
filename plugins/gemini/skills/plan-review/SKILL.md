@@ -14,7 +14,7 @@ cat ~/.claude/plans/example-plan.md | gemini "Review this implementation plan:
 
 \$(cat)
 
-Provide critique and feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Provide critique and feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## Pattern
@@ -32,7 +32,7 @@ Consider:
 3. Is the approach optimal?
 4. What alternatives should be considered?
 
-Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## With Source Context
@@ -48,7 +48,7 @@ Also read these source files for context:
 - src/auth/login.ts
 - src/middleware/session.ts
 
-Evaluate if the plan addresses the actual codebase structure. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Evaluate if the plan addresses the actual codebase structure. Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## Focused Reviews
@@ -65,7 +65,7 @@ Evaluate:
 - Rollback complexity
 - Dependencies that could fail
 
-Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 **Completeness check:**
@@ -79,12 +79,12 @@ Evaluate:
 - Is testing addressed?
 - Are there missing steps?
 
-Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
+Do not make any changes. Respond with feedback only." --allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos -o text 2>&1
 ```
 
 ## Notes
 
-- **READ-ONLY: Gemini must NOT write, edit, or modify any files. Provide critique only.**
+- **Gemini must not make any changes, provide feedback ONLY.**
 - Pipe plan content via stdin using `$(cat)` - Gemini cannot read `~/.claude/plans/` directly
 - Gemini can explore the project using `--allowed-tools read_file,codebase_investigator,glob,search_file_content,list_directory,write_todos`
 - Gemini respects `.gitignore` - it cannot read files matching gitignore patterns
