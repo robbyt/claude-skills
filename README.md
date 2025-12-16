@@ -52,6 +52,14 @@ Tools for managing CLAUDE.md memory files. Includes `reflect` skill for analyzin
 
 [Read more →](plugins/claude-md/README.md)
 
+### [codex](plugins/codex/)
+
+Integrates the OpenAI Codex CLI for code reviews, web search, plan review, and codebase analysis. Includes four skills: `web-search`, `diff-review`, `plan-review`, and `codebase-analysis`. Trigger with `use codex to ...`, `ask codex ...`, or `have codex review ...`.
+
+**Requirements:** Codex CLI ([installation guide](https://github.com/openai/codex)) with API keys or OAuth configured.
+
+[Read more →](plugins/codex/README.md)
+
 ### [gemini](plugins/gemini/)
 
 Integrates the Gemini CLI for code reviews, web search via Google Search, plan review, and codebase analysis. Includes four skills: `web-search`, `diff-review`, `plan-review`, and `codebase-analysis`. Trigger with `use gemini to ...` or `ask gemini ...`.
