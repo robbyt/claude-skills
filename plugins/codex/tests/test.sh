@@ -80,6 +80,31 @@ else
     fi
 fi
 
+# Verify MCP configuration exists
+run_test "Verify .mcp.json exists"
+if [ -f "$PLUGIN_DIR/.mcp.json" ]; then
+    pass_test
+else
+    fail_test ".mcp.json missing from plugin root"
+    exit 1
+fi
+
+run_test "Verify .mcp.json has valid JSON structure"
+if python3 -c "import json; json.load(open('$PLUGIN_DIR/.mcp.json'))" 2>/dev/null; then
+    pass_test
+else
+    fail_test ".mcp.json is not valid JSON"
+    exit 1
+fi
+
+run_test "Verify .mcp.json defines cli server"
+if python3 -c "import json; d=json.load(open('$PLUGIN_DIR/.mcp.json')); assert 'cli' in d" 2>/dev/null; then
+    pass_test
+else
+    fail_test ".mcp.json missing 'cli' server definition"
+    exit 1
+fi
+
 # Verify shared references at plugin root
 SHARED_REFS=("setup.md" "commands.md" "patterns.md")
 for ref_file in "${SHARED_REFS[@]}"; do

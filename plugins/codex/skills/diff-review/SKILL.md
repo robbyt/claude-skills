@@ -7,100 +7,80 @@ description: Get Codex's code review of git changes after Claude makes edits. Tr
 
 Have Codex review git changes for a second perspective on code quality.
 
-## Quick Start
+## Quick Start (MCP)
 
-Use the built-in review command:
-
-```bash
-codex review 2>&1
-```
-
-Or save diff to project root for manual review:
+If the `codex` MCP tool is available, first save the diff then review:
 
 ```bash
 git diff --cached > codex-review.diff
-codex exec "Review the code changes at codex-review.diff for issues. Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
+```
+
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "Review the code changes at codex-review.diff for bugs, security issues, and style problems. Do not make any changes. Respond with feedback only.",
+  "sandbox": "read-only"
+})
+```
+
+```bash
 rm codex-review.diff
+```
+
+## Fallback (Bash)
+
+If MCP is unavailable, use shell commands:
+
+```bash
+git diff --cached > codex-review.diff
+codex exec "Review the code changes at codex-review.diff for issues. Do not make any changes. Respond with feedback only." --sandbox read-only 2>&1
+rm codex-review.diff
+```
+
+Or use the built-in review subcommand:
+
+```bash
+codex exec review --uncommitted --sandbox read-only 2>&1
 ```
 
 ## Patterns
 
 **Staged changes:**
-```bash
-git diff --cached > codex-review.diff
-codex exec "Review codex-review.diff for:
-1. Bugs or logic errors
-2. Security vulnerabilities
-3. Style inconsistencies
-4. Missing error handling
-
-Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
-rm codex-review.diff
 ```
-
-**All uncommitted changes:**
-```bash
-git diff HEAD > codex-review.diff
-codex exec "Review codex-review.diff. Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
-rm codex-review.diff
+mcp__plugin_codex_cli__codex({
+  "prompt": "Review codex-review.diff for:\n1. Bugs or logic errors\n2. Security vulnerabilities\n3. Style inconsistencies\n4. Missing error handling\n\nDo not make any changes. Respond with feedback only.",
+  "sandbox": "read-only"
+})
 ```
-
-**Specific commit:**
-```bash
-git show abc123 > codex-review.diff
-codex exec "Review the commit at codex-review.diff. Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
-rm codex-review.diff
-```
-
-## Focused Reviews
 
 **Security focus:**
-```bash
-git diff --cached > codex-review.diff
-codex exec "Security review of codex-review.diff. Check for:
-- XSS vulnerabilities
-- SQL/command injection
-- Sensitive data exposure
-- Authentication/authorization issues
-
-Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
-rm codex-review.diff
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "Security review of codex-review.diff. Check for:\n- XSS vulnerabilities\n- SQL/command injection\n- Sensitive data exposure\n- Authentication/authorization issues\n\nDo not make any changes. Respond with feedback only.",
+  "sandbox": "read-only"
+})
 ```
 
 **Performance focus:**
-```bash
-git diff --cached > codex-review.diff
-codex exec "Performance review of codex-review.diff. Check for:
-- Inefficient algorithms
-- N+1 queries
-- Memory leaks
-- Blocking operations
-
-Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
-rm codex-review.diff
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "Performance review of codex-review.diff. Check for:\n- Inefficient algorithms\n- N+1 queries\n- Memory leaks\n- Blocking operations\n\nDo not make any changes. Respond with feedback only.",
+  "sandbox": "read-only"
+})
 ```
 
-## With File Context
+## Performance
 
-Ask Codex to read full files for better context:
-
-```bash
-git diff --cached > codex-review.diff
-codex exec "Review codex-review.diff. Also read the full files:
-- src/auth/login.ts
-- src/utils/validate.ts
-
-to understand the broader context. Do not make any changes. Respond with feedback only." --sandbox read-only --ask-for-approval never 2>&1
-rm codex-review.diff
-```
+- MCP diff review: ~5-30 seconds
+- MCP with source context: ~1-2 minutes
+- Bash fallback: ~2-3 minutes
 
 ## Notes
 
 - **Codex must not make any changes, provide feedback ONLY.**
-- **NEVER use `--dangerously-bypass-approvals-and-sandbox` or `--sandbox danger-full-access`** - these disable safety features and are forbidden
-- Uses `--sandbox read-only` to prevent file modifications
-- Uses `--ask-for-approval never` for non-interactive execution
-- If flag errors occur, run `codex --help` to verify correct flag usage
-- Requires `dangerouslyDisableSandbox: true` for Bash calls
-- May take 1-2 minutes for thorough review
+- **Always use `sandbox: "read-only"`** to prevent file modifications
+- **NEVER use `sandbox: "danger-full-access"`** - this is forbidden
+- Tool name may vary by installation. Check available tools for exact name.
+- Save diff to project root before review (Codex can read project files)
+- Clean up diff file after review
+- MCP is preferred; Bash fallback requires `dangerouslyDisableSandbox: true`
 - See `references/setup.md` for troubleshooting

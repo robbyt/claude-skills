@@ -1,0 +1,6 @@
+{
+  "cli": {
+    "command": "codex",
+    "args": ["mcp-server"]
+  }
+}
