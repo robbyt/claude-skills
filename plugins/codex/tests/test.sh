@@ -97,11 +97,11 @@ else
     exit 1
 fi
 
-run_test "Verify .mcp.json defines cli server"
-if python3 -c "import json; d=json.load(open('$PLUGIN_DIR/.mcp.json')); assert 'cli' in d" 2>/dev/null; then
+run_test "Verify .mcp.json defines mcpServers.cli"
+if python3 -c "import json; d=json.load(open('$PLUGIN_DIR/.mcp.json')); assert 'cli' in d.get('mcpServers', {})" 2>/dev/null; then
     pass_test
 else
-    fail_test ".mcp.json missing 'cli' server definition"
+    fail_test ".mcp.json missing 'mcpServers.cli' server definition"
     exit 1
 fi
 

@@ -59,7 +59,7 @@ codex "prompt"
 codex exec "prompt" --sandbox read-only
 
 # Code review (requires --uncommitted, --base, or --commit)
-codex exec review --uncommitted --sandbox read-only
+codex review --uncommitted
 ```
 
 ## Common Options for `codex exec`
@@ -68,24 +68,30 @@ codex exec review --uncommitted --sandbox read-only
 |--------|-------------|
 | `--sandbox read-only` | Most restrictive: read files only, no writes or command execution |
 | `--sandbox workspace-write` | Can write to workspace and /tmp |
-| `--search` | Enable web search |
 | `-m MODEL` | Specify model |
 | `-C DIR` | Set working directory |
+
+## Options for main `codex` command only
+
+| Option | Description |
+|--------|-------------|
+| `--search` | Enable web search (not available on `codex exec`) |
+| `--sandbox` | Set sandbox mode |
 
 ## Commands
 
 | Command | Alias | Description |
 |---------|-------|-------------|
 | `exec` | `e` | Non-interactive execution |
-| `exec review` | | Code review subcommand |
+| `review` | | Code review (top-level or via `exec review`) |
 | `resume` | | Resume previous session |
 | `apply` | `a` | Apply diff to working tree |
 | `login` | | Authenticate |
 | `logout` | | Remove credentials |
 
-## Review Subcommand Options
+## Review Command Options
 
-The `codex exec review` subcommand requires one of:
+The `codex review` command requires one of:
 
 | Option | Description |
 |--------|-------------|
@@ -100,18 +106,18 @@ The `codex exec review` subcommand requires one of:
 codex exec "Analyze this project structure" --sandbox read-only
 
 # Code review of uncommitted changes
-codex exec review --uncommitted --sandbox read-only
+codex review --uncommitted
 
 # Code review against main branch
-codex exec review --base main --sandbox read-only
+codex review --base main
 
-# Web search
-codex exec "Search for latest React patterns" --search --sandbox read-only
+# Web search (uses main command, not exec)
+codex "Search for latest React patterns" --search --sandbox read-only
 ```
 
 ## More Information
 
 - Full CLI reference: `codex --help`
 - Exec subcommand: `codex exec --help`
-- Review subcommand: `codex exec review --help`
+- Review command: `codex review --help`
 - Official docs: https://github.com/openai/codex

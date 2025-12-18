@@ -36,11 +36,13 @@ codex exec "Review the code changes at codex-review.diff for issues. Do not make
 rm codex-review.diff
 ```
 
-Or use the built-in review subcommand:
+Or use the built-in review command:
 
 ```bash
-codex exec review --uncommitted --sandbox read-only 2>&1
+codex review --uncommitted 2>&1
 ```
+
+Note: The review command is scoped to diffs and doesn't support `--sandbox`.
 
 ## Patterns
 

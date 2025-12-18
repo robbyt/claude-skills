@@ -88,8 +88,8 @@ cat file.md | codex exec "Review: $(cat)" --sandbox read-only
 For diff review, use `codex review` or save diff to a file:
 
 ```bash
-# Built-in review subcommand (requires --uncommitted, --base, or --commit)
-codex exec review --uncommitted --sandbox read-only
+# Built-in review command (requires --uncommitted, --base, or --commit)
+codex review --uncommitted
 
 # Manual diff review
 git diff --cached > codex-review.diff
@@ -97,12 +97,14 @@ codex exec "Review the diff at codex-review.diff" --sandbox read-only
 rm codex-review.diff
 ```
 
+Note: `codex review` doesn't support `--sandbox` - it's scoped to diffs.
+
 ## Web Search
 
-Enable web search with `--search`:
+Enable web search with `--search` (only on main `codex` command, not `exec`):
 
 ```bash
-codex exec "What are the latest TypeScript 5.x features?" --search --sandbox read-only
+codex "What are the latest TypeScript 5.x features?" --search --sandbox read-only
 ```
 
 ## Validation

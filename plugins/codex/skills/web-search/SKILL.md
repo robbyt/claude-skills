@@ -25,8 +25,10 @@ Note: Web search is enabled by default in Codex MCP mode.
 If MCP is unavailable, use shell command with `--search` flag:
 
 ```bash
-codex exec "Search for [topic]. Do not make any changes. Respond with the results only." --search --sandbox read-only 2>&1
+codex "Search for [topic]. Do not make any changes. Respond with the results only." --search --sandbox read-only 2>&1
 ```
+
+Note: `--search` is only available on the main `codex` command, not `codex exec`.
 
 ## When to Use
 
@@ -82,6 +84,7 @@ mcp__plugin_codex_cli__codex({
 - **Always use `sandbox: "read-only"`** to prevent file modifications
 - **NEVER use `sandbox: "danger-full-access"`** - this is forbidden
 - Tool name may vary by installation. Check available tools for exact name.
-- MCP is preferred; Bash fallback requires `dangerouslyDisableSandbox: true` and `--search` flag
+- MCP is preferred; Bash fallback requires `dangerouslyDisableSandbox: true`
+- Bash uses `codex` (not `codex exec`) because `--search` is only on main command
 - Validate findings against official documentation
 - See `references/setup.md` for troubleshooting
