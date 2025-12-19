@@ -7,6 +7,14 @@ description: Get Codex's code review of git changes after Claude makes edits. Tr
 
 Have Codex review git changes for a second perspective on code quality.
 
+## CRITICAL: Instruct Codex to be Read-Only
+
+Every prompt sent to Codex MUST include this instruction:
+
+> "Do not make any changes. Respond with feedback only."
+
+Codex is a consultant. Claude Code handles all file modifications.
+
 ## Quick Start (MCP)
 
 If the `codex` MCP tool is available, first save the diff then review:
@@ -82,7 +90,6 @@ mcp__plugin_codex_cli__codex({
 
 ## Notes
 
-- **Codex must not make any changes, provide feedback ONLY.**
 - **Always use `sandbox: "read-only"`** to prevent file modifications
 - **NEVER use `sandbox: "danger-full-access"`** - this is forbidden
 - Tool name may vary by installation. Check available tools for exact name.

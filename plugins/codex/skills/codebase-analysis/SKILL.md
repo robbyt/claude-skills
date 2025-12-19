@@ -7,6 +7,14 @@ description: Codebase analysis using Codex CLI with read-only sandbox. Trigger w
 
 Use Codex for codebase analysis with read-only sandbox.
 
+## CRITICAL: Instruct Codex to be Read-Only
+
+Every prompt sent to Codex MUST include this instruction:
+
+> "Do not make any changes. Respond with analysis only."
+
+Codex is a consultant. Claude Code handles all file modifications.
+
 ## Quick Start (MCP)
 
 If the `codex` MCP tool is available, use it directly:
@@ -73,7 +81,6 @@ mcp__plugin_codex_cli__codex({
 
 ## Notes
 
-- **Codex must not make any changes, provide feedback ONLY.**
 - **Always use `sandbox: "read-only"`** to prevent file modifications
 - **NEVER use `sandbox: "danger-full-access"`** - this is forbidden
 - Tool name may vary by installation. Check available tools for exact name.

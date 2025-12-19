@@ -7,6 +7,14 @@ description: Get Codex's review of Claude's implementation plans. Trigger when u
 
 Have Codex critique Claude's implementation plans for a second perspective.
 
+## CRITICAL: Instruct Codex to be Read-Only
+
+Every prompt sent to Codex MUST include this instruction:
+
+> "Do not make any changes. Respond with feedback only."
+
+Codex is a consultant. Claude Code handles all file modifications.
+
 ## Quick Start (MCP)
 
 If the `codex` MCP tool is available, read the plan and pass it to Codex:
@@ -84,7 +92,6 @@ mcp__plugin_codex_cli__codex({
 
 ## Notes
 
-- **Codex must not make any changes, provide feedback ONLY.**
 - **Always use `sandbox: "read-only"`** to prevent file modifications
 - **NEVER use `sandbox: "danger-full-access"`** - this is forbidden
 - Tool name may vary by installation. Check available tools for exact name.
