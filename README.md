@@ -54,7 +54,7 @@ Tools for managing CLAUDE.md memory files. Includes `reflect` skill for analyzin
 
 ### [codex](plugins/codex/)
 
-Integrates the OpenAI Codex CLI for code reviews, web search, plan review, and codebase analysis. Includes MCP server integration and four skills: `web-search`, `diff-review`, `plan-review`, and `codebase-analysis`. Trigger with `use codex to ...`, `ask codex ...`, or `have codex review ...`.
+Integrates the OpenAI Codex CLI for code reviews, plan review, and codebase analysis. Includes MCP server integration and three skills: `diff-review`, `plan-review`, and `codebase-analysis`. Trigger with `use codex to ...`, `ask codex ...`, or `have codex review ...`.
 
 **Requirements:** Codex CLI ([installation guide](https://github.com/openai/codex)) with API keys or OAuth configured.
 

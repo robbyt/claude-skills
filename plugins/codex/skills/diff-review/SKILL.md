@@ -18,7 +18,8 @@ git diff --cached > codex-review.diff
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the code changes at codex-review.diff for bugs, security issues, and style problems. Do not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -32,7 +33,7 @@ If MCP is unavailable, use shell commands:
 
 ```bash
 git diff --cached > codex-review.diff
-codex exec "Review the code changes at codex-review.diff for issues. Do not make any changes. Respond with feedback only." --sandbox read-only 2>&1
+codex exec "Review the code changes at codex-review.diff for issues. Do not make any changes. Respond with feedback only." --sandbox read-only -m gpt-5.2-codex 2>&1
 rm codex-review.diff
 ```
 
@@ -50,7 +51,8 @@ Note: The review command is scoped to diffs and doesn't support `--sandbox`.
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review codex-review.diff for:\n1. Bugs or logic errors\n2. Security vulnerabilities\n3. Style inconsistencies\n4. Missing error handling\n\nDo not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -58,7 +60,8 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Security review of codex-review.diff. Check for:\n- XSS vulnerabilities\n- SQL/command injection\n- Sensitive data exposure\n- Authentication/authorization issues\n\nDo not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -66,7 +69,8 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Performance review of codex-review.diff. Check for:\n- Inefficient algorithms\n- N+1 queries\n- Memory leaks\n- Blocking operations\n\nDo not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 

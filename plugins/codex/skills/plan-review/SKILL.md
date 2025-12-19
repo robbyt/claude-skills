@@ -16,7 +16,8 @@ First, read the plan file content, then:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this implementation plan:\n\n[PLAN CONTENT HERE]\n\nConsider:\n1. Are there gaps or missing steps?\n2. Are there risks not addressed?\n3. Is the approach optimal?\n4. What alternatives should be considered?\n\nDo not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -32,7 +33,7 @@ Consider:
 2. Are there risks not addressed?
 3. Is the approach optimal?
 
-Do not make any changes. Respond with feedback only." --sandbox read-only 2>&1
+Do not make any changes. Respond with feedback only." --sandbox read-only -m gpt-5.2-codex 2>&1
 ```
 
 **Note:** Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution. Instead, provide file paths in the prompt and let Codex read them directly.
@@ -44,7 +45,8 @@ Include source files for context in the prompt:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this implementation plan:\n\n[PLAN CONTENT]\n\nAlso read these source files for context:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate if the plan addresses the actual codebase structure. Do not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -54,7 +56,8 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan for risks:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail\n\nDo not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -62,7 +65,8 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan for completeness:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Are all edge cases covered?\n- Is testing addressed?\n- Are there missing steps?\n\nDo not make any changes. Respond with feedback only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 

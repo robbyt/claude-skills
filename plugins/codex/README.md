@@ -1,18 +1,12 @@
 # Codex CLI Plugin
 
-OpenAI Codex CLI integration for code review, web search, plan review, and codebase analysis.
+OpenAI Codex CLI integration for code review, plan review, and codebase analysis.
 
 ## MCP Server
 
 This plugin includes an MCP server that starts automatically when the plugin is enabled. The server provides `codex` and `codex-reply` tools for native integration. Skills prefer MCP when available and fall back to Bash commands.
 
 ## Skills
-
-### `codex:web-search`
-
-Real-time web research using Codex CLI's `--search` flag.
-
-**Triggers:** "search with Codex", "find current info about X", "what's the latest on Y"
 
 ### `codex:diff-review`
 

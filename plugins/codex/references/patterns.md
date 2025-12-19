@@ -4,7 +4,7 @@ Shared patterns for all Codex skills.
 
 ## Core Principle
 
-Claude Code handles all code writing, file operations, and commands. Codex provides consulting (second opinions) and search capabilities.
+Claude Code handles all code writing, file operations, and commands. Codex provides consulting and second opinions.
 
 ## MCP vs Bash
 
@@ -13,14 +13,15 @@ Claude Code handles all code writing, file operations, and commands. Codex provi
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this codebase. Do not make any changes. Respond with analysis only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
 **Fall back to Bash** if MCP unavailable:
 
 ```bash
-codex exec "Analyze this codebase. Do not make any changes. Respond with analysis only." --sandbox read-only 2>&1
+codex exec "Analyze this codebase. Do not make any changes. Respond with analysis only." --sandbox read-only -m gpt-5.2-codex 2>&1
 ```
 
 ## Session Continuity (MCP only)
@@ -31,7 +32,8 @@ MCP supports follow-up questions in the same context:
 # Initial request
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the authentication flow",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 # Returns conversation_id: "abc123"
 
@@ -57,11 +59,12 @@ These skills are read-only by design. Codex must not modify files.
 Always use these flags for automated integration:
 
 ```bash
-codex exec "prompt" --sandbox read-only
+codex exec "prompt" --sandbox read-only -m gpt-5.2-codex
 ```
 
 - `exec` - Run without interactive mode
 - `--sandbox read-only` - Prevent file modifications
+- `-m gpt-5.2-codex` - Preferred model
 
 ## File Paths
 
@@ -73,14 +76,14 @@ Provide file paths in the prompt and let Codex read them directly:
 
 ```bash
 # CORRECT - works
-codex exec "Review the file at path/to/file.md" --sandbox read-only
+codex exec "Review the file at path/to/file.md" --sandbox read-only -m gpt-5.2-codex
 ```
 
 Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution:
 
 ```bash
 # WRONG - doesn't work
-cat file.md | codex exec "Review: $(cat)" --sandbox read-only
+cat file.md | codex exec "Review: $(cat)" --sandbox read-only -m gpt-5.2-codex
 ```
 
 ## Working with Diffs
@@ -93,19 +96,11 @@ codex review --uncommitted
 
 # Manual diff review
 git diff --cached > codex-review.diff
-codex exec "Review the diff at codex-review.diff" --sandbox read-only
+codex exec "Review the diff at codex-review.diff" --sandbox read-only -m gpt-5.2-codex
 rm codex-review.diff
 ```
 
 Note: `codex review` doesn't support `--sandbox` - it's scoped to diffs.
-
-## Web Search
-
-Enable web search with `--search` (only on main `codex` command, not `exec`):
-
-```bash
-codex "What are the latest TypeScript 5.x features?" --search --sandbox read-only
-```
 
 ## Validation
 
@@ -120,7 +115,6 @@ Always validate Codex recommendations:
 
 **Do use Codex for:**
 - Code review and security audits
-- Web research for current information
 - Codebase analysis
 - Second opinions on design decisions
 

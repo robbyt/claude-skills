@@ -117,8 +117,8 @@ for ref_file in "${SHARED_REFS[@]}"; do
     fi
 done
 
-# Verify all 4 skills exist with proper frontmatter
-SKILLS=("web-search" "plan-review" "diff-review" "codebase-analysis")
+# Verify all 3 skills exist with proper frontmatter
+SKILLS=("plan-review" "diff-review" "codebase-analysis")
 for skill in "${SKILLS[@]}"; do
     run_test "Verify skill $skill exists with frontmatter"
     SKILL_FILE="$PLUGIN_DIR/skills/$skill/SKILL.md"
@@ -136,34 +136,6 @@ for skill in "${SKILLS[@]}"; do
     fi
     pass_test
 done
-
-run_test "End-to-end integration with web-search skill"
-if [ -z "$CLAUDE_CMD" ]; then
-    skip_test "claude CLI not found"
-elif [ -z "$CODEX_CMD" ]; then
-    echo -e "    ${YELLOW}⚠${NC}  Warning: codex CLI not installed"
-    skip_test "codex CLI not found"
-else
-    mkdir -p "$TEST_DIR/tmp"
-    TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
-    TEST_PROMPT="Use the codex:web-search skill to find the current world record holder for the largest domestic cat. Report what Codex found."
-
-    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
-        if grep -qi "codex" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
-            pass_test
-        else
-            fail_test "Output doesn't contain expected Codex response"
-            rm -f "$TEST_OUTPUT"
-            exit 1
-        fi
-    else
-        fail_test "claude CLI execution failed"
-        rm -f "$TEST_OUTPUT"
-        exit 1
-    fi
-
-    rm -f "$TEST_OUTPUT"
-fi
 
 run_test "End-to-end integration with diff-review skill"
 if [ -z "$CLAUDE_CMD" ]; then

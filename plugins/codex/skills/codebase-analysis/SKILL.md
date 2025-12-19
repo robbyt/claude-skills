@@ -14,7 +14,8 @@ If the `codex` MCP tool is available, use it directly:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project structure and architecture. Do not make any changes. Respond with analysis only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -23,7 +24,7 @@ mcp__plugin_codex_cli__codex({
 If MCP is unavailable, use shell command:
 
 ```bash
-codex exec "Analyze this project structure and architecture. Do not make any changes. Respond with analysis only." --sandbox read-only 2>&1
+codex exec "Analyze this project structure and architecture. Do not make any changes. Respond with analysis only." --sandbox read-only -m gpt-5.2-codex 2>&1
 ```
 
 ## When to Use
@@ -41,7 +42,8 @@ codex exec "Analyze this project structure and architecture. Do not make any cha
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project. Report on:\n- Overall architecture\n- Key dependencies\n- Component relationships\n- Potential issues\n\nDo not make any changes. Respond with analysis only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -49,7 +51,8 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Map the authentication flow in this codebase. Identify all components involved. Do not make any changes. Respond with analysis only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -57,7 +60,8 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze dependencies in this project:\n- Direct vs transitive\n- Outdated packages\n- Circular dependencies\n- Bundle size impact\n\nDo not make any changes. Respond with analysis only.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 

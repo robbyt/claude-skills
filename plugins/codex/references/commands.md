@@ -13,7 +13,8 @@ Start a new Codex session:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Your prompt here",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.2"
 })
 ```
 
@@ -22,9 +23,9 @@ mcp__plugin_codex_cli__codex({
 |-----------|----------|-------------|
 | `prompt` | Yes | The task or question |
 | `sandbox` | No | `read-only` (default), `workspace-write`, or `danger-full-access` |
+| `model` | No | Model to use (prefer `gpt-5.2`) |
 | `approval-policy` | No | Approval behavior |
 | `cwd` | No | Set working directory |
-| `model` | No | Specify model |
 
 **Note:** Tool name may vary by installation. Check available tools for exact name.
 
@@ -53,10 +54,10 @@ mcp__plugin_codex_cli__codex-reply({
 
 ```bash
 # Interactive mode
-codex "prompt"
+codex "prompt" -m gpt-5.2-codex
 
 # Non-interactive execution
-codex exec "prompt" --sandbox read-only
+codex exec "prompt" --sandbox read-only -m gpt-5.2-codex
 
 # Code review (requires --uncommitted, --base, or --commit)
 codex review --uncommitted
@@ -68,14 +69,13 @@ codex review --uncommitted
 |--------|-------------|
 | `--sandbox read-only` | Most restrictive: read files only, no writes or command execution |
 | `--sandbox workspace-write` | Can write to workspace and /tmp |
-| `-m MODEL` | Specify model |
+| `-m gpt-5.2-codex` | Preferred model for Bash commands |
 | `-C DIR` | Set working directory |
 
 ## Options for main `codex` command only
 
 | Option | Description |
 |--------|-------------|
-| `--search` | Enable web search (not available on `codex exec`) |
 | `--sandbox` | Set sandbox mode |
 
 ## Commands
@@ -103,16 +103,13 @@ The `codex review` command requires one of:
 
 ```bash
 # Analyze codebase (read-only)
-codex exec "Analyze this project structure" --sandbox read-only
+codex exec "Analyze this project structure" --sandbox read-only -m gpt-5.2-codex
 
 # Code review of uncommitted changes
 codex review --uncommitted
 
 # Code review against main branch
 codex review --base main
-
-# Web search (uses main command, not exec)
-codex "Search for latest React patterns" --search --sandbox read-only
 ```
 
 ## More Information
