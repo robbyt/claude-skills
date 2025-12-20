@@ -7,11 +7,11 @@ description: Codebase analysis using Codex CLI with read-only sandbox. Trigger w
 
 Use Codex for codebase analysis with read-only sandbox.
 
-## CRITICAL: Instruct Codex to be Read-Only
+## CRITICAL: Instruct Codex
 
-Every prompt sent to Codex MUST include this instruction:
+Every prompt sent to Codex MUST include these instructions:
 
-> "Do not make any changes. Respond with analysis only."
+> "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately."
 
 Codex is a consultant. Claude Code handles all file modifications.
 
@@ -21,7 +21,7 @@ If the `codex` MCP tool is available, use it directly:
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Analyze this project structure and architecture. Do not make any changes. Respond with analysis only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nAnalyze this project structure and architecture.",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -32,7 +32,9 @@ mcp__plugin_codex_cli__codex({
 If MCP is unavailable, use shell command:
 
 ```bash
-codex exec "Analyze this project structure and architecture. Do not make any changes. Respond with analysis only." --sandbox read-only -m gpt-5.2-codex 2>&1
+codex exec "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.
+
+Analyze this project structure and architecture." --sandbox read-only -m gpt-5.2-codex 2>&1
 ```
 
 ## When to Use
@@ -49,7 +51,7 @@ codex exec "Analyze this project structure and architecture. Do not make any cha
 **Full project analysis:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Analyze this project. Report on:\n- Overall architecture\n- Key dependencies\n- Component relationships\n- Potential issues\n\nDo not make any changes. Respond with analysis only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nAnalyze this project. Report on:\n- Overall architecture\n- Key dependencies\n- Component relationships\n- Potential issues",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -58,7 +60,7 @@ mcp__plugin_codex_cli__codex({
 **Flow mapping:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Map the authentication flow in this codebase. Identify all components involved. Do not make any changes. Respond with analysis only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nMap the authentication flow in this codebase. Identify all components involved.",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -67,7 +69,7 @@ mcp__plugin_codex_cli__codex({
 **Dependency analysis:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Analyze dependencies in this project:\n- Direct vs transitive\n- Outdated packages\n- Circular dependencies\n- Bundle size impact\n\nDo not make any changes. Respond with analysis only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nAnalyze dependencies in this project:\n- Direct vs transitive\n- Outdated packages\n- Circular dependencies\n- Bundle size impact",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })

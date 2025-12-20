@@ -12,7 +12,7 @@ Start a new Codex session:
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Your prompt here",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete response immediately.\n\nYour prompt here",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -103,7 +103,9 @@ The `codex review` command requires one of:
 
 ```bash
 # Analyze codebase (read-only)
-codex exec "Analyze this project structure" --sandbox read-only -m gpt-5.2-codex
+codex exec "You are running non-interactively. Do not ask questions. Do not make changes. Provide your response immediately.
+
+Analyze this project structure" --sandbox read-only -m gpt-5.2-codex
 
 # Code review of uncommitted changes
 codex review --uncommitted

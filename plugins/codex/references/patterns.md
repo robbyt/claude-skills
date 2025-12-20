@@ -6,13 +6,21 @@ Shared patterns for all Codex skills.
 
 Claude Code handles all code writing, file operations, and commands. Codex provides consulting and second opinions.
 
+## Required Prompt Prefix
+
+Every prompt sent to Codex MUST begin with:
+
+> "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete response immediately."
+
+This prevents Codex from entering interactive mode or waiting for user input.
+
 ## MCP vs Bash
 
 **Prefer MCP** when available:
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Analyze this codebase. Do not make any changes. Respond with analysis only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nAnalyze this codebase.",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -21,7 +29,9 @@ mcp__plugin_codex_cli__codex({
 **Fall back to Bash** if MCP unavailable:
 
 ```bash
-codex exec "Analyze this codebase. Do not make any changes. Respond with analysis only." --sandbox read-only -m gpt-5.2-codex 2>&1
+codex exec "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.
+
+Analyze this codebase." --sandbox read-only -m gpt-5.2-codex 2>&1
 ```
 
 ## Session Continuity (MCP only)
@@ -31,7 +41,7 @@ MCP supports follow-up questions in the same context:
 ```
 # Initial request
 mcp__plugin_codex_cli__codex({
-  "prompt": "Review the authentication flow",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nReview the authentication flow.",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -76,15 +86,12 @@ Provide file paths in the prompt and let Codex read them directly:
 
 ```bash
 # CORRECT - works
-codex exec "Review the file at path/to/file.md" --sandbox read-only -m gpt-5.2-codex
+codex exec "You are running non-interactively. Do not ask questions. Do not make changes. Provide feedback immediately.
+
+Review the file at path/to/file.md" --sandbox read-only -m gpt-5.2-codex
 ```
 
-Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution:
-
-```bash
-# WRONG - doesn't work
-cat file.md | codex exec "Review: $(cat)" --sandbox read-only -m gpt-5.2-codex
-```
+Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution.
 
 ## Working with Diffs
 
@@ -96,7 +103,9 @@ codex review --uncommitted
 
 # Manual diff review
 git diff --cached > codex-review.diff
-codex exec "Review the diff at codex-review.diff" --sandbox read-only -m gpt-5.2-codex
+codex exec "You are running non-interactively. Do not ask questions. Do not make changes. Provide feedback immediately.
+
+Review the diff at codex-review.diff" --sandbox read-only -m gpt-5.2-codex
 rm codex-review.diff
 ```
 

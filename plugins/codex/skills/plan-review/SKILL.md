@@ -7,11 +7,11 @@ description: Get Codex's review of Claude's implementation plans. Trigger when u
 
 Have Codex critique Claude's implementation plans for a second perspective.
 
-## CRITICAL: Instruct Codex to be Read-Only
+## CRITICAL: Instruct Codex
 
-Every prompt sent to Codex MUST include this instruction:
+Every prompt sent to Codex MUST include these instructions:
 
-> "Do not make any changes. Respond with feedback only."
+> "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately."
 
 Codex is a consultant. Claude Code handles all file modifications.
 
@@ -23,7 +23,7 @@ First, read the plan file content, then:
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Review this implementation plan:\n\n[PLAN CONTENT HERE]\n\nConsider:\n1. Are there gaps or missing steps?\n2. Are there risks not addressed?\n3. Is the approach optimal?\n4. What alternatives should be considered?\n\nDo not make any changes. Respond with feedback only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this implementation plan:\n\n[PLAN CONTENT HERE]\n\nConsider:\n1. Are there gaps or missing steps?\n2. Are there risks not addressed?\n3. Is the approach optimal?\n4. What alternatives should be considered?",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -34,14 +34,14 @@ mcp__plugin_codex_cli__codex({
 If MCP is unavailable, tell Codex to read the file directly:
 
 ```bash
-codex exec "Review the implementation plan at path/to/plan.md
+codex exec "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.
+
+Review the implementation plan at path/to/plan.md
 
 Consider:
 1. Are there gaps or missing steps?
 2. Are there risks not addressed?
-3. Is the approach optimal?
-
-Do not make any changes. Respond with feedback only." --sandbox read-only -m gpt-5.2-codex 2>&1
+3. Is the approach optimal?" --sandbox read-only -m gpt-5.2-codex 2>&1
 ```
 
 **Note:** Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution. Instead, provide file paths in the prompt and let Codex read them directly.
@@ -52,7 +52,7 @@ Include source files for context in the prompt:
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Review this implementation plan:\n\n[PLAN CONTENT]\n\nAlso read these source files for context:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate if the plan addresses the actual codebase structure. Do not make any changes. Respond with feedback only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this implementation plan:\n\n[PLAN CONTENT]\n\nAlso read these source files for context:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate if the plan addresses the actual codebase structure.",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -63,7 +63,7 @@ mcp__plugin_codex_cli__codex({
 **Risk assessment:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Review this plan for risks:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail\n\nDo not make any changes. Respond with feedback only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this plan for risks:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
@@ -72,7 +72,7 @@ mcp__plugin_codex_cli__codex({
 **Completeness check:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Review this plan for completeness:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Are all edge cases covered?\n- Is testing addressed?\n- Are there missing steps?\n\nDo not make any changes. Respond with feedback only.",
+  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this plan for completeness:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Are all edge cases covered?\n- Is testing addressed?\n- Are there missing steps?",
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
