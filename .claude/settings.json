@@ -1,6 +1,7 @@
 {
   "enabledPlugins": {
     "python-formatter-ruff@robbyt-claude-skills": true,
-    "example-skills@anthropic-agent-skills": true
+    "example-skills@anthropic-agent-skills": true,
+    "plugin-dev@claude-plugins-official": true
   }
 }
