@@ -191,6 +191,28 @@
         "documentation"
       ],
       "strict": true
+    },
+    {
+      "name": "multimedia",
+      "description": "Video and audio file analysis, quality auditing, and encoding guidance. Includes skills for video audit, artifact detection, telecine detection, HDR validation, source comparison, and subtitle analysis.",
+      "source": "./plugins/multimedia",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "video",
+        "audio",
+        "encoding",
+        "ffmpeg",
+        "mediainfo",
+        "quality",
+        "hdr",
+        "telecine",
+        "subtitles"
+      ],
+      "strict": true
     }
   ]
 }

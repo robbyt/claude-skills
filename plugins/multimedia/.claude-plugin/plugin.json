@@ -1,0 +1,10 @@
+{
+  "name": "multimedia",
+  "description": "Video and audio file analysis, quality auditing, and encoding guidance",
+  "version": "1.0.0",
+  "author": {
+    "name": "rterhaar"
+  },
+  "license": "MIT",
+  "keywords": ["video", "audio", "encoding", "ffmpeg", "mediainfo", "quality"]
+}
