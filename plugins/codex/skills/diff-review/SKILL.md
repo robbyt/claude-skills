@@ -7,6 +7,10 @@ description: Get Codex's code review of git changes after Claude makes edits. Tr
 
 Have Codex review git changes for a second perspective on code quality.
 
+## CRITICAL: Default Model
+
+**ALWAYS use `model: "gpt-5.2"`** unless the user explicitly requests a different model. Do NOT choose `o3` or other models on your own.
+
 ## CRITICAL: Instruct Codex
 
 Every prompt sent to Codex MUST include these instructions:

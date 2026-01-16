@@ -7,6 +7,10 @@ description: Get Codex's review of Claude's implementation plans. Trigger when u
 
 Have Codex critique Claude's implementation plans for a second perspective.
 
+## CRITICAL: Default Model
+
+**ALWAYS use `model: "gpt-5.2"`** unless the user explicitly requests a different model. Do NOT choose `o3` or other models on your own.
+
 ## CRITICAL: Instruct Codex
 
 Every prompt sent to Codex MUST include these instructions:

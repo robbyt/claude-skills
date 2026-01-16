@@ -7,6 +7,10 @@ description: Codebase analysis using Codex CLI with read-only sandbox. Trigger w
 
 Use Codex for codebase analysis with read-only sandbox.
 
+## CRITICAL: Default Model
+
+**ALWAYS use `model: "gpt-5.2"`** unless the user explicitly requests a different model. Do NOT choose `o3` or other models on your own.
+
 ## CRITICAL: Instruct Codex
 
 Every prompt sent to Codex MUST include these instructions:

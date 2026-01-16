@@ -6,6 +6,38 @@ Shared patterns for all Codex skills.
 
 Claude Code handles all code writing, file operations, and commands. Codex provides consulting and second opinions.
 
+## Default Model: gpt-5.2
+
+**ALWAYS use `model: "gpt-5.2"`** (MCP) or `-m gpt-5.2-codex` (Bash) unless the user explicitly requests a different model.
+
+- Default: `gpt-5.2` - use this for all Codex calls
+- Alternative: `o3` - ONLY if user explicitly asks for it
+- Alternative: `o4-mini` - ONLY if user explicitly asks for it
+
+**Do NOT choose a model on your own.** If the user doesn't specify a model, use `gpt-5.2`.
+
+## Enabling Built-in Tools
+
+Codex has built-in tools that can be enabled via the `config` parameter:
+
+| Feature | Purpose |
+|---------|---------|
+| `web_search_request` | Allow Codex to search the web |
+
+Example with web search enabled:
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "Search for the latest SwiftUI changes in iOS 18",
+  "sandbox": "read-only",
+  "model": "gpt-5.2",
+  "config": {
+    "features": {
+      "web_search_request": true
+    }
+  }
+})
+```
+
 ## Required Prompt Prefix
 
 Every prompt sent to Codex MUST begin with:
@@ -45,12 +77,12 @@ mcp__plugin_codex_cli__codex({
   "sandbox": "read-only",
   "model": "gpt-5.2"
 })
-# Returns conversation_id: "abc123"
+# Returns threadId: "abc123"
 
 # Follow-up
 mcp__plugin_codex_cli__codex-reply({
   "prompt": "What about the session handling?",
-  "conversationId": "abc123"
+  "threadId": "abc123"
 })
 ```
 
