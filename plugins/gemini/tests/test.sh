@@ -37,6 +37,26 @@ else
     GEMINI_CMD=""
 fi
 
+# Timeout for integration tests (5 minutes)
+INTEGRATION_TEST_TIMEOUT=300
+
+# Portable timeout function (macOS doesn't have timeout)
+# Usage: run_with_timeout <timeout_secs> <output_file> <command...>
+run_with_timeout() {
+    local timeout_secs="$1"
+    local output_file="$2"
+    shift 2
+    ( "$@" 2>&1 | tee "$output_file" ) &
+    local pid=$!
+    (sleep "$timeout_secs" && kill -9 "$pid" 2>/dev/null) &
+    local killer=$!
+    wait "$pid" 2>/dev/null
+    local result=$?
+    kill "$killer" 2>/dev/null
+    wait "$killer" 2>/dev/null
+    return "$result"
+}
+
 # Test counter
 TESTS_RUN=0
 TESTS_PASSED=0
@@ -124,7 +144,7 @@ else
     TEST_OUTPUT="$TEST_DIR/tmp/integration-test-$$.txt"
     TEST_PROMPT="Use the gemini:web-search skill to find the current world record holder for the largest domestic cat. Report what Gemini found."
 
-    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+    if run_with_timeout "$INTEGRATION_TEST_TIMEOUT" "$TEST_OUTPUT" "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
             pass_test
         else
@@ -133,7 +153,7 @@ else
             exit 1
         fi
     else
-        fail_test "claude CLI execution failed"
+        fail_test "claude CLI execution failed or timed out"
         rm -f "$TEST_OUTPUT"
         exit 1
     fi
@@ -169,7 +189,7 @@ DIFF_EOF
 
     TEST_PROMPT="Use the gemini:diff-review skill to review the code changes at tests/tmp/test.diff. Report what Gemini found."
 
-    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+    if run_with_timeout "$INTEGRATION_TEST_TIMEOUT" "$TEST_OUTPUT" "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
             pass_test
         else
@@ -178,7 +198,7 @@ DIFF_EOF
             exit 1
         fi
     else
-        fail_test "claude CLI execution failed"
+        fail_test "claude CLI execution failed or timed out"
         rm -f "$TEST_OUTPUT" "$TEST_DIFF"
         exit 1
     fi
@@ -218,7 +238,7 @@ PLAN_EOF
 
     TEST_PROMPT="Use the gemini:plan-review skill to review the plan at tests/tmp/test-plan.md. Report Gemini's critique."
 
-    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+    if run_with_timeout "$INTEGRATION_TEST_TIMEOUT" "$TEST_OUTPUT" "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
             pass_test
         else
@@ -227,7 +247,7 @@ PLAN_EOF
             exit 1
         fi
     else
-        fail_test "claude CLI execution failed"
+        fail_test "claude CLI execution failed or timed out"
         rm -f "$TEST_OUTPUT" "$TEST_PLAN"
         exit 1
     fi
@@ -248,7 +268,7 @@ else
 
     TEST_PROMPT="Use the gemini:codebase-analysis skill to analyze the structure of the plugins/gemini directory. Give a brief summary of what Gemini found."
 
-    if "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT" 2>&1 | tee "$TEST_OUTPUT"; then
+    if run_with_timeout "$INTEGRATION_TEST_TIMEOUT" "$TEST_OUTPUT" "$CLAUDE_CMD" --plugin-dir "$PLUGIN_DIR" --permission-mode bypassPermissions --tools "Bash" --print "$TEST_PROMPT"; then
         if grep -qi "gemini" "$TEST_OUTPUT" && [ -s "$TEST_OUTPUT" ]; then
             pass_test
         else
@@ -257,7 +277,7 @@ else
             exit 1
         fi
     else
-        fail_test "claude CLI execution failed"
+        fail_test "claude CLI execution failed or timed out"
         rm -f "$TEST_OUTPUT"
         exit 1
     fi
