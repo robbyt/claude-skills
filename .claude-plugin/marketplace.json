@@ -172,27 +172,6 @@
       "strict": true
     },
     {
-      "name": "apple-dev-docs",
-      "description": "On-demand Apple Developer Documentation access via JSON-RPC. Search docs, browse frameworks, access WWDC videos with bundled offline content.",
-      "source": "./plugins/apple-dev-docs",
-      "version": "0.1.0",
-      "author": {
-        "name": "robbyt"
-      },
-      "license": "MIT",
-      "keywords": [
-        "apple",
-        "ios",
-        "macos",
-        "swiftui",
-        "uikit",
-        "swift",
-        "wwdc",
-        "documentation"
-      ],
-      "strict": true
-    },
-    {
       "name": "multimedia",
       "description": "Video and audio file analysis, quality auditing, and encoding guidance. Includes skills for video audit, artifact detection, telecine detection, HDR validation, source comparison, and subtitle analysis.",
       "source": "./plugins/multimedia",
