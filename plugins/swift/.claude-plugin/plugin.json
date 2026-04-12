@@ -1,0 +1,11 @@
+{
+  "name": "swift",
+  "description": "Swift development tools: automatic formatting with swift-format, and SwiftData expert guidance for @Model, @Query, @Relationship, migrations, concurrency, and architecture auditing",
+  "version": "1.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": ["swift", "swiftdata", "formatter", "swift-format", "ios", "swiftui", "persistence", "hooks"]
+}

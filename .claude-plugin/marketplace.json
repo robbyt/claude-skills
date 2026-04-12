@@ -79,9 +79,9 @@
       "strict": true
     },
     {
-      "name": "swift-formatter",
-      "description": "Automatically format Swift files with swift-format after Write/Edit/MultiEdit operations",
-      "source": "./plugins/swift-formatter",
+      "name": "swift",
+      "description": "Swift development tools: automatic formatting with swift-format, and SwiftData expert guidance for @Model, @Query, @Relationship, migrations, concurrency, and architecture auditing",
+      "source": "./plugins/swift",
       "version": "1.0.0",
       "author": {
         "name": "robbyt"
@@ -89,8 +89,12 @@
       "license": "MIT",
       "keywords": [
         "swift",
+        "swiftdata",
         "formatter",
         "swift-format",
+        "ios",
+        "swiftui",
+        "persistence",
         "hooks"
       ],
       "strict": true
