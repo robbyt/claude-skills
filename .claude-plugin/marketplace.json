@@ -196,6 +196,32 @@
         "subtitles"
       ],
       "strict": true
+    },
+    {
+      "name": "api-design",
+      "description": "API design review, audit, and architecture guidance based on Google API Improvement Proposals (AIPs). Covers resource-oriented design, standard methods, ETags, idempotency, pagination, error handling, backward compatibility, and BFF/backend separation.",
+      "source": "./plugins/api-design",
+      "version": "1.0.0",
+      "author": {
+        "name": "robbyt"
+      },
+      "license": "MIT",
+      "keywords": [
+        "api",
+        "api-design",
+        "aip",
+        "rest",
+        "grpc",
+        "protobuf",
+        "etag",
+        "idempotency",
+        "pagination",
+        "bff",
+        "backend",
+        "architecture",
+        "code-review"
+      ],
+      "strict": true
     }
   ]
 }
