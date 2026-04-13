@@ -32,6 +32,39 @@ Invoke this skill when:
 when providing guidance. This gives teams an authoritative, linkable reference at
 https://google.aip.dev/{number}.
 
+## Query Routing
+
+Match the user's concern to the right reference file:
+
+| User asks about... | Primary reference | Key AIPs |
+|---|---|---|
+| PUT vs PATCH, partial update, field masks | `standard-update.md` | AIP-134 |
+| Race conditions, lost updates, concurrent edits, ETags | `etags-and-freshness.md` | AIP-154 |
+| Retry safety, duplicate requests, request IDs | `idempotency.md` | AIP-155 |
+| Page tokens, cursor pagination, filtering, ordering | `pagination-and-filtering.md` | AIP-158, 160 |
+| Breaking changes, backward compatibility | `compatibility.md` | AIP-192 |
+| Alpha/beta/stable, API versioning | `versioning-and-stability.md` | AIP-180, 181 |
+| Error codes, error responses, status details | `errors.md` | AIP-193 |
+| Auth checks, permission denied vs not found | `authorization.md` | AIP-211 |
+| BFF anti-patterns, layer boundaries, orchestration | `bff-architecture.md` | -- |
+| Secrets, passwords, write-only fields | `sensitive-fields.md` | AIP-147 |
+| Soft delete, undelete, resource expiry | `resource-lifecycle.md` | AIP-164, 216 |
+| Async tasks, long-running operations | `long-running-operations.md` | AIP-151 |
+| Recurring tasks, scheduled execution | `jobs.md` | AIP-152 |
+| Bulk operations, batch requests | `batch-methods.md` | AIP-235 |
+| Bulk data import/export, data portability | `import-and-export.md` | AIP-153 |
+| Dry run, preview, validate-only | `change-validation.md` | AIP-163 |
+| Many-to-many, multi-parent resources | `resource-association.md` | AIP-124 |
+| Field defaults, server-modified values | `server-modified-values.md` | AIP-129 |
+| Timestamps, durations, date fields | `time-and-duration.md` | AIP-142 |
+| Unset vs zero, optional primitives | `unset-field-values.md` | AIP-149 |
+| Naming conventions, enums, standard fields | `naming-and-fields.md` | AIP-140, 148 |
+| Required/optional/immutable annotations | `field-behavior.md` | AIP-203 |
+| Wildcard parent, cross-collection queries | `cross-collection-reads.md` | AIP-159 |
+| Singleton resources, config objects | `singletons.md` | AIP-156 |
+| Management vs data plane | `planes.md` | AIP-111 |
+| Desired-state, reconciliation, declarative | `declarative-interfaces.md` | AIP-128 |
+
 ## Core Principles
 
 These five principles form the foundation of well-designed APIs:
@@ -135,6 +168,9 @@ Consult these for detailed guidance, full AIP text, and code examples:
 
 ### Resource Design
 - **`references/resource-oriented-design.md`** — Resource hierarchies, naming, types, standard methods overview (AIP-121, 122, 123)
+- **`references/resource-association.md`** — Many-to-many, multi-parent, canonical parent selection (AIP-124)
+- **`references/planes.md`** — Management vs data plane, declarative client requirements, consistency rules (AIP-111)
+- **`references/singletons.md`** — Single-instance resources, no Create/Delete, config objects (AIP-156)
 
 ### Standard Methods
 - **`references/standard-get-list.md`** — Get and List methods with pagination, filtering, ordering (AIP-131, 132, 158, 160)
@@ -148,17 +184,31 @@ Consult these for detailed guidance, full AIP text, and code examples:
 - **`references/custom-methods.md`** — When and how to use custom methods for business operations (AIP-136)
 - **`references/declarative-interfaces.md`** — Desired-state pattern, reconciliation, declarative-friendly resources (AIP-128)
 - **`references/long-running-operations.md`** — LRO pattern, metadata, parallel operations, expiration (AIP-151)
+- **`references/jobs.md`** — Recurring tasks, Run method, Job vs LRO distinction (AIP-152)
+- **`references/import-and-export.md`** — Bulk data movement, inline sources, partial failures (AIP-153)
+- **`references/change-validation.md`** — Validate-only / dry-run pattern for previewing mutations (AIP-163)
+- **`references/cross-collection-reads.md`** — Wildcard parent reads, unique resource lookup, partial failures (AIP-159, 217)
 
-### Data Handling
+### Fields & Data Handling
+- **`references/naming-and-fields.md`** — Field naming conventions, standard fields, enums, standardized codes (AIP-140, 148, 126, 143)
 - **`references/field-behavior.md`** — Required, optional, output_only, input_only, immutable annotations (AIP-203)
+- **`references/server-modified-values.md`** — Field ownership, effective values, normalization rules (AIP-129)
+- **`references/time-and-duration.md`** — Timestamp/Duration/Date types, naming conventions (AIP-142)
+- **`references/unset-field-values.md`** — Optional primitives, unset vs default value distinction (AIP-149)
 - **`references/field-masks.md`** — Partial update and partial response with FieldMask (AIP-161)
+- **`references/sensitive-fields.md`** — Write-only secrets, INPUT_ONLY pattern, obfuscated fields (AIP-147)
+- **`references/repeated-fields.md`** — List fields, update strategies (read-modify-write vs Add/Remove), sub-resources (AIP-144)
+- **`references/partial-responses.md`** — View enums, field mask parameters, BASIC vs FULL views (AIP-157)
 - **`references/pagination-and-filtering.md`** — Page tokens, page size, filter expressions, ordering (AIP-158, 160)
 - **`references/batch-methods.md`** — Batch get, create, update, delete patterns (AIP-235)
 
 ### Lifecycle & Errors
 - **`references/errors.md`** — Standard error codes, error details, PERMISSION_DENIED vs NOT_FOUND (AIP-193)
+- **`references/authorization.md`** — Auth-before-validation rule, information leakage prevention (AIP-211)
+- **`references/retry-strategy.md`** — Retryable vs non-retryable error codes, exponential backoff (AIP-194)
 - **`references/resource-lifecycle.md`** — State enums, soft delete/undelete, resource expiry/TTL (AIP-216, 164, 214)
 - **`references/compatibility.md`** — Backward compatibility rules, breaking vs non-breaking changes (AIP-192)
+- **`references/versioning-and-stability.md`** — Alpha/Beta/Stable levels, major versions, compatibility rules (AIP-180, 181, 185)
 
 ### Architecture
 - **`references/bff-architecture.md`** — BFF layer boundaries, anti-patterns, migration guidance
