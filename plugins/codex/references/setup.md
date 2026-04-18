@@ -2,92 +2,67 @@
 
 Shared reference for all Codex skills.
 
-## MCP Server
+## MCP Server (primary interface)
 
-The Codex plugin includes an MCP server that starts automatically when the plugin is enabled. This provides the `codex` and `codex-reply` tools.
+The plugin's `.mcp.json` starts `codex mcp-server` automatically when the plugin is enabled. All Codex skills expect to call the MCP tools directly — no shelling out.
 
 **Requirements:**
-- Plugin must be enabled in Claude Code
-- Claude Code restart required after enabling plugin
-- Codex CLI must be installed and authenticated
+- Plugin enabled in Claude Code
+- Claude Code restarted after enabling the plugin
+- Codex CLI installed and authenticated
 
 **Verification:**
-MCP tools should appear as `mcp__plugin_codex_cli__codex` when working (tool name may vary by installation). If MCP is unavailable, fall back to Bash commands.
+Run `/mcp` and look for the Codex tools (typically `mcp__plugin_codex_cli__codex` and `mcp__plugin_codex_cli__codex-reply`; exact prefix varies).
 
 ## Prerequisites
 
-Codex CLI must be installed and authenticated before using any Codex skill.
-
-**Installation:**
 ```bash
-# Via npm
+# Install
 npm install -g @openai/codex
 
-# Verify installation
+# Verify (one-time installation check — not a runtime pattern)
 codex --version
+codex exec --ephemeral "hi" --sandbox read-only
 ```
 
-**Verify:**
-```bash
-codex --version  # Should show version
-codex exec "Say hello" --sandbox read-only  # Should respond
-```
+At runtime, call Codex via the MCP tool, not `codex exec` — see `patterns.md`.
 
 ## Authentication
 
-Claude Code will NOT configure authentication. Codex CLI must be pre-configured with API keys or OAuth before using these skills. See [official Codex CLI docs](https://github.com/openai/codex) for authentication options.
+Claude Code will **not** configure Codex auth. Codex CLI must be pre-authenticated (ChatGPT account or API key). See https://github.com/openai/codex for options.
+
+**ChatGPT account note:** `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, and `gpt-5.2` work on Plus/Pro/Business/Edu/Enterprise plans. `gpt-5.3-codex-spark` is Pro-only. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
 
 ## Sandbox Modes
 
-Codex supports three sandbox modes via `--sandbox` or `-s`, from most to least restrictive:
+Set via the `sandbox` MCP parameter (or `--sandbox`/`-s` in Bash):
 
-| Mode | Description |
-|------|-------------|
-| `read-only` | **Most restrictive.** Can read files but cannot write or execute commands that modify files. Use for all analysis tasks. |
-| `workspace-write` | Can read anywhere, write to workspace and /tmp only. |
-| `danger-full-access` | **FORBIDDEN.** No restrictions. Never use with these skills. |
+| Mode | Use for these skills? |
+|------|----------------------|
+| `read-only` | **Yes — always.** |
+| `workspace-write` | No. Claude writes code, not Codex. |
+| `danger-full-access` | **Forbidden.** |
 
-These skills always use `--sandbox read-only` to prevent Codex from modifying files.
-
-## Interactive vs Non-Interactive
-
-- **Interactive mode**: `codex "prompt"` - runs with user interaction
-- **Non-interactive mode**: `codex exec "prompt"` - runs without user interaction
-
-For non-interactive execution with `codex exec`, approval is automatically bypassed.
+Also forbidden: `--dangerously-bypass-approvals-and-sandbox`.
 
 ## Troubleshooting
 
-### Sandbox Permission Error
+### MCP tools not visible
 
-**Problem:** Codex cannot read files as expected.
+Restart Claude Code after enabling the plugin. Run `/mcp` to confirm the `cli` server is connected.
 
-**Solution:** Ensure `--sandbox read-only` is specified. These skills should only read files, never write.
+### "model is not supported" error
 
-### Authentication Issues
+You're passing a model name not covered by your Codex account. Omit the `model` parameter to use the default (`gpt-5.4`), or pick from `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`.
 
-**Problem:** `codex` commands fail with authentication errors.
+### Codex asks clarifying questions instead of answering
 
-**Solution:** Verify your Codex CLI authentication configuration. See [official docs](https://github.com/openai/codex) for API key or OAuth setup.
+Add a one-liner to your prompt: "Provide a complete answer; don't ask clarifying questions."
+
+### Sandbox / session file errors (Bash fallback)
+
+If you're shelling out and see `permission denied` on `~/.codex/sessions`, add `--ephemeral` to skip session persistence, and set `dangerouslyDisableSandbox: true` on the Bash call.
 
 ### Timeout
 
-Complex analysis may take several minutes. Allow up to 10 minutes before assuming timeout.
-
-## Working with Files
-
-Codex can read files directly. Pass file paths in prompts:
-
-```bash
-codex exec "Review the code in src/main.ts" --sandbox read-only
-```
-
-For files outside the workspace, save them to the project root first.
-
-## Non-Interactive Execution
-
-Use `codex exec` for non-interactive execution:
-
-```bash
-codex exec "Your prompt here" --sandbox read-only
-```
+Complex analyses can take several minutes. Allow up to 10 minutes before assuming a hang.

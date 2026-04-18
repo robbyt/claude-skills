@@ -1,104 +1,119 @@
 ---
 name: plan-review
-description: Get Codex's review of Claude's implementation plans. Trigger when user wants a second opinion on a plan ("have Codex review this plan", "get second opinion from Codex", "critique this plan with Codex"), or after Claude creates a plan file that needs validation before implementation.
+description: Get Codex's review of Claude's implementation plans via the Codex MCP server. Trigger when user wants a second opinion on a plan ("have Codex review this plan", "get second opinion from Codex", "critique this plan with Codex"), or after Claude creates a plan file that needs validation before implementation.
 ---
 
 # Plan Review via Codex
 
-Have Codex critique Claude's implementation plans for a second perspective.
+Use Codex to critique implementation plans for gaps, risks, and better alternatives. Codex consults; Claude writes.
 
-## CRITICAL: Default Model
+## Transport
 
-**ALWAYS use `model: "gpt-5.2"`** unless the user explicitly requests a different model. Do NOT choose `o3` or other models on your own.
+**Always use the MCP tool.** The plugin runs `codex mcp-server` on stdio via `.mcp.json`. Tool name: `mcp__plugin_codex_cli__codex`. If the example below errors with an unknown-tool error, run `/mcp` and substitute the actual prefix (e.g., `mcp__codex_cli__codex`).
 
-## CRITICAL: Instruct Codex
+## Model
 
-Every prompt sent to Codex MUST include these instructions:
+**Omit `model` to use the default (`gpt-5.4`).** Only set it if the user asks for a specific model. See `../references/patterns.md`.
 
-> "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately."
+## Flow
 
-Codex is a consultant. Claude Code handles all file modifications.
-
-## Quick Start (MCP)
-
-If the `codex` MCP tool is available, read the plan and pass it to Codex:
-
-First, read the plan file content, then:
+Codex reads files from the project root. For plans living outside the repo (e.g., `~/.claude/plans/...`), **read them with Claude's `Read` tool first and embed the content in the prompt.** Codex doesn't expand shell substitutions and can't see paths outside its `cwd`.
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this implementation plan:\n\n[PLAN CONTENT HERE]\n\nConsider:\n1. Are there gaps or missing steps?\n2. Are there risks not addressed?\n3. Is the approach optimal?\n4. What alternatives should be considered?",
-  "sandbox": "read-only",
-  "model": "gpt-5.2"
+  "prompt": "Review this implementation plan:\n\n---\n[PLAN CONTENT HERE]\n---\n\nConsider:\n1. Gaps or missing steps?\n2. Risks not addressed?\n3. Is the approach optimal? What alternatives should we consider?",
+  "sandbox": "read-only"
 })
 ```
 
-## Fallback (Bash)
-
-If MCP is unavailable, tell Codex to read the file directly:
-
-```bash
-codex exec "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.
-
-Review the implementation plan at path/to/plan.md
-
-Consider:
-1. Are there gaps or missing steps?
-2. Are there risks not addressed?
-3. Is the approach optimal?" --sandbox read-only -m gpt-5.2-codex 2>&1
-```
-
-**Note:** Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution. Instead, provide file paths in the prompt and let Codex read them directly.
-
-## With Source Context
-
-Include source files for context in the prompt:
+If the plan lives inside the repo, you can just reference the path:
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this implementation plan:\n\n[PLAN CONTENT]\n\nAlso read these source files for context:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate if the plan addresses the actual codebase structure.",
-  "sandbox": "read-only",
-  "model": "gpt-5.2"
+  "prompt": "Review the implementation plan at docs/plans/auth-rewrite.md. Flag gaps, risks, and better alternatives.",
+  "sandbox": "read-only"
 })
 ```
 
-## Focused Reviews
+## With source context
+
+Let Codex cross-check the plan against the actual code:
+
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nRead these source files for context before critiquing:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate whether the plan accounts for the real code structure.",
+  "sandbox": "read-only"
+})
+```
+
+## Focused reviews
 
 **Risk assessment:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this plan for risks:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail",
-  "sandbox": "read-only",
-  "model": "gpt-5.2"
+  "prompt": "Risk review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail",
+  "sandbox": "read-only"
 })
 ```
 
 **Completeness check:**
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete feedback immediately.\n\nReview this plan for completeness:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Are all edge cases covered?\n- Is testing addressed?\n- Are there missing steps?",
-  "sandbox": "read-only",
-  "model": "gpt-5.2"
+  "prompt": "Completeness review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Edge cases covered?\n- Testing addressed?\n- Missing steps?",
+  "sandbox": "read-only"
 })
 ```
 
-## Recommended Pattern
+## Iterative workflow (prefer `codex-reply`)
 
-1. Use Claude's Read tool to get plan file content
-2. Embed content directly in the Codex prompt
-3. List additional source files for Codex to read from project
+When you're still iterating on the same plan, **continue the existing thread** rather than starting a new `codex` call. Codex keeps the plan and its prior critique in context; starting fresh discards that reasoning and forces re-reading.
+
+Typical loop: initial critique → Claude revises the plan → `codex-reply` with the revised sections asking "does this address your concern?" → Codex confirms or pushes back → repeat.
+
+**Cap at 3–4 rounds total.** Plan review should converge fast; if you're still going at round 5, stop and surface the open questions to the user rather than letting the dialog spiral.
+
+**Example — three rounds on the same plan:**
+
+```
+# Round 1 — initial critique
+mcp__plugin_codex_cli__codex({
+  "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nFlag gaps, risks, and better alternatives.",
+  "sandbox": "read-only"
+})
+# → threadId: "019da14b-..."  /  flags: "No rollback strategy for the schema migration in step 3."
+
+# Round 2 — Claude revises and resubmits only the changed section
+mcp__plugin_codex_cli__codex-reply({
+  "threadId": "019da14b-...",
+  "prompt": "Revised step 3 to use an expand-contract migration with a reversible intermediate state:\n\n[REVISED SECTION]\n\nDoes this address the rollback concern?"
+})
+
+# Round 3 — triage remaining risks
+mcp__plugin_codex_cli__codex-reply({
+  "threadId": "019da14b-...",
+  "prompt": "Of the risks you flagged, which would actually block merge vs. which can be mitigated post-launch?"
+})
+```
+
+**Start a fresh thread when:** reviewing a different plan, the `threadId` is no longer in context, or the plan has been rewritten so substantially that re-priming is cleaner than patching. See `../references/patterns.md`.
+
+## Recommended pattern
+
+1. If the plan is outside the workspace, use Claude's `Read` to fetch it.
+2. Embed the plan content in the Codex prompt.
+3. List any in-repo source files Codex should read for context.
+4. Use `codex-reply` to drill in rather than starting new threads.
 
 ## Performance
 
-- MCP plan review: ~5-30 seconds
-- MCP with source files: ~1-2 minutes
-- Bash fallback: ~2-3 minutes
+- Plan-only review: ~5–30 s
+- Plan + source cross-check: ~1–2 min
 
-## Notes
+## Safety
 
-- **Always use `sandbox: "read-only"`** to prevent file modifications
-- **NEVER use `sandbox: "danger-full-access"`** - this is forbidden
-- Tool name may vary by installation. Check available tools for exact name.
-- Read plan file content first, then include in prompt (Codex may not access ~/.claude/plans/)
-- MCP is preferred; Bash fallback requires `dangerouslyDisableSandbox: true`
-- See `references/setup.md` for troubleshooting
+- **Always** `sandbox: "read-only"`.
+- Never use `workspace-write`, `danger-full-access`, or `--dangerously-bypass-approvals-and-sandbox`.
+
+## Fallback (rare)
+
+If the MCP server is unavailable, see `../references/commands.md` for the Bash `codex exec` form. Requires `dangerouslyDisableSandbox: true`. Don't pipe with `$(cat plan.md)` — Codex doesn't expand shell substitutions; either embed the content or pass a repo-relative path.

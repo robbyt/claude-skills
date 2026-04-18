@@ -1,55 +1,41 @@
 # Codex MCP Server Schema
 
-Quick reference for the Codex MCP server tools.
+The plugin's `.mcp.json` starts `codex mcp-server` (stdio) automatically when the plugin is enabled.
 
-## Checking the Schema
+## Discovering live tool names
 
-The MCP tool definitions are available in the current session. Check:
-- Tool names: `mcp__plugin_codex_cli__codex` and `mcp__plugin_codex_cli__codex-reply`
-- Use `/mcp` command to list available MCP tools and their schemas
+Run `/mcp` in Claude Code to list actual tool names and parameter schemas for your install. The tool prefix varies (`mcp__plugin_codex_cli__codex`, `mcp__codex_cli__codex`, ...).
 
-To check CLI options:
+Supporting CLI commands:
+
 ```bash
-codex --help
-codex --version
-codex features list
+codex --version          # CLI version
+codex --help             # all flags
+codex features list      # feature flags and their states
 ```
 
-## Tools
+## `codex` — start a new thread
 
-### `codex` - Run a Codex session
+| Parameter | Required | Notes |
+|-----------|----------|-------|
+| `prompt` | yes | Initial user prompt |
+| `model` | no | Default `gpt-5.4`. Alternatives: `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`. Omit to use default. |
+| `sandbox` | no | `read-only` (use this), `workspace-write`, `danger-full-access` (forbidden) |
+| `approval-policy` | no | `untrusted`, `on-request`, `never` |
+| `cwd` | no | Working directory |
+| `config` | no | TOML overrides (dotted keys, TOML-parsed values) |
 
-**Key parameters:**
+Returns `threadId` — pass to `codex-reply` for follow-ups.
 
-| Name | Required | Notes |
-|------|----------|-------|
-| `prompt` | Yes | The initial user prompt |
-| `model` | No | Use `gpt-5.2` (default) |
-| `sandbox` | No | `read-only`, `workspace-write`, `danger-full-access` |
-| `approval-policy` | No | `untrusted`, `on-failure`, `on-request`, `never` |
-| `cwd` | No | Working directory |
-| `config` | No | Override config.toml settings |
+### Web search
 
-**Enabling features via config:**
+Codex enables cached web search by default. For live results, use the top-level `--search` flag (CLI) or check `/mcp` for the current MCP-config shape.
 
-```json
-{
-  "config": {
-    "features": {
-      "web_search_request": true
-    }
-  }
-}
-```
+## `codex-reply` — continue a thread
 
-Check available features with `codex features list`.
+| Parameter | Required | Notes |
+|-----------|----------|-------|
+| `threadId` | yes | From a prior `codex` or `codex-reply` response |
+| `prompt` | yes | Follow-up prompt |
 
-### `codex-reply` - Continue a conversation
-
-**Key parameters:**
-
-| Name | Required | Notes |
-|------|----------|-------|
-| `threadId` | Yes | Thread ID from previous `codex` call |
-| `prompt` | Yes | Follow-up prompt |
-| `conversationId` | No | **DEPRECATED** - use `threadId` |
+**Prefer `codex-reply` over starting a new `codex` thread whenever you're still iterating on the same topic and have `threadId` in context.** See `patterns.md` → "Iterative consultation".

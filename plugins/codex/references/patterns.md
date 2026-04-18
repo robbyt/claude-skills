@@ -4,164 +4,140 @@ Shared patterns for all Codex skills.
 
 ## Core Principle
 
-Claude Code handles all code writing, file operations, and commands. Codex provides consulting and second opinions.
+Claude writes code. Codex provides second opinions, reviews, and analysis.
 
-## Default Model: gpt-5.2
+## Transport: MCP stdio (always)
 
-**ALWAYS use `model: "gpt-5.2"`** (MCP) or `-m gpt-5.2-codex` (Bash) unless the user explicitly requests a different model.
+This plugin ships an MCP server configured in `.mcp.json` that runs `codex mcp-server` over stdio. **Always use the MCP tool — never shell out to `codex` via Bash** unless the MCP server is unavailable.
 
-- Default: `gpt-5.2` - use this for all Codex calls
-- Alternative: `o3` - ONLY if user explicitly asks for it
-- Alternative: `o4-mini` - ONLY if user explicitly asks for it
+Why MCP over Bash:
+- No shell-quoting issues with multi-line prompts
+- No `dangerouslyDisableSandbox: true` approval prompt
+- Session continuity via `threadId`
+- Richer structured responses
 
-**Do NOT choose a model on your own.** If the user doesn't specify a model, use `gpt-5.2`.
+Tool names (check `/mcp` for exact names on your install):
+- `mcp__plugin_codex_cli__codex` — start a new thread
+- `mcp__plugin_codex_cli__codex-reply` — continue an existing thread
 
-## Enabling Built-in Tools
+## Models
 
-Codex has built-in tools that can be enabled via the `config` parameter:
+Authoritative list: https://developers.openai.com/codex/models
 
-| Feature | Purpose |
-|---------|---------|
-| `web_search_request` | Allow Codex to search the web |
+| Model | When to use |
+|-------|-------------|
+| `gpt-5.4` | **Default.** Flagship — strong coding, reasoning, tool use. |
+| `gpt-5.4-mini` | Faster/cheaper for lighter tasks or subagents. |
+| `gpt-5.3-codex` | Coding-specialized; good for deep code review. |
+| `gpt-5.2` | Previous general-purpose model (alternative). |
+| `gpt-5.3-codex-spark` | ChatGPT Pro only — research preview, real-time iteration. |
 
-Example with web search enabled:
+**Default behavior: omit the `model` parameter.** Codex CLI picks `gpt-5.4` on its own. Only set `model` when the user explicitly names one, or when a skill needs a specific variant (e.g., `gpt-5.4-mini` for a fast subagent call).
+
+Models not listed above (e.g., `o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`) either don't exist or aren't available to ChatGPT-account users. Don't guess — pick from the table.
+
+## Sandbox
+
+Always `read-only`. Codex consults; Claude writes.
+
+Forbidden:
+- `workspace-write` — Claude's job, not Codex's
+- `danger-full-access` — never
+- `--dangerously-bypass-approvals-and-sandbox` — never
+
+## Prompt style
+
+Codex in non-interactive MCP mode already knows not to prompt back. You don't need a lengthy "you are running non-interactively" preamble. A single line is enough when needed:
+
+> "Read-only review — do not modify files. Provide a complete answer; don't ask clarifying questions."
+
+Task-specific prompts should just state the task directly.
+
+## Iterative consultation (continue the thread)
+
+**Default behavior when iterating on the same topic: reuse the `threadId`, don't start fresh.**
+
+Every `codex` and `codex-reply` response returns a `threadId`. As long as it's still in your context, use `codex-reply` for every subsequent round on the same topic. Fresh `codex` calls discard Codex's prior reasoning and force it to re-read the same files — wasted tokens and drift-prone.
+
+### The loop
+
+1. Claude consults Codex on a topic → response includes `threadId`.
+2. Claude researches further (reads code, runs tests, applies a fix).
+3. Claude has a follow-up question, a correction to a Codex assumption, or new findings to share.
+4. Claude calls `codex-reply` with the same `threadId`, feeding in what it learned.
+5. Repeat from step 2 until the thread is resolved.
+
+**Cap the dialog at 3–4 rounds.** Each round costs tokens and Codex time; productive iteration converges fast. If you're past round 4 and still going, stop and summarize what you have — either act on the current answer, surface the disagreement to the user, or start a fresh thread with a sharper question. Don't let Claude and Codex debate a topic indefinitely.
+
+### Example: 3-round iteration
+
 ```
+# Round 1 — initial consult
 mcp__plugin_codex_cli__codex({
-  "prompt": "Search for the latest SwiftUI changes in iOS 18",
-  "sandbox": "read-only",
-  "model": "gpt-5.2",
-  "config": {
-    "features": {
-      "web_search_request": true
-    }
-  }
+  "prompt": "Review the auth flow in src/auth/. Call out concerns.",
+  "sandbox": "read-only"
 })
-```
+# → response includes threadId: "019da14b-8e9d-..."
+# → Codex flags: "Session rotation looks too infrequent — looks like ~1h window."
 
-## Required Prompt Prefix
-
-Every prompt sent to Codex MUST begin with:
-
-> "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete response immediately."
-
-This prevents Codex from entering interactive mode or waiting for user input.
-
-## MCP vs Bash
-
-**Prefer MCP** when available:
-
-```
-mcp__plugin_codex_cli__codex({
-  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nAnalyze this codebase.",
-  "sandbox": "read-only",
-  "model": "gpt-5.2"
-})
-```
-
-**Fall back to Bash** if MCP unavailable:
-
-```bash
-codex exec "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.
-
-Analyze this codebase." --sandbox read-only -m gpt-5.2-codex 2>&1
-```
-
-## Session Continuity (MCP only)
-
-MCP supports follow-up questions in the same context:
-
-```
-# Initial request
-mcp__plugin_codex_cli__codex({
-  "prompt": "You are running non-interactively as part of a script. Do not ask questions or wait for input. Do not make any changes. Provide your complete analysis immediately.\n\nReview the authentication flow.",
-  "sandbox": "read-only",
-  "model": "gpt-5.2"
-})
-# Returns threadId: "abc123"
-
-# Follow-up
+# Round 2 — Claude reads the actual rotation code, finds Codex's assumption was wrong
 mcp__plugin_codex_cli__codex-reply({
-  "prompt": "What about the session handling?",
-  "threadId": "abc123"
+  "threadId": "019da14b-8e9d-...",
+  "prompt": "I checked src/session/rotate.ts — the rotation window is 15m, not 1h. Does that change your concern, or is there still an issue?"
+})
+# → Codex updates: "15m window is fine for the threat model; the remaining concern is CSRF on the refresh endpoint."
+
+# Round 3 — Claude drills in
+mcp__plugin_codex_cli__codex-reply({
+  "threadId": "019da14b-8e9d-...",
+  "prompt": "The refresh endpoint uses SameSite=Strict cookies. Does that mitigate your CSRF concern?"
 })
 ```
 
-## Safety Requirements
+### When to start a fresh thread instead
 
-**NEVER disable safety features:**
-- `--dangerously-bypass-approvals-and-sandbox` - FORBIDDEN
-- `--sandbox danger-full-access` - FORBIDDEN
+- **New unrelated topic.** User asks about a different area of the codebase.
+- **`threadId` no longer in context.** Conversation was compacted, or it's a new Claude Code session.
+- **Codex's prior answer is now stale.** Claude made enough code changes that Codex's assumptions are broadly wrong — re-priming with a fresh call is cleaner than patching assumptions incrementally. If changes are targeted and you can describe them in a follow-up prompt, just continue the thread.
 
-These skills are read-only by design. Codex must not modify files.
+When the topic hasn't changed and the `threadId` is still in context, continue the thread. If files Codex read have been modified, tell Codex to re-read them in your follow-up prompt.
 
-**If flag errors occur**, run `codex --help` to verify correct flag usage.
+## Web search
 
-## Non-Interactive Execution
+Codex enables cached web search by default — no action needed to let it look things up.
 
-Always use these flags for automated integration:
+For live (non-cached) results, use `codex --search "prompt"` for a single run, or set `web_search = "live"` in `~/.codex/config.toml`. Use `web_search = "disabled"` to turn it off.
 
-```bash
-codex exec "prompt" --sandbox read-only -m gpt-5.2-codex
-```
+## File access
 
-- `exec` - Run without interactive mode
-- `--sandbox read-only` - Prevent file modifications
-- `-m gpt-5.2-codex` - Preferred model
+Codex reads files from its working directory. Pass repo-relative paths in the prompt:
 
-## File Paths
+- ✓ `"Review src/auth/login.ts"`
+- ✗ `"Review ~/projects/foo/src/auth/login.ts"`
 
-Codex runs in the current working directory. Use paths relative to project root:
-- ✓ `src/components/Button.tsx`
-- ✗ `~/projects/myapp/src/components/Button.tsx`
+For files outside the workspace (e.g., plans in `~/.claude/plans/`), read them with Claude's `Read` tool and embed the content into the prompt rather than passing the path.
 
-Provide file paths in the prompt and let Codex read them directly:
-
-```bash
-# CORRECT - works
-codex exec "You are running non-interactively. Do not ask questions. Do not make changes. Provide feedback immediately.
-
-Review the file at path/to/file.md" --sandbox read-only -m gpt-5.2-codex
-```
-
-Do NOT use stdin piping with `$(cat)` - Codex doesn't expand shell command substitution.
-
-## Working with Diffs
-
-For diff review, use `codex review` or save diff to a file:
-
-```bash
-# Built-in review command (requires --uncommitted, --base, or --commit)
-codex review --uncommitted
-
-# Manual diff review
-git diff --cached > codex-review.diff
-codex exec "You are running non-interactively. Do not ask questions. Do not make changes. Provide feedback immediately.
-
-Review the diff at codex-review.diff" --sandbox read-only -m gpt-5.2-codex
-rm codex-review.diff
-```
-
-Note: `codex review` doesn't support `--sandbox` - it's scoped to diffs.
+Don't use `$(cat file)` in Bash prompts — Codex doesn't expand shell substitutions.
 
 ## Validation
 
-Always validate Codex recommendations:
+Codex can be wrong. Verify recommendations against:
+1. Official docs (for API claims, especially for recently changed libraries)
+2. Actual project constraints
+3. Your own reasoning
 
-1. **Verify against official docs** - web search may find outdated info
-2. **Test recommendations** - don't blindly implement suggestions
-3. **Review for context** - Codex may miss project-specific constraints
-4. **Get multiple opinions** - use Claude's reasoning to evaluate
+Don't implement Codex's suggestions blindly.
 
-## Best Practices
+## Bash fallback (rare)
 
-**Do use Codex for:**
-- Code review and security audits
-- Codebase analysis
-- Second opinions on design decisions
+Only when the MCP server is unavailable (plugin disabled, server crashed):
 
-**Don't use Codex for:**
-- Primary code generation (Claude's job)
-- File operations (use Claude's tools)
-- Running commands (use Claude's Bash tool)
+```bash
+codex exec --ephemeral --sandbox read-only "prompt"
+```
 
-**Remember:** Claude writes code, Codex provides feedback.
+- Omit `-m` to get the default (`gpt-5.4`).
+- `--ephemeral` avoids persisting a session to `~/.codex/sessions/`.
+- This requires `dangerouslyDisableSandbox: true` because Codex writes to its own state dirs.
+
+If you reach for Bash, first verify MCP really is unavailable: look for `mcp__*_codex` tools in the current tool list, or run `/mcp`.
