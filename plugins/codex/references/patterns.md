@@ -26,13 +26,13 @@ Authoritative list: https://developers.openai.com/codex/models
 
 | Model | When to use |
 |-------|-------------|
-| `gpt-5.4` | **Default.** Flagship — strong coding, reasoning, tool use. |
-| `gpt-5.4-mini` | Faster/cheaper for lighter tasks or subagents. |
-| `gpt-5.3-codex` | Coding-specialized; good for deep code review. |
-| `gpt-5.2` | Previous general-purpose model (alternative). |
-| `gpt-5.3-codex-spark` | ChatGPT Pro only — research preview, real-time iteration. |
+| `gpt-5.5` | **Default.** Flagship — strongest agentic coding. Used when `model` is omitted. |
+| `gpt-5.4-mini` | Smaller/cheaper. Use for small or trivial tasks (single-function diff, dependency lookup, yes/no triage). ~30% of `gpt-5.4` quota. |
+| `gpt-5.3-codex` | Coding-specialized older model. Codex prompts an upgrade to `gpt-5.4` — listed for completeness. |
+| `gpt-5.4` | Previous flagship. |
+| `gpt-5.2` | Legacy. |
 
-**Default behavior: omit the `model` parameter.** Codex CLI picks `gpt-5.4` on its own. Only set `model` when the user explicitly names one, or when a skill needs a specific variant (e.g., `gpt-5.4-mini` for a fast subagent call).
+**Default behavior: omit the `model` parameter.** Codex CLI picks `gpt-5.5` on its own. Set `model: gpt-5.5` only when you want to be explicit. Set `model: gpt-5.4-mini` when the task is clearly small — a brief lookup, a tiny diff, a yes/no triage — to save quota and latency. **Don't switch to `gpt-5.4-mini` for plan critique, codebase analysis, or security review** — those benefit from the flagship's reasoning.
 
 Models not listed above (e.g., `o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`) either don't exist or aren't available to ChatGPT-account users. Don't guess — pick from the table.
 
@@ -59,6 +59,8 @@ Task-specific prompts should just state the task directly.
 
 Every `codex` and `codex-reply` response returns a `threadId`. As long as it's still in your context, use `codex-reply` for every subsequent round on the same topic. Fresh `codex` calls discard Codex's prior reasoning and force it to re-read the same files — wasted tokens and drift-prone.
 
+**`threadId` is an MCP argument, never prompt content.** Pass it as the `threadId` field of the `codex-reply` MCP call. Don't write `"Continue thread abc123 and …"` into the `prompt` — codex won't read it as a thread reference, and you'll silently start a fresh thread.
+
 ### The loop
 
 1. Claude consults Codex on a topic → response includes `threadId`.
@@ -81,13 +83,14 @@ mcp__plugin_codex_cli__codex({
 # → Codex flags: "Session rotation looks too infrequent — looks like ~1h window."
 
 # Round 2 — Claude reads the actual rotation code, finds Codex's assumption was wrong
+# Note: threadId is an MCP arg, NOT in the prompt text.
 mcp__plugin_codex_cli__codex-reply({
   "threadId": "019da14b-8e9d-...",
   "prompt": "I checked src/session/rotate.ts — the rotation window is 15m, not 1h. Does that change your concern, or is there still an issue?"
 })
 # → Codex updates: "15m window is fine for the threat model; the remaining concern is CSRF on the refresh endpoint."
 
-# Round 3 — Claude drills in
+# Round 3 — Claude drills in (threadId still as MCP arg)
 mcp__plugin_codex_cli__codex-reply({
   "threadId": "019da14b-8e9d-...",
   "prompt": "The refresh endpoint uses SameSite=Strict cookies. Does that mitigate your CSRF concern?"
@@ -136,7 +139,7 @@ Only when the MCP server is unavailable (plugin disabled, server crashed):
 codex exec --ephemeral --sandbox read-only "prompt"
 ```
 
-- Omit `-m` to get the default (`gpt-5.4`).
+- Omit `-m` to get the default (`gpt-5.5`).
 - `--ephemeral` avoids persisting a session to `~/.codex/sessions/`.
 - This requires `dangerouslyDisableSandbox: true` because Codex writes to its own state dirs.
 

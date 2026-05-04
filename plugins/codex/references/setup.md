@@ -31,7 +31,7 @@ At runtime, call Codex via the MCP tool, not `codex exec` — see `patterns.md`.
 
 Claude Code will **not** configure Codex auth. Codex CLI must be pre-authenticated (ChatGPT account or API key). See https://github.com/openai/codex for options.
 
-**ChatGPT account note:** `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, and `gpt-5.2` work on Plus/Pro/Business/Edu/Enterprise plans. `gpt-5.3-codex-spark` is Pro-only. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
+**ChatGPT account note:** `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, and `gpt-5.2` work on Plus/Pro/Business/Edu/Enterprise plans. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
 
 ## Sandbox Modes
 
@@ -53,7 +53,7 @@ Restart Claude Code after enabling the plugin. Run `/mcp` to confirm the `cli` s
 
 ### "model is not supported" error
 
-You're passing a model name not covered by your Codex account. Omit the `model` parameter to use the default (`gpt-5.4`), or pick from `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`.
+You're passing a model name not covered by your Codex account. Omit the `model` parameter to use the default (`gpt-5.5`), or pick from `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`.
 
 ### Codex asks clarifying questions instead of answering
 

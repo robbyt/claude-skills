@@ -13,7 +13,7 @@ Use Codex to review git changes for bugs, security issues, and style problems. C
 
 ## Model
 
-**Omit `model` unless the user names one.** Codex picks `gpt-5.4` on its own. See `../references/patterns.md` for the full table.
+**Omit `model` to use the default (`gpt-5.5`)** for non-trivial diffs. For small diffs (~< 100 changed lines, single function, no security surface) you may set `model: gpt-5.4-mini` to save quota. **Security or performance focused reviews should always use the default** — don't downgrade. See `../references/patterns.md` for the full table.
 
 ## Flow
 
@@ -80,6 +80,8 @@ When you're still working on the same diff, **continue the existing thread** rat
 Typical loop: initial review → Claude implements a fix → `codex-reply` asking "does the revised code still have the issue?" → Codex confirms or flags new concern → repeat.
 
 **Cap at 3–4 rounds total.** Diff reviews should converge fast; if you're still going at round 5, stop and surface the remaining disagreement to the user rather than letting the two models debate indefinitely.
+
+**`threadId` is an MCP argument — pass it as the `threadId` field of `codex-reply`, not in the `prompt` text.** See `../references/mcp-schema.md` for wrong-vs-right examples.
 
 **Example — three rounds on the same diff:**
 

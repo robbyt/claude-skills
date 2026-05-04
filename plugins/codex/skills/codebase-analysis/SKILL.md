@@ -13,7 +13,7 @@ Use Codex to get a second-opinion architectural read of the current project, wit
 
 ## Model
 
-**Omit the `model` parameter by default.** Codex picks `gpt-5.4` — the recommended flagship. Only set `model` if the user names one explicitly. Valid alternatives: `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`. See `../references/patterns.md` for the full table.
+**Omit the `model` parameter by default** — codex picks `gpt-5.5`, the current flagship. Don't switch to `gpt-5.4-mini` here; codebase analysis benefits from the flagship's reasoning across many files. Only set `model` if the user names one explicitly. See `../references/patterns.md` for the full table.
 
 ## Basic call
 
@@ -71,6 +71,8 @@ Typical loop:
 2. Claude reads related files / runs a query / makes a change.
 3. `codex-reply` with new findings or a follow-up question.
 4. Repeat — but **cap at 3–4 rounds total.** If the thread isn't converging, stop and bring the current state back to the user.
+
+**`threadId` is an MCP argument — pass it as the `threadId` field of `codex-reply`, not in the `prompt` text.** See `../references/mcp-schema.md` for wrong-vs-right examples.
 
 **Example — three rounds on the same architecture thread:**
 

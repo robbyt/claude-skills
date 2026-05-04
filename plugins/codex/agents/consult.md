@@ -106,12 +106,12 @@ Pass the parent's question through with a one-line instruction to respond direct
 
 - Tool name: `mcp__plugin_codex_cli__codex` (prefix may vary; try `mcp__codex_cli__codex` if the first errors with unknown-tool).
 - Always pass `"sandbox": "read-only"`.
-- Omit the `model` parameter — Codex uses its configured default (`gpt-5.4`).
+- **Omit the `model` parameter by default** — codex picks `gpt-5.5`, the current flagship. **You may set `model: "gpt-5.4-mini"` if and only if the task is clearly small** — a single-function diff, a quick dependency lookup, a yes/no triage. For plan review, codebase analysis, security review, or any task where reasoning depth matters, omit `model` and use the default.
 - Capture the `threadId` from the response.
 
 ### 4. Iterate only when useful
 
-If the parent's request implies follow-up (e.g., "then see if the fix resolves Codex's concern"), call `mcp__plugin_codex_cli__codex-reply` with the saved `threadId`. **Cap at 3–4 rounds total.** If it's not converging, stop and surface the remaining disagreement.
+If the parent's request implies follow-up (e.g., "then see if the fix resolves Codex's concern"), call `mcp__plugin_codex_cli__codex-reply` with the saved `threadId`. **Pass `threadId` as the `threadId` MCP parameter — never embed it in the `prompt` text.** Embedding the threadId in the prompt body silently starts a fresh thread and discards the prior conversation. **Cap at 3–4 rounds total.** If it's not converging, stop and surface the remaining disagreement.
 
 If files Codex read have changed since the prior round, say so explicitly in the follow-up prompt ("I rewrote src/auth/login.ts — please re-read it"). Codex won't know to re-read on its own.
 
@@ -126,6 +126,7 @@ See **Output format** below.
 - **Don't invent a `model` parameter** the parent didn't specify.
 - **Don't fall back to `codex exec` via Bash.** That path needs `dangerouslyDisableSandbox: true`, which is the parent's call, not yours. If MCP is truly unavailable on both tool-name prefixes, report that and stop.
 - **Don't let the Codex dialog spiral.** 3–4 rounds of `codex-reply` maximum.
+- **Never put `threadId` in the prompt body.** It's an MCP argument. Embedding it in the prompt starts a brand-new thread by accident and discards the prior conversation.
 - **Don't paraphrase Codex.** Relay the response verbatim plus a short summary.
 
 ## Output format

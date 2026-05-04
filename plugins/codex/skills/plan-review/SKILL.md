@@ -13,7 +13,7 @@ Use Codex to critique implementation plans for gaps, risks, and better alternati
 
 ## Model
 
-**Omit `model` to use the default (`gpt-5.4`).** Only set it if the user asks for a specific model. See `../references/patterns.md`.
+**Omit `model` to use the default (`gpt-5.5`).** Plan review benefits from flagship reasoning — don't downgrade to `gpt-5.4-mini` here. Only set `model` if the user explicitly names one. See `../references/patterns.md`.
 
 ## Flow
 
@@ -71,6 +71,8 @@ When you're still iterating on the same plan, **continue the existing thread** r
 Typical loop: initial critique → Claude revises the plan → `codex-reply` with the revised sections asking "does this address your concern?" → Codex confirms or pushes back → repeat.
 
 **Cap at 3–4 rounds total.** Plan review should converge fast; if you're still going at round 5, stop and surface the open questions to the user rather than letting the dialog spiral.
+
+**`threadId` is an MCP argument — pass it as the `threadId` field of `codex-reply`, not in the `prompt` text.** See `../references/mcp-schema.md` for wrong-vs-right examples.
 
 **Example — three rounds on the same plan:**
 

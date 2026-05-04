@@ -19,7 +19,7 @@ mcp__plugin_codex_cli__codex({
 |-----------|----------|---------|-------|
 | `prompt` | yes | — | The task or question |
 | `sandbox` | no | `read-only` | Always `read-only` for these skills |
-| `model` | no | `gpt-5.4` | Omit unless user specifies a model |
+| `model` | no | `gpt-5.5` | Omit unless user specifies a model |
 | `cwd` | no | project root | Working directory |
 | `approval-policy` | no | — | `untrusted`, `on-request`, `never`. Usually not needed with `read-only` sandbox. |
 | `config` | no | — | TOML overrides (dotted paths) |
@@ -45,11 +45,11 @@ Authoritative list: https://developers.openai.com/codex/models
 
 | Model | Notes |
 |-------|-------|
-| `gpt-5.4` | Default flagship |
-| `gpt-5.4-mini` | Fast/cheap |
-| `gpt-5.3-codex` | Coding-specialized |
-| `gpt-5.2` | Previous |
-| `gpt-5.3-codex-spark` | ChatGPT Pro only |
+| `gpt-5.5` | Default flagship — current |
+| `gpt-5.4-mini` | Fast/cheap (~30% of `gpt-5.4` quota); use for small tasks |
+| `gpt-5.4` | Previous flagship |
+| `gpt-5.3-codex` | Coding-specialized older model |
+| `gpt-5.2` | Legacy |
 
 ## Bash fallback (rare)
 
@@ -65,7 +65,7 @@ codex exec --ephemeral --sandbox read-only "prompt"
 |------|---------|
 | `--ephemeral` | Don't persist session to `~/.codex/sessions/` |
 | `--sandbox read-only` | Read-only filesystem access |
-| `-m <model>` | Override default model (omit to get `gpt-5.4`) |
+| `-m <model>` | Override default model (omit to get `gpt-5.5`) |
 | `-C <dir>` | Set working directory |
 | `--output-last-message <file>` | Write final agent message to file |
 | `--output-schema <file>` | Enforce JSON Schema on response |
