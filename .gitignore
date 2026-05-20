@@ -27,3 +27,4 @@ dist/
 vendor/
 
 .env
+.antigravitycli
