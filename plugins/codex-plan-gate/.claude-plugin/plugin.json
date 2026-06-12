@@ -1,0 +1,10 @@
+{
+  "name": "codex-plan-gate",
+  "version": "0.1.0",
+  "description": "Routes every plan-mode plan through a Codex MCP review before it is shown. A PreToolUse hook intercepts ExitPlanMode, has Claude consult Codex (read-only) to critique and refine the plan over a capped iterative loop, then lets the refined plan through.",
+  "author": {
+    "name": "Robert Terhaar",
+    "email": "robbyt@gmail.com"
+  },
+  "keywords": ["codex", "hooks", "plan-mode", "plan-review", "pretooluse", "mcp"]
+}

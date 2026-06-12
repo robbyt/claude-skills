@@ -1,0 +1,17 @@
+{
+  "description": "Intercepts ExitPlanMode so every plan is reviewed by Codex before it is presented.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode|exit_plan_mode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/plan-review-gate.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
