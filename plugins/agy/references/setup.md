@@ -90,7 +90,8 @@ same as the gemini skills did.
 ## Response Time
 
 Tasks like codebase analysis and search can take several minutes. The `--print-timeout`
-flag defaults to `5m0s`; raise it for big jobs:
+flag defaults to `5m0s`; raise it for big jobs. The duration needs a unit (`30s`, `3m`,
+`10m`, `1h`):
 
 ```bash
 agy --print-timeout 10m --print "..." --dangerously-skip-permissions

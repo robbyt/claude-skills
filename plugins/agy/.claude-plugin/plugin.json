@@ -1,7 +1,7 @@
 {
   "name": "agy",
   "description": "Google Antigravity (agy) CLI integration with focused skills for web search, plan review, code review, and architecture analysis. Replaces the deprecated gemini-cli with Google's new Antigravity CLI.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "robbyt",
     "email": "robbyt@robbyt.net"

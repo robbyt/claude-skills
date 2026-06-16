@@ -109,5 +109,5 @@ rm ./agy-plan.md
 - Choose a temp name that won't collide with project files (`agy-plan.md` is reasonable). Always `rm` it after.
 - `agy` respects `.gitignore` — it cannot read files matching gitignore patterns.
 - Requires `dangerouslyDisableSandbox: true` on the Bash tool because Google Antigravity writes session state under `~/.gemini/` (shared with the old gemini-cli).
-- May take 2–3 minutes for thorough review with source analysis; bump `--print-timeout` if needed.
+- May take 2–3 minutes for thorough review with source analysis; bump `--print-timeout` if needed (use a unit, e.g. `--print-timeout 10m`).
 - See `references/setup.md` and `references/patterns.md` for more.

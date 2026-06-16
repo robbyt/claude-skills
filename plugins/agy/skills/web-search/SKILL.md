@@ -64,6 +64,6 @@ agy --continue --print "Of those, which support hybrid search and quantization? 
 - **Google Antigravity must not make any changes; provide research output ONLY.**
 - `agy` has no `--allowed-tools` flag — rely on prompt instructions to keep the call read-only.
 - Requires sandbox bypass: use `dangerouslyDisableSandbox: true` when calling via the Bash tool, because agy writes session state under `~/.gemini/` (shared with the old gemini-cli).
-- May take 1–2 minutes for comprehensive Google searches; bump `--print-timeout` if needed.
+- May take 1–2 minutes for comprehensive Google searches; bump `--print-timeout` if needed (use a unit, e.g. `--print-timeout 10m`).
 - Validate findings against official documentation.
 - See `references/setup.md` and `references/patterns.md` for more.

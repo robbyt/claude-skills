@@ -22,7 +22,7 @@ agy --print "[prompt]" --dangerously-skip-permissions
 | `--dangerously-skip-permissions` | | Auto-approve all tool requests. Required for scripting |
 | `--add-dir <path>` | | Add a directory to the workspace (repeatable) |
 | `--sandbox` | | Restrict terminal access (still allows workspace file I/O) |
-| `--print-timeout <duration>` | | Override the 5-minute print-mode timeout |
+| `--print-timeout <duration>` | | Override the 5-minute print-mode timeout. Duration needs a unit, e.g. `3m`, `10m`, `1h`. |
 | `--prompt-interactive` | `-i` | Seed an interactive session with an initial prompt |
 | `--log-file <path>` | | Override CLI log file path |
 

@@ -109,5 +109,5 @@ rm agy-review.diff
 - `agy` reads files inside the current workspace only. Saving the diff into the project root (`agy-review.diff`) makes it accessible.
 - `agy` respects `.gitignore` — it cannot read files matching gitignore patterns.
 - Requires `dangerouslyDisableSandbox: true` on the Bash tool because Google Antigravity writes session state under `~/.gemini/` (shared with the old gemini-cli).
-- May take 1–2 minutes for thorough review; bump `--print-timeout` if needed.
+- May take 1–2 minutes for thorough review; bump `--print-timeout` if needed (use a unit, e.g. `--print-timeout 10m`).
 - See `references/setup.md` and `references/patterns.md` for more.
