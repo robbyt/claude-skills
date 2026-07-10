@@ -11,7 +11,9 @@ The plugin's `.mcp.json` starts `codex mcp-server` on stdio. Use the MCP tools; 
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project's architecture.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -19,10 +21,10 @@ mcp__plugin_codex_cli__codex({
 |-----------|----------|---------|-------|
 | `prompt` | yes | — | The task or question |
 | `sandbox` | no | `read-only` | Always `read-only` for these skills |
-| `model` | no | `gpt-5.5` | Omit unless user specifies a model |
+| `model` | no | — | **Pin explicitly.** `gpt-5.6-sol` for deep tasks, `gpt-5.6-luna` for small ones (see Models). Don't omit — see `patterns.md` → Reasoning effort. |
+| `config` | no | — | TOML overrides (dotted paths). Carries reasoning effort: `{ "model_reasoning_effort": "medium" }`. |
 | `cwd` | no | project root | Working directory |
 | `approval-policy` | no | — | `untrusted`, `on-request`, `never`. Usually not needed with `read-only` sandbox. |
-| `config` | no | — | TOML overrides (dotted paths) |
 
 Returns a `threadId`. Pass it to `codex-reply` for follow-ups.
 
@@ -41,22 +43,23 @@ mcp__plugin_codex_cli__codex-reply({
 
 ## Models
 
-Authoritative list: https://developers.openai.com/codex/models
+Authoritative list (snapshot below may go stale): https://developers.openai.com/codex/models — and what your local Codex advertises. The bare `gpt-5.6` name is **not** in the CLI list; use explicit slugs. Pin effort alongside the model — see `patterns.md` → Reasoning effort.
 
-| Model | Notes |
-|-------|-------|
-| `gpt-5.5` | Default flagship — current |
-| `gpt-5.4-mini` | Fast/cheap (~30% of `gpt-5.4` quota); use for small tasks |
-| `gpt-5.4` | Previous flagship |
-| `gpt-5.3-codex` | Coding-specialized older model |
-| `gpt-5.2` | Legacy |
+| Model | Notes | Pinned effort |
+|-------|-------|---------------|
+| `gpt-5.6-sol` | Flagship — default for deep tasks | `medium` |
+| `gpt-5.6-terra` | Balance of intelligence/cost; optional middle tier | `medium` |
+| `gpt-5.6-luna` | Efficient; small tasks (replaces `gpt-5.4-mini`) | `low` |
+| `gpt-5.5` | Previous flagship | — |
+| `gpt-5.4`, `gpt-5.4-mini` | Legacy | — |
 
 ## Bash fallback (rare)
 
 Only when MCP is unavailable. Requires `dangerouslyDisableSandbox: true`.
 
 ```bash
-codex exec --ephemeral --sandbox read-only "prompt"
+codex exec --ephemeral --sandbox read-only \
+  -m gpt-5.6-sol -c 'model_reasoning_effort="medium"' "prompt"
 ```
 
 ### `codex exec` flags
@@ -65,7 +68,8 @@ codex exec --ephemeral --sandbox read-only "prompt"
 |------|---------|
 | `--ephemeral` | Don't persist session to `~/.codex/sessions/` |
 | `--sandbox read-only` | Read-only filesystem access |
-| `-m <model>` | Override default model (omit to get `gpt-5.5`) |
+| `-m <model>` | Model to use — pin explicitly (`gpt-5.6-sol` deep, `gpt-5.6-luna` small) |
+| `-c 'model_reasoning_effort="<level>"'` | Reasoning effort (`medium` for sol, `low` for luna). Quote the value so the shell keeps the TOML string. |
 | `-C <dir>` | Set working directory |
 | `--output-last-message <file>` | Write final agent message to file |
 | `--output-schema <file>` | Enforce JSON Schema on response |

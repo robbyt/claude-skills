@@ -27,11 +27,19 @@ codex exec --ephemeral "hi" --sandbox read-only
 
 At runtime, call Codex via the MCP tool, not `codex exec` — see `patterns.md`.
 
+## Model compatibility
+
+These skills **pin** the GPT-5.6 tiers explicitly (`gpt-5.6-sol` for deep tasks, `gpt-5.6-luna` for small ones), so — unlike the old "omit to get the default" behavior — an older CLI or an account without 5.6 access will **error** rather than silently fall back.
+
+- Tested with **Codex CLI 0.144.1** (not asserted as the minimum). If a 5.6 slug is rejected, upgrade first: `npm install -g @openai/codex`.
+- Your **local model list is authoritative** — availability is account- and release-dependent. Confirm a slug is advertised before relying on it (an unsupported name fails fast: `codex exec -m gpt-5.6-sol --sandbox read-only --ephemeral "hi"`).
+- **Operational fallback** if your account hasn't received 5.6: editing `~/.codex/config.toml` alone won't help, because the skills override the model per call. Instead, **explicitly ask** for a model your Codex advertises (e.g. "use gpt-5.5") — the skills/agent honor a supported user-provided model — or use an API-key install that has the 5.6 tiers.
+
 ## Authentication
 
 Claude Code will **not** configure Codex auth. Codex CLI must be pre-authenticated (ChatGPT account or API key). See https://github.com/openai/codex for options.
 
-**ChatGPT account note:** `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, and `gpt-5.2` work on Plus/Pro/Business/Edu/Enterprise plans. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
+**ChatGPT account note:** the GPT-5.6 tiers (`gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`) plus older `gpt-5.5`, `gpt-5.4`, and `gpt-5.4-mini` work on Plus/Pro/Business/Edu/Enterprise plans. Availability is account-dependent — your local Codex model list is authoritative. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, the bare `gpt-5.6`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
 
 ## Sandbox Modes
 
@@ -53,7 +61,7 @@ Restart Claude Code after enabling the plugin. Run `/mcp` to confirm the `cli` s
 
 ### "model is not supported" error
 
-You're passing a model name not covered by your Codex account. Omit the `model` parameter to use the default (`gpt-5.5`), or pick from `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.3-codex`, `gpt-5.2`.
+You're passing a model name your Codex account or CLI doesn't advertise. Common causes: the bare `gpt-5.6` (unlisted — use `gpt-5.6-sol`), an account that hasn't received the 5.6 tiers yet, or an out-of-date CLI. Pick a slug your local Codex actually lists (`codex exec -m … --sandbox read-only --ephemeral "hi"` fails fast on an unsupported name), or fall back to an older listed model — `gpt-5.5`, `gpt-5.4`, `gpt-5.4-mini`. See the compatibility note above for the operational fallback.
 
 ### Codex asks clarifying questions instead of answering
 

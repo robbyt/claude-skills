@@ -181,7 +181,7 @@
       "name": "codex",
       "description": "OpenAI Codex CLI integration with MCP server and skills for web search, plan review, code review, and codebase analysis",
       "source": "./plugins/codex",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "robbyt"
       },

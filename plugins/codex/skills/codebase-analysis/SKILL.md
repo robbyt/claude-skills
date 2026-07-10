@@ -13,14 +13,16 @@ Use Codex to get a second-opinion architectural read of the current project, wit
 
 ## Model
 
-**Omit the `model` parameter by default** — codex picks `gpt-5.5`, the current flagship. Don't switch to `gpt-5.4-mini` here; codebase analysis benefits from the flagship's reasoning across many files. Only set `model` if the user names one explicitly. See `../references/patterns.md` for the full table.
+**Pin `model: "gpt-5.6-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Codebase analysis benefits from the flagship's reasoning across many files — don't downgrade to `gpt-5.6-luna` here. Set both on the first `codex` call only; `codex-reply` inherits them. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort.
 
 ## Basic call
 
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project's architecture: entry points, major modules, component relationships, and notable dependencies.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -41,7 +43,9 @@ The response includes a `threadId`. Use `mcp__plugin_codex_cli__codex-reply` wit
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project. Report on:\n- Overall architecture\n- Key dependencies\n- Component relationships\n- Potential issues",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -49,7 +53,9 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Map the authentication flow. Identify every component involved from request to session creation.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -57,7 +63,9 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze dependencies: direct vs transitive, outdated packages, circular dependencies, bundle-size impact.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -77,10 +85,12 @@ Typical loop:
 **Example — three rounds on the same architecture thread:**
 
 ```
-# Round 1 — initial map
+# Round 1 — initial map (opening call pins model + effort)
 mcp__plugin_codex_cli__codex({
   "prompt": "Map the auth flow end-to-end.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: uncertainty about session rotation
 

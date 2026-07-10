@@ -22,19 +22,45 @@ Tool names (check `/mcp` for exact names on your install):
 
 ## Models
 
-Authoritative list: https://developers.openai.com/codex/models
+Authoritative list (current snapshot below may go stale): https://developers.openai.com/codex/models — and what your local Codex advertises. The bare `gpt-5.6` name is **not** in the CLI's model list; use the explicit `-sol`/`-terra`/`-luna` slugs.
 
-| Model | When to use |
-|-------|-------------|
-| `gpt-5.5` | **Default.** Flagship — strongest agentic coding. Used when `model` is omitted. |
-| `gpt-5.4-mini` | Smaller/cheaper. Use for small or trivial tasks (single-function diff, dependency lookup, yes/no triage). ~30% of `gpt-5.4` quota. |
-| `gpt-5.3-codex` | Coding-specialized older model. Codex prompts an upgrade to `gpt-5.4` — listed for completeness. |
-| `gpt-5.4` | Previous flagship. |
-| `gpt-5.2` | Legacy. |
+| Model | When to use | Pinned effort |
+|-------|-------------|---------------|
+| `gpt-5.6-sol` | **Default for these skills.** Flagship — strongest reasoning. Plan review, codebase analysis, security/perf review. | `medium` |
+| `gpt-5.6-terra` | Balance of intelligence/cost. Optional middle tier for general consultation. | `medium` |
+| `gpt-5.6-luna` | Efficient/high-volume. Small or trivial tasks (single-function diff, dependency lookup, yes/no triage). Replaces the old `gpt-5.4-mini` role. | `low` |
+| `gpt-5.5` | Previous flagship. | — |
+| `gpt-5.4`, `gpt-5.4-mini` | Legacy. | — |
 
-**Default behavior: omit the `model` parameter.** Codex CLI picks `gpt-5.5` on its own. Set `model: gpt-5.5` only when you want to be explicit. Set `model: gpt-5.4-mini` when the task is clearly small — a brief lookup, a tiny diff, a yes/no triage — to save quota and latency. **Don't switch to `gpt-5.4-mini` for plan critique, codebase analysis, or security review** — those benefit from the flagship's reasoning.
+**Default behavior: pin both `model` and effort explicitly** (see [Reasoning effort](#reasoning-effort) for why omitting is not the same as using a model default). For deep tasks — plan critique, codebase analysis, security/perf review — use `gpt-5.6-sol` at `medium`. For clearly small tasks — a brief lookup, a tiny diff, a yes/no triage — use `gpt-5.6-luna` at `low` to save quota and latency. **Don't downgrade to `luna` for deep reasoning tasks.**
 
-Models not listed above (e.g., `o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`) either don't exist or aren't available to ChatGPT-account users. Don't guess — pick from the table.
+Models not listed above (e.g., `o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, or the bare `gpt-5.6`) either don't exist, aren't advertised by the CLI, or aren't available to ChatGPT-account users. Don't guess — pick a slug from the table, or one your local Codex actually lists.
+
+## Reasoning effort
+
+GPT-5.6 exposes a reasoning-effort knob. **Set it explicitly on every opening call** — don't rely on "the default." Omitting effort does **not** pick the model's own default; it inherits whatever `model_reasoning_effort` is in the user's `~/.codex/config.toml`, which is unknown and could be anything (`high`, `max`, …). For reproducible behavior, pin it: `sol` → `medium`, `terra` → `medium`, `luna` → `low`. Raise sol to `high` only for a task that measurably benefits.
+
+Pass it via the MCP `config` object (overrides `config.toml` for that call). Model + effort go on the **opening `codex` call**; `codex-reply` takes no `model`/`config` and inherits both, so set them once when you start the thread.
+
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "...",
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
+})
+```
+
+Bash equivalent (quote the TOML value so the shell keeps it): `-m gpt-5.6-sol -c 'model_reasoning_effort="medium"'`.
+
+**Capability vs. recommendation** — supported effort levels (capability snapshot observed with Codex CLI 0.144.1 on 2026-07-10, from the account's local model list; availability and levels are account- and release-dependent and may change — check your local Codex model list):
+
+| Model | Supported efforts |
+|-------|-------------------|
+| `gpt-5.6-sol`, `gpt-5.6-terra` | `low`, `medium`, `high`, `xhigh`, `max`, `ultra` |
+| `gpt-5.6-luna` | `low`, `medium`, `high`, `xhigh`, `max` |
+
+This table is *capability*, not policy. This plugin uses only `sol`/`medium`, `terra`/`medium`, and `luna`/`low` by default.
 
 ## Sandbox
 
@@ -74,10 +100,12 @@ Every `codex` and `codex-reply` response returns a `threadId`. As long as it's s
 ### Example: 3-round iteration
 
 ```
-# Round 1 — initial consult
+# Round 1 — initial consult (opening call pins model + effort)
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the auth flow in src/auth/. Call out concerns.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 # → response includes threadId: "019da14b-8e9d-..."
 # → Codex flags: "Session rotation looks too infrequent — looks like ~1h window."
@@ -139,7 +167,7 @@ Only when the MCP server is unavailable (plugin disabled, server crashed):
 codex exec --ephemeral --sandbox read-only "prompt"
 ```
 
-- Omit `-m` to get the default (`gpt-5.5`).
+- Pin the model and effort explicitly: `-m gpt-5.6-sol -c 'model_reasoning_effort="medium"'` (quote the TOML value so the shell keeps it). Use `-m gpt-5.6-luna -c 'model_reasoning_effort="low"'` for small tasks.
 - `--ephemeral` avoids persisting a session to `~/.codex/sessions/`.
 - This requires `dangerouslyDisableSandbox: true` because Codex writes to its own state dirs.
 

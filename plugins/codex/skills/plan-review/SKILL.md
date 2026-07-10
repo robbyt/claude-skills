@@ -13,7 +13,7 @@ Use Codex to critique implementation plans for gaps, risks, and better alternati
 
 ## Model
 
-**Omit `model` to use the default (`gpt-5.5`).** Plan review benefits from flagship reasoning — don't downgrade to `gpt-5.4-mini` here. Only set `model` if the user explicitly names one. See `../references/patterns.md`.
+**Pin `model: "gpt-5.6-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Plan review benefits from flagship reasoning — don't downgrade to `gpt-5.6-luna` here. Set both on the first `codex` call only; `codex-reply` inherits them. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort.
 
 ## Flow
 
@@ -22,7 +22,9 @@ Codex reads files from the project root. For plans living outside the repo (e.g.
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this implementation plan:\n\n---\n[PLAN CONTENT HERE]\n---\n\nConsider:\n1. Gaps or missing steps?\n2. Risks not addressed?\n3. Is the approach optimal? What alternatives should we consider?",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -31,7 +33,9 @@ If the plan lives inside the repo, you can just reference the path:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the implementation plan at docs/plans/auth-rewrite.md. Flag gaps, risks, and better alternatives.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -42,7 +46,9 @@ Let Codex cross-check the plan against the actual code:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nRead these source files for context before critiquing:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate whether the plan accounts for the real code structure.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -52,7 +58,9 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Risk review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -60,7 +68,9 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Completeness review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Edge cases covered?\n- Testing addressed?\n- Missing steps?",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -77,10 +87,12 @@ Typical loop: initial critique → Claude revises the plan → `codex-reply` wit
 **Example — three rounds on the same plan:**
 
 ```
-# Round 1 — initial critique
+# Round 1 — initial critique (opening call pins model + effort)
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nFlag gaps, risks, and better alternatives.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: "No rollback strategy for the schema migration in step 3."
 
