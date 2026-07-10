@@ -109,11 +109,13 @@ mcp__plugin_codex_cli__codex-reply({
 
 **Start a fresh thread when:** the user switches topic, the `threadId` is no longer in context, or Claude has made substantial code changes that would be cleaner to re-prime than to patch incrementally. See `../references/patterns.md`.
 
-## Performance
+## After the analysis
 
-- Simple analysis: ~5–30 s
-- Multi-directory traversal: ~1–2 min
-- Large legacy codebases: up to ~10 min
+Codex's read is a second opinion, not authoritative — it can misread structure or miss context it never saw.
+
+- **Relay the findings** to the user and attribute them to Codex, rather than presenting them as verified fact.
+- **Spot-check claims against the actual code** before acting on them (see `../references/patterns.md` → Validation) — especially dependency, impact, and "nothing else uses this" claims.
+- **Surface uncertainty or disagreement** to the user instead of smoothing it over into a confident-sounding summary.
 
 ## Safety
 

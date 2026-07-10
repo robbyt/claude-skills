@@ -129,10 +129,13 @@ codex review --commit <sha>
 
 Requires `dangerouslyDisableSandbox: true`.
 
-## Performance
+## After the review
 
-- Simple diff: ~5–30 s
-- Large diff with source traversal: ~1–2 min
+Codex's findings are a second opinion, not a merge gate — weigh them, don't rubber-stamp them.
+
+- **Relay what Codex found** to the user; don't silently fold its notes into your own review as if they were your conclusions.
+- **Verify before fixing.** Codex can raise false positives or miss context it never saw (see `../references/patterns.md` → Validation). Confirm each issue against the actual code before changing anything.
+- **Separate merge-blockers from nits**, and surface genuine disagreements to the user rather than looping with Codex to force consensus.
 
 ## Safety
 

@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Get Codex's review of Claude's implementation plans via the Codex MCP server. Trigger when user wants a second opinion on a plan ("have Codex review this plan", "get second opinion from Codex", "critique this plan with Codex"), or after Claude creates a plan file that needs validation before implementation.
+description: Get Codex's review of an implementation plan before the user starts building — trigger when they want Codex (or a named GPT model like gpt-5.6) to review, critique, or pressure-test a plan. Applies to any plan-shaped artifact — a plan file, plan-mode plan, a migration/rearchitecture/integration/checkout write-up, or a doc describing how they intend to do something (pasted, at a repo path, or just described). Fire on any second-opinion phrasing — "poke holes in it", "sanity-check my plan", "run this past Codex", "get Codex's take", "flag the biggest risks", "look this over before I start", "did I miss edge cases, testing, or a rollback path?". The point is catching gaps, risks, missing steps, and better alternatives ahead of implementation. Do NOT use for reviewing already-written code or diffs (that's diff-review), mapping an existing codebase's architecture (codebase-analysis), or web/research questions.
 ---
 
 # Plan Review via Codex
@@ -17,7 +17,9 @@ Use Codex to critique implementation plans for gaps, risks, and better alternati
 
 ## Flow
 
-Codex reads files from the project root. For plans living outside the repo (e.g., `~/.claude/plans/...`), **read them with Claude's `Read` tool first and embed the content in the prompt.** Codex doesn't expand shell substitutions and can't see paths outside its `cwd`.
+Codex reads files from the project root. For plans living outside the repo (e.g., `~/.claude/plans/...`), **read them with Claude's `Read` tool first and embed the content in the prompt** — Codex can't see paths outside its `cwd`.
+
+**Give Codex enough context to critique against reality, not assumptions.** A plan reviewed blind gets flagged for things you've already handled. State the plan's goal, the hard constraints it must respect (tech stack, deadlines, backward-compat, what's already decided), and what's deliberately out of scope. The critique is only as good as the context you prime it with.
 
 ```
 mcp__plugin_codex_cli__codex({
@@ -111,17 +113,13 @@ mcp__plugin_codex_cli__codex-reply({
 
 **Start a fresh thread when:** reviewing a different plan, the `threadId` is no longer in context, or the plan has been rewritten so substantially that re-priming is cleaner than patching. See `../references/patterns.md`.
 
-## Recommended pattern
+## After the review
 
-1. If the plan is outside the workspace, use Claude's `Read` to fetch it.
-2. Embed the plan content in the Codex prompt.
-3. List any in-repo source files Codex should read for context.
-4. Use `codex-reply` to drill in rather than starting new threads.
+Codex's critique is input, not instructions — treat it the way you'd treat a thoughtful colleague's review, not a verdict.
 
-## Performance
-
-- Plan-only review: ~5–30 s
-- Plan + source cross-check: ~1–2 min
+- **Relay it.** Surface the findings to the user (or act on them); don't silently absorb a critique and quietly rewrite the plan as if it were your own conclusion.
+- **Don't auto-apply.** Codex can be wrong or miss project context it never saw (see `../references/patterns.md` → Validation). Weigh each point against the actual constraints before revising.
+- **Surface genuine disagreements to the user** rather than looping with Codex to force consensus — if you and Codex still differ after a round or two, that disagreement is exactly what the user needs to see.
 
 ## Safety
 
