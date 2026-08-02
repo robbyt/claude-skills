@@ -95,8 +95,8 @@ else
     fi
 fi
 
-# Verify all 5 skills exist
-SKILL_NAMES=("pr" "issues" "actions" "view-file" "repo")
+# Verify all 6 skills exist
+SKILL_NAMES=("pr" "stacks" "issues" "actions" "view-file" "repo")
 for skill in "${SKILL_NAMES[@]}"; do
     run_test "Verify skill $skill exists"
     if [ -f "$SKILLS_DIR/$skill/SKILL.md" ]; then
@@ -121,6 +121,26 @@ if [ -f "$PR_SKILL_DIR/scripts/view_pr_files.py" ]; then
     pass_test
 else
     fail_test "pr/scripts/view_pr_files.py missing"
+    exit 1
+fi
+
+# Structural checks for the stacks skill (content, not just existence)
+STACKS_SKILL_DIR="$SKILLS_DIR/stacks"
+
+run_test "Verify stacks skill has valid frontmatter (name + description)"
+if grep -q "^name: stacks$" "$STACKS_SKILL_DIR/SKILL.md" \
+    && grep -q "^description: " "$STACKS_SKILL_DIR/SKILL.md"; then
+    pass_test
+else
+    fail_test "stacks/SKILL.md missing 'name: stacks' or 'description:' frontmatter"
+    exit 1
+fi
+
+run_test "Verify stacks references/commands.md exists"
+if [ -f "$STACKS_SKILL_DIR/references/commands.md" ]; then
+    pass_test
+else
+    fail_test "stacks/references/commands.md missing"
     exit 1
 fi
 

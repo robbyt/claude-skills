@@ -1,6 +1,6 @@
 # gh-cli
 
-GitHub CLI integration with focused skills for pull requests, issues, GitHub Actions, repository info, and viewing GitHub file URLs.
+GitHub CLI integration with focused skills for pull requests, stacked pull requests, issues, GitHub Actions, repository info, and viewing GitHub file URLs.
 
 ## Setup
 
@@ -10,6 +10,8 @@ Install and authenticate the GitHub CLI before using this plugin. See the [offic
 gh auth login
 gh auth status  # verify authentication
 ```
+
+The `stacks` skill additionally uses the [`gh-stack`](https://github.com/github/gh-stack) extension (public preview). It's assumed already installed; if a `gh stack` command reports the extension is missing, install it with `gh extension install github/gh-stack`.
 
 ## Skills
 
@@ -24,6 +26,19 @@ Pull request operations.
 "Show me all open PRs" → gh pr list --state open
 "Create a PR for my current branch" → gh pr create --fill
 "What files changed in PR #123?" → view_pr_files.py 123 --list
+```
+
+### stacks
+
+Stacked pull requests via the `gh stack` extension — split a large change into a chain of small, independently reviewable PRs.
+
+**Triggers:** "stack this into smaller PRs", "split this branch into a stack", "create a stacked PR", "add a layer on top of the stack", "rebase my stack", "sync the stack", "merge the stack"
+
+**Examples:**
+```
+"Split this auth work into a stack of PRs" → gh stack init … → add … → submit --auto
+"Fix the middle layer and carry it up" → gh stack checkout … → commit → rebase --upstack → push
+"Merge the stack through PR 2" → gh stack merge 2 --yes --squash
 ```
 
 ### issues
