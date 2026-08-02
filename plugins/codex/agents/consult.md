@@ -106,7 +106,12 @@ Pass the parent's question through with a one-line instruction to respond direct
 
 - Tool name: `mcp__plugin_codex_cli__codex` (prefix may vary; try `mcp__codex_cli__codex` if the first errors with unknown-tool).
 - Always pass `"sandbox": "read-only"`.
-- **Omit the `model` parameter by default** — codex picks `gpt-5.5`, the current flagship. **You may set `model: "gpt-5.4-mini"` if and only if the task is clearly small** — a single-function diff, a quick dependency lookup, a yes/no triage. For plan review, codebase analysis, security review, or any task where reasoning depth matters, omit `model` and use the default.
+- **Pin `model` and reasoning effort explicitly** on the opening call (never omit — omitting inherits the user's `config.toml`, not a model default). Precedence:
+  1. **User/parent named a model and/or effort** → honor it. Both given: pass both (if the local Codex advertises the model). Model only: apply the plugin's documented effort for a known 5.6 tier (`medium` for sol/terra, `low` for luna); for a legacy model, omit the effort override. Effort only: apply it to the plugin-selected model. An explicit but locally-unlisted model → report the incompatibility, don't blindly pass it.
+  2. **Else, task is clearly small and low-risk** (single-function diff, quick dependency lookup, yes/no triage) → `model: "gpt-5.6-luna"`, `config: { "model_reasoning_effort": "low" }`.
+  3. **Else** (plan review, codebase analysis, security/perf review, anything where reasoning depth matters) → `model: "gpt-5.6-sol"`, `config: { "model_reasoning_effort": "medium" }`.
+  4. **Never guess aliases or unlisted names** — no bare `gpt-5.6`; use the explicit `-sol`/`-terra`/`-luna` slugs.
+- Set model + effort on the opening `codex` call only; `codex-reply` inherits both.
 - Capture the `threadId` from the response.
 
 ### 4. Iterate only when useful
@@ -123,7 +128,7 @@ See **Output format** below.
 
 - **Never modify files.** Codex consults; the parent Claude writes.
 - **Never use `sandbox: "workspace-write"` or `"danger-full-access"`.** Read-only only.
-- **Don't invent a `model` parameter** the parent didn't specify.
+- **Pin `model` + effort per the Step-3 precedence** (default `gpt-5.6-sol` @ `medium`; `gpt-5.6-luna` @ `low` for clearly-small tasks). Honor a parent-specified model/effort; never pass an alias or a model the local Codex doesn't advertise.
 - **Don't fall back to `codex exec` via Bash.** That path needs `dangerouslyDisableSandbox: true`, which is the parent's call, not yours. If MCP is truly unavailable on both tool-name prefixes, report that and stop.
 - **Don't let the Codex dialog spiral.** 3–4 rounds of `codex-reply` maximum.
 - **Never put `threadId` in the prompt body.** It's an MCP argument. Embedding it in the prompt starts a brand-new thread by accident and discards the prior conversation.

@@ -13,7 +13,7 @@ Use Codex to review git changes for bugs, security issues, and style problems. C
 
 ## Model
 
-**Omit `model` to use the default (`gpt-5.5`)** for non-trivial diffs. For small diffs (~< 100 changed lines, single function, no security surface) you may set `model: gpt-5.4-mini` to save quota. **Security or performance focused reviews should always use the default** — don't downgrade. See `../references/patterns.md` for the full table.
+**Pin `model: "gpt-5.6-sol"` with `config: { "model_reasoning_effort": "medium" }`** for non-trivial diffs. For small diffs (~< 100 changed lines, single function, no security surface) use `model: "gpt-5.6-luna"` with `config: { "model_reasoning_effort": "low" }` to save quota. **Security- or performance-focused reviews always stay on `gpt-5.6-sol` at `medium`** — don't downgrade. Set model+effort on the opening call only; `codex-reply` inherits them. See `../references/patterns.md` → Models and Reasoning effort.
 
 ## Flow
 
@@ -28,7 +28,9 @@ Then:
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Review codex-review.diff for bugs, security issues, style problems, and missing error handling.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -61,7 +63,9 @@ git show <sha> > codex-review.diff
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Security review of codex-review.diff:\n- XSS vulnerabilities\n- SQL/command injection\n- Sensitive data exposure\n- Auth/authz issues",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -69,7 +73,9 @@ mcp__plugin_codex_cli__codex({
 ```
 mcp__plugin_codex_cli__codex({
   "prompt": "Performance review of codex-review.diff:\n- Inefficient algorithms\n- N+1 queries\n- Memory leaks\n- Blocking operations",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -86,10 +92,12 @@ Typical loop: initial review → Claude implements a fix → `codex-reply` askin
 **Example — three rounds on the same diff:**
 
 ```
-# Round 1 — initial review
+# Round 1 — initial review (opening call pins model + effort)
 mcp__plugin_codex_cli__codex({
   "prompt": "Review codex-review.diff for bugs, security issues, and missing error handling.",
-  "sandbox": "read-only"
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: "parseToken doesn't handle malformed JWTs — will throw unhandled."
 
@@ -121,10 +129,13 @@ codex review --commit <sha>
 
 Requires `dangerouslyDisableSandbox: true`.
 
-## Performance
+## After the review
 
-- Simple diff: ~5–30 s
-- Large diff with source traversal: ~1–2 min
+Codex's findings are a second opinion, not a merge gate — weigh them, don't rubber-stamp them.
+
+- **Relay what Codex found** to the user; don't silently fold its notes into your own review as if they were your conclusions.
+- **Verify before fixing.** Codex can raise false positives or miss context it never saw (see `../references/patterns.md` → Validation). Confirm each issue against the actual code before changing anything.
+- **Separate merge-blockers from nits**, and surface genuine disagreements to the user rather than looping with Codex to force consensus.
 
 ## Safety
 

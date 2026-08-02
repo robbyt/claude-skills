@@ -19,13 +19,26 @@ codex features list      # feature flags and their states
 | Parameter | Required | Notes |
 |-----------|----------|-------|
 | `prompt` | yes | Initial user prompt |
-| `model` | no | Default `gpt-5.5` (current flagship). Alternatives: `gpt-5.4-mini` (smaller/cheaper), `gpt-5.4`, `gpt-5.3-codex`, legacy `gpt-5.2`. Omit to use default. |
+| `model` | no | **Pin explicitly** — don't omit (omitting inherits the user's `config.toml`, not a model default). `gpt-5.6-sol` for deep tasks, `gpt-5.6-luna` for small ones; `gpt-5.6-terra` middle tier. The bare `gpt-5.6` name is unlisted — use slugs. See `patterns.md` → Models. |
 | `sandbox` | no | `read-only` (use this), `workspace-write`, `danger-full-access` (forbidden) |
+| `config` | no | TOML overrides (dotted keys, TOML-parsed values). Carries reasoning effort — e.g. `{ "model_reasoning_effort": "medium" }` (`medium` for sol/terra, `low` for luna). |
 | `approval-policy` | no | `untrusted`, `on-failure`, `on-request`, `never` |
 | `cwd` | no | Working directory |
-| `config` | no | TOML overrides (dotted keys, TOML-parsed values) |
 
 Returns `threadId` — pass to `codex-reply` for follow-ups.
+
+Opening call — pin `model` and reasoning effort via `config`:
+
+```
+mcp__plugin_codex_cli__codex({
+  "prompt": "Analyze this project's architecture.",
+  "sandbox": "read-only",
+  "model": "gpt-5.6-sol",
+  "config": { "model_reasoning_effort": "medium" }
+})
+```
+
+`codex-reply` takes no `model`/`config` — it inherits both from this opening call, so set them once here.
 
 ### Less-common parameters
 
