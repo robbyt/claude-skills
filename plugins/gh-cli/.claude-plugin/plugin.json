@@ -1,11 +1,20 @@
 {
   "name": "gh-cli",
-  "description": "GitHub CLI integration with focused skills for pull requests, issues, GitHub Actions, and viewing GitHub file URLs",
-  "version": "2.0.0",
+  "description": "GitHub CLI integration with focused skills for pull requests, stacked pull requests, issues, GitHub Actions, and viewing GitHub file URLs",
+  "version": "2.1.0",
   "author": {
     "name": "robbyt",
     "email": "robbyt@robbyt.net"
   },
   "license": "MIT",
-  "keywords": ["github", "gh", "cli", "pull-requests", "issues", "actions", "api"]
+  "keywords": [
+    "github",
+    "gh",
+    "cli",
+    "pull-requests",
+    "stacked-pull-requests",
+    "issues",
+    "actions",
+    "api"
+  ]
 }

@@ -70,7 +70,7 @@ Integrates the Gemini CLI for code reviews, web search via Google Search, plan r
 
 ### [gh-cli](plugins/gh-cli/)
 
-Interacts with GitHub using the gh CLI for PR management, issues, repository operations, GitHub Actions, and viewing GitHub file links. Triggers on `gh` mentions or GitHub operations such as viewing a `github.com` link.
+Interacts with GitHub using the gh CLI for PR management, stacked pull requests (the `gh stack` extension), issues, repository operations, GitHub Actions, and viewing GitHub file links. Triggers on `gh` mentions or GitHub operations such as viewing a `github.com` link.
 
 **Requirements:** GitHub CLI ([installation guide](https://cli.github.com/)) with authentication configured (`gh auth login`).
 

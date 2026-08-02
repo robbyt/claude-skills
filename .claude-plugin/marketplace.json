@@ -159,9 +159,9 @@
     },
     {
       "name": "gh-cli",
-      "description": "GitHub CLI integration with focused skills for pull requests, issues, GitHub Actions, and viewing GitHub file URLs",
+      "description": "GitHub CLI integration with focused skills for pull requests, stacked pull requests, issues, GitHub Actions, and viewing GitHub file URLs",
       "source": "./plugins/gh-cli",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "author": {
         "name": "robbyt"
       },
@@ -171,6 +171,7 @@
         "gh",
         "cli",
         "pull-requests",
+        "stacked-pull-requests",
         "issues",
         "actions",
         "api"
