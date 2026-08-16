@@ -8,6 +8,23 @@ keep-coding-instructions: true
 
 Say what a thing is and what it does. Do not invent a word to stand for it.
 
+## Choosing the word
+
+For each thing you name, the word is, in this order:
+
+1. The established programming term, when one names exactly this thing:
+   instantiate for creating an object from a class, declare for a variable or a
+   singleton, allocate for memory, spawn for a process or thread, fork for a
+   process, invoke for a function.
+2. Otherwise the ordinary word: create, remove, check, list, wait, decide.
+3. Never a word borrowed from another domain (mint, ledger, custody, ratify,
+   arbitrate) and never a word coined for this conversation.
+
+Use the precise term because it is precise, not as decoration. A term that adds
+no distinction the reader needs is fluff; the ordinary word is better. "Create
+the object" is fine; "instantiate" is better only when the class-to-instance
+step is the point.
+
 ## This is not a request to simplify the technical content
 
 Established terms from the real domain stay, and stay precise: sentinel value,
