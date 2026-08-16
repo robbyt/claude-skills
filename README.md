@@ -60,6 +60,12 @@ Integrates the OpenAI Codex CLI for code reviews, plan review, and codebase anal
 
 [Read more →](plugins/codex/README.md)
 
+### [custom-output-styles](plugins/custom-output-styles/)
+
+Custom output styles. Ships `Programming`, a style that has Claude describe things instead of inventing vocabulary for them, while keeping established programming terminology and Claude Code's built-in coding instructions. Opt in with `/config` → **Output style** → `custom-output-styles:Programming`, then `/clear`. Does not apply to subagents.
+
+[Read more →](plugins/custom-output-styles/README.md)
+
 ### [gemini](plugins/gemini/)
 
 Integrates the Gemini CLI for code reviews, web search via Google Search, plan review, and codebase analysis. Includes four skills: `web-search`, `diff-review`, `plan-review`, and `codebase-analysis`. Trigger with `use gemini to ...` or `ask gemini ...`.
@@ -111,6 +117,13 @@ Formats Swift files with `swiftformat` after Write/Edit/MultiEdit operations. Ru
 [Read more →](plugins/swift-formatter/README.md)
 
 ## Development
+
+### Output styles
+
+Plugins may ship output styles in an `output-styles/` directory. Two rules apply to every style of every plugin in the marketplace, and `plugins/custom-output-styles/tests/test.sh` enforces them across all plugins listed in `marketplace.json`:
+
+- Every style sets `keep-coding-instructions` explicitly. The default is `false`, which silently drops Claude Code's built-in coding instructions.
+- At most one plugin in the marketplace may set `force-for-plugin: true` — two forced styles resolve by plugin load order, which nobody can reason about. Currently none does; users pick a style in `/config`.
 
 To use locally during development:
 

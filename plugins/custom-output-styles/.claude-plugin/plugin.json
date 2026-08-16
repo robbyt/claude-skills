@@ -1,0 +1,16 @@
+{
+  "name": "custom-output-styles",
+  "description": "Custom output styles. Ships the Programming style, which has Claude describe things instead of inventing vocabulary for them while keeping established programming terminology and Claude Code's built-in coding instructions. Opt in with /config.",
+  "version": "1.0.0",
+  "author": {
+    "name": "robbyt",
+    "email": "robbyt@robbyt.net"
+  },
+  "license": "MIT",
+  "keywords": [
+    "output-style",
+    "writing",
+    "plain-language",
+    "communication"
+  ]
+}
