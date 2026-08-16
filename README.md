@@ -120,10 +120,10 @@ Formats Swift files with `swiftformat` after Write/Edit/MultiEdit operations. Ru
 
 ### Output styles
 
-Plugins may ship output styles in an `output-styles/` directory. Two rules apply across the whole marketplace, and `plugins/custom-output-styles/tests/test.sh` enforces them:
+Plugins may ship output styles in an `output-styles/` directory. Two rules apply to every style of every plugin in the marketplace, and `plugins/custom-output-styles/tests/test.sh` enforces them across all plugins listed in `marketplace.json`:
 
 - Every style sets `keep-coding-instructions` explicitly. The default is `false`, which silently drops Claude Code's built-in coding instructions.
-- No plugin sets `force-for-plugin`. Users pick a style in `/config`. If a plugin ever needs to force one, at most one plugin in the marketplace may do so — two forced styles resolve by plugin load order, which nobody can reason about.
+- At most one plugin in the marketplace may set `force-for-plugin: true` — two forced styles resolve by plugin load order, which nobody can reason about. Currently none does; users pick a style in `/config`.
 
 To use locally during development:
 

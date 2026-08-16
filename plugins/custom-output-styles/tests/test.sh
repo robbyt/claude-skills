@@ -65,9 +65,61 @@ frontmatter() {
     awk 'NR==1 && $0!="---" {exit} NR==1 {next} $0=="---" {exit} {print}' "$1"
 }
 
-# Value of a frontmatter key, with surrounding quotes stripped.
+# Value of a frontmatter key (first occurrence), trailing whitespace trimmed.
 fm_value() {
-    frontmatter "$1" | sed -n "s/^$2:[[:space:]]*//p" | head -1 | sed 's/^["'"'"']//; s/["'"'"']$//' | sed 's/[[:space:]]*$//'
+    frontmatter "$1" | sed -n "s/^$2:[[:space:]]*//p" | head -1 | sed 's/[[:space:]]*$//'
+}
+
+# Validate the frontmatter of an output style file. Prints one diagnostic and
+# returns 1 on the first problem; prints nothing and returns 0 when valid.
+#
+# This is deliberately a narrow grammar, not a YAML parser. Claude Code output
+# styles use a flat mapping of four keys with plain scalar values, so that is
+# all we accept: no quotes, flow collections ([ ] { }), block scalars (| >),
+# anchors, comments (#), embedded ": ", unknown keys, or duplicate keys. A file
+# that passes here cannot be reinterpreted differently by a real YAML parser.
+check_style_frontmatter() {
+    local file="$1" line key val block seen=" "
+    [ -f "$file" ] || { echo "file not found: $file"; return 1; }
+    [ "$(head -1 "$file")" = "---" ] || { echo "missing opening --- on line 1"; return 1; }
+    [ "$(sed -n '2,$p' "$file" | grep -c '^---$')" -ge 1 ] || { echo "missing closing ---"; return 1; }
+    block=$(frontmatter "$file")
+    [ -n "$block" ] || { echo "empty frontmatter block"; return 1; }
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        if ! printf '%s\n' "$line" | grep -qE '^[a-z][a-z-]*: '; then
+            echo "line is not 'key: value': $line"; return 1
+        fi
+        key=${line%%:*}
+        val=${line#*: }
+        case "$key" in
+            name|description|keep-coding-instructions|force-for-plugin) ;;
+            *) echo "unknown key: $key"; return 1 ;;
+        esac
+        case "$seen" in *" $key "*) echo "duplicate key: $key"; return 1 ;; esac
+        seen="$seen$key "
+        # Positive allowlist for values: letters, digits, spaces and . , ; ( ) / _ ' -
+        if ! printf '%s\n' "$val" | grep -qE "^[A-Za-z0-9][A-Za-z0-9 .,;()/_'-]*\$"; then
+            echo "value of $key is not a plain scalar (letters, digits, spaces, . , ; ( ) / _ ' - only): $val"; return 1
+        fi
+        case "$key" in
+            name|description)
+                if printf '%s\n' "$val" | grep -qiE '^(null|true|false|yes|no|on|off|[0-9.]+|[0-9]{4}-[0-9]{2}-[0-9]{2})$'; then
+                    echo "$key would be read as a non-string by YAML: $val"; return 1
+                fi ;;
+            keep-coding-instructions|force-for-plugin)
+                case "$val" in
+                    true|false) ;;
+                    *) echo "$key must be true or false, got: $val"; return 1 ;;
+                esac ;;
+        esac
+    done <<< "$block"
+    case "$seen" in *" name "*) ;; *) echo "missing name"; return 1 ;; esac
+    case "$seen" in *" description "*) ;; *) echo "missing description"; return 1 ;; esac
+    # The default for this field is false, which silently strips Claude Code's
+    # own coding instructions. Every style must state its value explicitly.
+    case "$seen" in *" keep-coding-instructions "*) ;; *) echo "missing keep-coding-instructions (default false silently drops the coding instructions)"; return 1 ;; esac
+    return 0
 }
 
 echo "Running validation tests for $PLUGIN_NAME..."
@@ -131,33 +183,12 @@ fi
 for style in "${STYLE_FILES[@]}"; do
     base=$(basename "$style")
 
-    run_test "$base: frontmatter block parses"
-    if [ "$(head -1 "$style")" != "---" ]; then
-        fail_test "$base does not start with '---'"
+    run_test "$base: frontmatter is valid (name, description, explicit keep-coding-instructions)"
+    if msg=$(check_style_frontmatter "$style"); then
+        pass_test
+    else
+        fail_test "$base: $msg"
     fi
-    if [ "$(sed -n '2,$p' "$style" | grep -c '^---$')" -lt 1 ]; then
-        fail_test "$base has no closing '---'"
-    fi
-    if [ -z "$(frontmatter "$style")" ]; then
-        fail_test "$base has an empty frontmatter block"
-    fi
-    pass_test
-
-    run_test "$base: 'name' is present"
-    if [ -n "$(fm_value "$style" name)" ]; then pass_test; else fail_test "missing name"; fi
-
-    run_test "$base: 'description' is present"
-    if [ -n "$(fm_value "$style" description)" ]; then pass_test; else fail_test "missing description"; fi
-
-    # The default for this field is false, which silently strips Claude Code's
-    # own coding instructions. Every style must state its value explicitly.
-    run_test "$base: 'keep-coding-instructions' is set explicitly to true or false"
-    kci=$(fm_value "$style" keep-coding-instructions)
-    case "$kci" in
-        true|false) pass_test ;;
-        "") fail_test "keep-coding-instructions missing (default false drops the coding instructions)" ;;
-        *) fail_test "keep-coding-instructions must be true or false, got '$kci'" ;;
-    esac
 
     run_test "$base: 'force-for-plugin' is absent"
     if frontmatter "$style" | grep -q '^force-for-plugin:'; then
@@ -179,6 +210,46 @@ for style in "${STYLE_FILES[@]}"; do
         pass_test
     fi
 done
+
+# ---------------------------------------------------------------------------
+# The validator itself: each bad fixture must be rejected with the intended
+# diagnostic, and the good fixture must pass.
+# ---------------------------------------------------------------------------
+
+FIXTURES_DIR="$SCRIPT_DIR/fixtures"
+# fixture|expected diagnostic substring (empty = must pass)
+FIXTURE_TABLE="good.md|
+unterminated-flow.md|not a plain scalar
+embedded-colon.md|not a plain scalar
+embedded-hash.md|not a plain scalar
+quoted-value.md|not a plain scalar
+duplicate-key.md|duplicate key
+missing-kci.md|missing keep-coding-instructions
+bad-kci-value.md|must be true or false
+bad-force-value.md|must be true or false
+unknown-key.md|unknown key
+no-frontmatter.md|missing opening ---
+missing-closing-delimiter.md|missing closing ---
+null-name.md|non-string by YAML
+empty-value.md|not a plain scalar"
+
+run_test "Frontmatter validator rejects each bad fixture with the intended diagnostic"
+while IFS='|' read -r fx expected; do
+    f="$FIXTURES_DIR/$fx"
+    [ -f "$f" ] || fail_test "fixture missing: $fx"
+    rc=0
+    msg=$(check_style_frontmatter "$f") || rc=$?
+    if [ -z "$expected" ]; then
+        [ "$rc" -eq 0 ] || fail_test "$fx should pass, got: $msg"
+    else
+        [ "$rc" -ne 0 ] || fail_test "$fx should be rejected but passed"
+        case "$msg" in
+            *"$expected"*) ;;
+            *) fail_test "$fx: expected diagnostic containing '$expected', got: $msg" ;;
+        esac
+    fi
+done <<< "$FIXTURE_TABLE"
+pass_test
 
 # ---------------------------------------------------------------------------
 # README ↔ style agreement
@@ -206,10 +277,13 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Marketplace-wide rule: at most one plugin may set force-for-plugin
+# Marketplace-wide rules, applied to every output style of every plugin:
+#   - frontmatter valid, incl. an explicit keep-coding-instructions
+#   - at most one plugin sets force-for-plugin: true (load order decides
+#     between two, which nobody can reason about)
 # ---------------------------------------------------------------------------
 
-run_test "At most one plugin in the marketplace sets force-for-plugin"
+run_test "Marketplace-wide output-style rules (valid frontmatter, explicit keep-coding-instructions, at most one force-for-plugin)"
 if [ ! -f "$MARKETPLACE" ]; then
     skip_test "marketplace.json not found"
 else
@@ -223,8 +297,12 @@ else
         [ -d "$dir/output-styles" ] || continue
         for f in "$dir"/output-styles/*.md; do
             [ -f "$f" ] || continue
-            if frontmatter "$f" | grep -qE '^force-for-plugin:[[:space:]]*(true|[A-Za-z])'; then
-                forcing+=("$(basename "$(cd "$dir" && pwd)")/output-styles/$(basename "$f")")
+            label="$(basename "$dir")/output-styles/$(basename "$f")"
+            if ! msg=$(check_style_frontmatter "$f"); then
+                fail_test "$label: $msg"
+            fi
+            if [ "$(fm_value "$f" force-for-plugin)" = "true" ]; then
+                forcing+=("$label")
             fi
         done
     done < <(jq -r '.plugins[].source' "$MARKETPLACE")

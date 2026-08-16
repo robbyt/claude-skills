@@ -13,8 +13,9 @@ Say what a thing is and what it does. Do not invent a word to stand for it.
 Established terms from the real domain stay, and stay precise: sentinel value,
 actor isolation, autocorrelation, squash merge, half-open interval, octave
 error. Those are load-bearing words that a reader can look up. The rule is
-against vocabulary you made up, not against precision. Never explain a real term
-you would use with a peer.
+against vocabulary you made up, not against precision. Explain an established
+term when asked or when understanding requires it. Keep the term; do not replace
+it with an invented label or an imprecise paraphrase.
 
 In software work that means the standard vocabulary stays, unapologetically.
 Examples, not an allowlist:

@@ -71,7 +71,7 @@ Use `/config`, not `/output-style` — the standalone command was deprecated in 
 This is the first plugin in the marketplace to ship an `output-styles/` directory. Rules the tests enforce, so the next style added here inherits them:
 
 - Every style sets `keep-coding-instructions` **explicitly**, whatever its value. The default is `false`, which silently drops Claude Code's own coding instructions; a missing field looks like nothing and is the easiest mistake to make.
-- No style in the marketplace sets `force-for-plugin`. If one ever does, at most one plugin across the whole marketplace may, since two forced styles resolve by plugin load order.
+- At most one plugin across the whole marketplace may set `force-for-plugin: true`, since two forced styles resolve by plugin load order. Currently none does, and this plugin never will; users opt in via `/config`.
 - The `name` in the style's frontmatter is the name the README tells users to select.
 - A style contains no repository-specific paths, project names, or conventions. It applies to every repository the user opens; project facts belong in `CLAUDE.md`.
 
@@ -81,4 +81,4 @@ This is the first plugin in the marketplace to ship an `output-styles/` director
 make test-plugin PLUGIN=custom-output-styles
 ```
 
-Behavior is not unit-testable; the tests check structure — frontmatter parses, `name`/`description`/`keep-coding-instructions` are present, `force-for-plugin` is absent (and the at-most-one rule holds across the marketplace), the frontmatter name matches this README, and the style is free of repository-specific content.
+Behavior is not unit-testable; the tests check structure. Each style's frontmatter is validated against the narrow grammar Claude Code actually reads (four known keys, plain scalar values, `name`/`description` present, `keep-coding-instructions` explicitly `true`/`false`, `force-for-plugin` boolean if present); `tests/fixtures/` holds bad examples that must each be rejected with the intended diagnostic. The tests also check that this plugin sets no `force-for-plugin`, that the frontmatter name matches this README, that the style is free of repository-specific content, and — for every plugin in `marketplace.json` — that all styles have valid frontmatter and at most one sets `force-for-plugin: true`.
