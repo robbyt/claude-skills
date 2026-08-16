@@ -10,7 +10,7 @@ Styles in this plugin:
 
 ## Programming
 
-An output style that has Claude **describe things instead of naming them**. It stops the habit of inventing a word for an idea (turning a process into a noun, borrowing a term from finance or law for a file check, compressing a multi-part idea into one token) and replaces it with the plain sentence the word would have stood for.
+An output style that has Claude use plain engineering prose. It uses an established technical term when the term is accurate, an existing identifier when referring to code, and an ordinary word otherwise. It rejects invented labels, vague metaphors, and inflated language.
 
 The style keeps Claude Code's built-in software engineering instructions (`keep-coding-instructions: true`), so Claude scopes changes, comments, and verifies work exactly as before. Only the writing changes.
 
@@ -18,11 +18,12 @@ The style keeps Claude Code's built-in software engineering instructions (`keep-
 
 An output style is text appended to Claude Code's system prompt, on every turn. This one tells Claude to:
 
-- Say what a thing is and what it does, in a sentence, every time it comes up — rather than coining a term for it.
-- Choose words in a fixed order: the established programming term when one names exactly the thing (`instantiate`, `declare`, `allocate`, `spawn`); otherwise the ordinary word (`create`, `remove`, `check`); never a word borrowed from another domain (`mint`, `ledger`, `ratify`) or coined for the conversation. Precise terms are for precision, not decoration.
-- Keep established vocabulary precise. The style names the categories of programming terminology that stay (language and runtime, concurrency and systems, data and algorithms, tools and workflow — `race condition`, `idempotent`, `invariant`, `rebase`, and so on) and gives a test for the boundary: a term stays when it already has a stable meaning in the relevant technical community, independent of this codebase; a label coined in the conversation gets described instead. This is not a request to dumb the content down.
-- Quote existing bad identifiers as locators in parentheses instead of adopting them as the register of the sentence.
-- Translate what comes back from subagents, reviews, and external tools into plain language before relaying it.
+- Use standard technical terms when they name the exact concept and ordinary words when they do not.
+- Do not use related technical terms as synonyms; follow the distinctions made by the language, framework, protocol, or tool being discussed.
+- Use the same term for the same concept instead of changing words for variety.
+- Accept metaphors with an established technical meaning, such as `fork` and `deadlock`, but reject new metaphors and project-specific labels that hide what the code does.
+- Use exact code identifiers as locators and explain opaque or misleading names in plain language.
+- Remove filler, dramatic emphasis, personification, and inflated prose from its own responses and from work produced by other agents or tools.
 
 The full text is in [`output-styles/programming.md`](output-styles/programming.md).
 
