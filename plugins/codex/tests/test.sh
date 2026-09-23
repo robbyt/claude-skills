@@ -105,8 +105,40 @@ else
     exit 1
 fi
 
+# codex mcp-server was removed in Codex CLI 0.154.0; the plugin bundles its own server.
+run_test "Verify .mcp.json starts the bundled MCP server, not codex mcp-server"
+if python3 -c "
+import json
+d = json.load(open('$PLUGIN_DIR/.mcp.json'))['mcpServers']['cli']
+assert 'mcp-server' not in d.get('args', [])
+assert any(a.endswith('/scripts/codex-mcp-server.mjs') for a in d.get('args', []))
+" 2>/dev/null && [ -f "$PLUGIN_DIR/scripts/codex-mcp-server.mjs" ]; then
+    pass_test
+else
+    fail_test ".mcp.json must run scripts/codex-mcp-server.mjs"
+    exit 1
+fi
+
+run_test "Verify review output schema exists and is valid JSON"
+if python3 -c "import json; json.load(open('$PLUGIN_DIR/schemas/review-output.schema.json'))" 2>/dev/null; then
+    pass_test
+else
+    fail_test "schemas/review-output.schema.json missing or invalid"
+    exit 1
+fi
+
+run_test "MCP server unit tests (node --test)"
+if ! command -v node >/dev/null 2>&1; then
+    skip_test "node not found"
+elif node --test "$PLUGIN_DIR/tests/"*.test.mjs; then
+    pass_test
+else
+    fail_test "node tests failed"
+    exit 1
+fi
+
 # Verify shared references at plugin root
-SHARED_REFS=("setup.md" "commands.md" "patterns.md")
+SHARED_REFS=("setup.md" "commands.md" "patterns.md" "mcp-schema.md" "prompting.md")
 for ref_file in "${SHARED_REFS[@]}"; do
     run_test "Verify shared reference $ref_file exists"
     if [ -f "$PLUGIN_DIR/references/$ref_file" ]; then
@@ -117,8 +149,8 @@ for ref_file in "${SHARED_REFS[@]}"; do
     fi
 done
 
-# Verify all 3 skills exist with proper frontmatter
-SKILLS=("plan-review" "diff-review" "codebase-analysis")
+# Verify all skills exist with proper frontmatter
+SKILLS=("plan-review" "diff-review" "codebase-analysis" "adversarial-review")
 for skill in "${SKILLS[@]}"; do
     run_test "Verify skill $skill exists with frontmatter"
     SKILL_FILE="$PLUGIN_DIR/skills/$skill/SKILL.md"
