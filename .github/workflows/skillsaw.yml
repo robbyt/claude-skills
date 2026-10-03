@@ -10,7 +10,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     env:
-      CLAUDELINT_VERSION: "0.3.3"
+      SKILLSAW_VERSION: "0.21.0"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,5 +18,5 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
 
-      - name: Run claudelint
-        run: uv tool run "claudelint@${CLAUDELINT_VERSION}" --strict .
+      - name: Run skillsaw
+        run: uv tool run "skillsaw@${SKILLSAW_VERSION}" lint --strict --no-custom-rules .
