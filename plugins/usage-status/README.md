@@ -1,22 +1,27 @@
 # usage-status
 
-A Claude Code mod that pins your remaining subscription usage in a status row under the prompt:
+A Claude Code mod that shows your remaining subscription usage as its own row under the prompt's hint line:
 
 ```
-usage-status: session 77% · week 58% remaining
+⏵⏵ auto mode on (shift+tab to cycle)
+Claude Usage Remaining: session 94% · week 76%
 ```
 
 - **session** is the rolling 5-hour window (`five_hour`)
 - **week** is the 7-day window (`seven_day`)
 
+The text is drawn in the default color, and turns yellow when either window drops below 10% remaining.
+
 ## How it works
 
-The mod uses the function-hooks API (`hooks/hooks.json` → `hooks/register.ts`):
+The mod uses the function-hooks API (`hooks/hooks.json` → `hooks/register.tsx`):
 
-- On `session.start` it reads `$.session.usage()` and sets the status row with `$.ui.status()`.
-- On `session.measure`, which fires after each turn and whenever a rate-limit window moves a whole point, it refreshes the row.
+- A `ui.render` hook on `PromptHint` draws the engine's hint line, then a row below it with the usage read from `$.session.usage()`.
+- On `session.measure`, which fires after each turn and whenever a rate-limit window moves a whole point, it calls `$.ui.invalidate('ui.render')` to redraw the line.
 
-The figures are the same rate-limit windows the API reports on each response, so the row appears after the first response of a session. Off a subscription (API key, gateway) no windows are reported and the row stays empty.
+The figures are the same rate-limit windows the API reports on each response, so the row appears after the first response of a session. Off a subscription (API key, gateway) no windows are reported and the hint line is left as the engine draws it.
+
+`hooks.json` carries an empty `"hooks": {}` beside `"modules"` so skillsaw's `claude-hooks-valid` rule accepts it.
 
 ## Install
 
