@@ -3,9 +3,9 @@ import type { Register } from 'claude-code'
 import { formatUsage } from './format'
 
 export const register: Register = on => {
-  // Redraw the hint line whenever a rate-limit window moves a whole point.
+  // Redraw the row whenever a rate-limit window or the context fill moves.
   on('session.measure', ($, e, next) => {
-    if (e.changed.includes('rateLimits')) {
+    if (e.changed.includes('rateLimits') || e.changed.includes('context')) {
       $.ui.invalidate('ui.render')
     }
 
@@ -15,7 +15,8 @@ export const register: Register = on => {
   // Draw the usage as its own row under the engine's hint line.
   on('ui.render', { component: 'PromptHint' }, async ($, e, next) => {
     const hint = await next(e)
-    const usage = formatUsage((await $.session.usage()).rateLimits)
+    const { rateLimits, context } = await $.session.usage()
+    const usage = formatUsage(rateLimits, context)
 
     if (!usage) {
       return hint
