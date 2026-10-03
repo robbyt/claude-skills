@@ -284,9 +284,9 @@
     },
     {
       "name": "usage-status",
-      "description": "Mod that shows the remaining 5-hour session and 7-day weekly usage as percentages in a row under the prompt, turning yellow below 10%.",
+      "description": "Mod that shows the remaining 5-hour session, 7-day weekly and context window usage as percentages in a row under the prompt, turning yellow when one runs low.",
       "source": "./plugins/usage-status",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "author": {
         "name": "robbyt"
       },
