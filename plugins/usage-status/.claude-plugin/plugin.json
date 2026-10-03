@@ -1,0 +1,10 @@
+{
+  "name": "usage-status",
+  "version": "0.1.0",
+  "description": "Mod that pins the remaining 5-hour session and 7-day weekly usage as percentages in a status row under the prompt.",
+  "author": {
+    "name": "Robert Terhaar",
+    "email": "robbyt@gmail.com"
+  },
+  "keywords": ["mod", "status", "usage", "rate-limit"]
+}
