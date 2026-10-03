@@ -1,0 +1,5 @@
+# skillsaw configuration
+# https://github.com/stbenjam/skillsaw
+# Rules not listed here use skillsaw's defaults; see `skillsaw list-rules`.
+
+version: "0.21.0"

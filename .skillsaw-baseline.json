@@ -1,0 +1,43 @@
+{
+  "version": "1",
+  "generated_by": "skillsaw 0.21.0",
+  "generated_at": "2026-10-03T05:29:41.653757+00:00",
+  "violations": [
+    {
+      "fingerprint": "706fff9e737969fc",
+      "rule_id": "content-description-routing",
+      "file_path": "plugins/codex/skills/adversarial-review/SKILL.md",
+      "line": 3,
+      "message": "Description does not say when to use this skill; include trigger phrasing such as 'Use when ...'",
+      "severity": "warning"
+    },
+    {
+      "fingerprint": "f27bcb725a788fd5",
+      "rule_id": "context-budget",
+      "file_path": "plugins/codex/agents/consult.md",
+      "message": "Estimated 3,126 tokens exceeds agent warn limit of 2,000",
+      "severity": "warning",
+      "value": 3126,
+      "baseline_mode": "ceiling"
+    },
+    {
+      "fingerprint": "a93dfd2da992b5f8",
+      "rule_id": "context-budget",
+      "file_path": "plugins/api-design/skills/api-review/SKILL.md",
+      "message": "Estimated 3,267 tokens exceeds skill warn limit of 3,000",
+      "severity": "warning",
+      "value": 3267,
+      "baseline_mode": "ceiling"
+    },
+    {
+      "fingerprint": "9da2cba7b8a50b48",
+      "rule_id": "context-budget",
+      "file_path": "plugins/codex/skills/plan-review/SKILL.md",
+      "line": 3,
+      "message": "Frontmatter description is ~230 tokens (exceeds skill-description limit of 200)",
+      "severity": "warning",
+      "value": 230,
+      "baseline_mode": "ceiling"
+    }
+  ]
+}
