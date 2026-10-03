@@ -180,9 +180,9 @@
     },
     {
       "name": "codex",
-      "description": "OpenAI Codex CLI integration with MCP server and skills for web search, plan review, code review, and codebase analysis",
+      "description": "OpenAI Codex CLI integration with a bundled MCP server and read-only skills for web search, plan review, code review, adversarial review, and codebase analysis",
       "source": "./plugins/codex",
-      "version": "1.6.0",
+      "version": "1.7.0",
       "author": {
         "name": "robbyt"
       },
@@ -250,7 +250,7 @@
       "name": "codex-plan-gate",
       "description": "Routes every plan-mode plan through a Codex MCP review before it is shown. A PreToolUse hook intercepts ExitPlanMode, has Claude consult Codex (read-only) to critique and refine the plan over a capped iterative loop, then lets the refined plan through.",
       "source": "./plugins/codex-plan-gate",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "author": {
         "name": "robbyt"
       },

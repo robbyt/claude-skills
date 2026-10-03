@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Get Codex's review of an implementation plan before the user starts building — trigger when they want Codex (or a named GPT model like gpt-5.6) to review, critique, or pressure-test a plan. Applies to any plan-shaped artifact — a plan file, plan-mode plan, a migration/rearchitecture/integration/checkout write-up, or a doc describing how they intend to do something (pasted, at a repo path, or just described). Fire on any second-opinion phrasing — "poke holes in it", "sanity-check my plan", "run this past Codex", "get Codex's take", "flag the biggest risks", "look this over before I start", "did I miss edge cases, testing, or a rollback path?". The point is catching gaps, risks, missing steps, and better alternatives ahead of implementation. Do NOT use for reviewing already-written code or diffs (that's diff-review), mapping an existing codebase's architecture (codebase-analysis), or web/research questions.
+description: Get Codex's review of an implementation plan before the user starts building — trigger when they want Codex (or a named GPT model like gpt-6-sol) to review, critique, or pressure-test a plan. Applies to any plan-shaped artifact — a plan file, plan-mode plan, a migration/rearchitecture/integration/checkout write-up, or a doc describing how they intend to do something (pasted, at a repo path, or just described). Fire on any second-opinion phrasing — "poke holes in it", "sanity-check my plan", "run this past Codex", "get Codex's take", "flag the biggest risks", "look this over before I start", "did I miss edge cases, testing, or a rollback path?". The point is catching gaps, risks, missing steps, and better alternatives ahead of implementation. Do NOT use for reviewing already-written code or diffs (that's diff-review), mapping an existing codebase's architecture (codebase-analysis), or web/research questions.
 ---
 
 # Plan Review via Codex
@@ -9,11 +9,11 @@ Use Codex to critique implementation plans for gaps, risks, and better alternati
 
 ## Transport
 
-**Always use the MCP tool.** The plugin runs `codex mcp-server` on stdio via `.mcp.json`. Tool name: `mcp__plugin_codex_cli__codex`. If the example below errors with an unknown-tool error, run `/mcp` and substitute the actual prefix (e.g., `mcp__codex_cli__codex`).
+**Always use the MCP tool.** The plugin's MCP server (`scripts/codex-mcp-server.mjs`, started from `.mcp.json`) runs `codex exec` for each call. Tool name: `mcp__plugin_codex_cli__codex`. If the example below errors with an unknown-tool error, run `/mcp` and substitute the actual prefix (e.g., `mcp__codex_cli__codex`).
 
 ## Model
 
-**Pin `model: "gpt-5.6-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Plan review benefits from flagship reasoning — don't downgrade to `gpt-5.6-luna` here. Set both on the first `codex` call only; `codex-reply` inherits them. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort.
+**Pin `model: "gpt-6-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Plan review benefits from flagship reasoning — don't downgrade to `gpt-6-luna` here. Set both on the first `codex` call only; `codex-reply` reuses them unless you escalate. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same plan in a fresh thread — see `../references/patterns.md` → Escalating to gpt-6-astra.
 
 ## Flow
 
@@ -23,9 +23,9 @@ Codex reads files from the project root. For plans living outside the repo (e.g.
 
 ```
 mcp__plugin_codex_cli__codex({
-  "prompt": "Review this implementation plan:\n\n---\n[PLAN CONTENT HERE]\n---\n\nConsider:\n1. Gaps or missing steps?\n2. Risks not addressed?\n3. Is the approach optimal? What alternatives should we consider?",
+  "prompt": "<task>\nReview this implementation plan before it is built.\nGoal: [GOAL]\nConstraints already decided: [CONSTRAINTS]\nOut of scope: [OUT OF SCOPE]\n---\n[PLAN CONTENT HERE]\n---\n</task>\n\n<structured_output_contract>\nReturn, most serious first:\n1. Gaps or missing steps\n2. Risks not addressed\n3. Better alternatives, if any\nName the plan step each point applies to. If the plan is sound, say so in one line.\n</structured_output_contract>\n\n<grounding_rules>\nCheck claims about the codebase against the actual files. Label inferences.\n</grounding_rules>",
   "sandbox": "read-only",
-  "model": "gpt-5.6-sol",
+  "model": "gpt-6-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -36,7 +36,7 @@ If the plan lives inside the repo, you can just reference the path:
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the implementation plan at docs/plans/auth-rewrite.md. Flag gaps, risks, and better alternatives.",
   "sandbox": "read-only",
-  "model": "gpt-5.6-sol",
+  "model": "gpt-6-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -49,7 +49,7 @@ Let Codex cross-check the plan against the actual code:
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nRead these source files for context before critiquing:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate whether the plan accounts for the real code structure.",
   "sandbox": "read-only",
-  "model": "gpt-5.6-sol",
+  "model": "gpt-6-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -61,7 +61,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Risk review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail",
   "sandbox": "read-only",
-  "model": "gpt-5.6-sol",
+  "model": "gpt-6-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -71,7 +71,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Completeness review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Edge cases covered?\n- Testing addressed?\n- Missing steps?",
   "sandbox": "read-only",
-  "model": "gpt-5.6-sol",
+  "model": "gpt-6-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -82,7 +82,7 @@ When you're still iterating on the same plan, **continue the existing thread** r
 
 Typical loop: initial critique → Claude revises the plan → `codex-reply` with the revised sections asking "does this address your concern?" → Codex confirms or pushes back → repeat.
 
-**Cap at 3–4 rounds total.** Plan review should converge fast; if you're still going at round 5, stop and surface the open questions to the user rather than letting the dialog spiral.
+**Cap at 3–4 rounds total, and run round 3 onward on `gpt-6-astra`.** Plan review should converge fast; if you're still going at round 5, stop and surface the open questions to the user rather than letting the dialog spiral.
 
 **`threadId` is an MCP argument — pass it as the `threadId` field of `codex-reply`, not in the `prompt` text.** See `../references/mcp-schema.md` for wrong-vs-right examples.
 
@@ -93,7 +93,7 @@ Typical loop: initial critique → Claude revises the plan → `codex-reply` wit
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nFlag gaps, risks, and better alternatives.",
   "sandbox": "read-only",
-  "model": "gpt-5.6-sol",
+  "model": "gpt-6-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: "No rollback strategy for the schema migration in step 3."
@@ -104,10 +104,12 @@ mcp__plugin_codex_cli__codex-reply({
   "prompt": "Revised step 3 to use an expand-contract migration with a reversible intermediate state:\n\n[REVISED SECTION]\n\nDoes this address the rollback concern?"
 })
 
-# Round 3 — triage remaining risks
+# Round 3 — triage remaining risks; escalate to gpt-6-astra (the thread keeps its history)
 mcp__plugin_codex_cli__codex-reply({
   "threadId": "019da14b-...",
-  "prompt": "Of the risks you flagged, which would actually block merge vs. which can be mitigated post-launch?"
+  "prompt": "Of the risks you flagged, which would actually block merge vs. which can be mitigated post-launch?",
+  "model": "gpt-6-astra",
+  "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
@@ -120,6 +122,7 @@ Codex's critique is input, not instructions — treat it the way you'd treat a t
 - **Relay it.** Surface the findings to the user (or act on them); don't silently absorb a critique and quietly rewrite the plan as if it were your own conclusion.
 - **Don't auto-apply.** Codex can be wrong or miss project context it never saw (see `../references/patterns.md` → Validation). Weigh each point against the actual constraints before revising.
 - **Surface genuine disagreements to the user** rather than looping with Codex to force consensus — if you and Codex still differ after a round or two, that disagreement is exactly what the user needs to see.
+- Present the critique in Codex's order, most serious first, and keep its inference labels. See `../references/patterns.md` → Presenting results. For more prompt blocks, see `../references/prompting.md`.
 
 ## Safety
 
