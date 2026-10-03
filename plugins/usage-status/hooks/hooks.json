@@ -1,4 +1,4 @@
 {
   "hooks": {},
-  "modules": ["./register.ts"]
+  "modules": ["./register.tsx"]
 }
