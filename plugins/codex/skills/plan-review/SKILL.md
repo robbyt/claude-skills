@@ -1,6 +1,6 @@
 ---
 name: plan-review
-description: Get Codex's review of an implementation plan before the user starts building — trigger when they want Codex (or a named GPT model like gpt-6-sol) to review, critique, or pressure-test a plan. Applies to any plan-shaped artifact — a plan file, plan-mode plan, a migration/rearchitecture/integration/checkout write-up, or a doc describing how they intend to do something (pasted, at a repo path, or just described). Fire on any second-opinion phrasing — "poke holes in it", "sanity-check my plan", "run this past Codex", "get Codex's take", "flag the biggest risks", "look this over before I start", "did I miss edge cases, testing, or a rollback path?". The point is catching gaps, risks, missing steps, and better alternatives ahead of implementation. Do NOT use for reviewing already-written code or diffs (that's diff-review), mapping an existing codebase's architecture (codebase-analysis), or web/research questions.
+description: Get Codex's review of an implementation plan before the user starts building — trigger when they want Codex (or a named GPT model like gpt-6.1-sol) to review, critique, or pressure-test a plan. Applies to any plan-shaped artifact — a plan file, plan-mode plan, a migration/rearchitecture/integration/checkout write-up, or a doc describing how they intend to do something (pasted, at a repo path, or just described). Fire on any second-opinion phrasing — "poke holes in it", "sanity-check my plan", "run this past Codex", "get Codex's take", "flag the biggest risks", "look this over before I start", "did I miss edge cases, testing, or a rollback path?". The point is catching gaps, risks, missing steps, and better alternatives ahead of implementation. Do NOT use for reviewing already-written code or diffs (that's diff-review), mapping an existing codebase's architecture (codebase-analysis), or web/research questions.
 ---
 
 # Plan Review via Codex
@@ -13,7 +13,7 @@ Use Codex to critique implementation plans for gaps, risks, and better alternati
 
 ## Model
 
-**Pin `model: "gpt-6-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Plan review benefits from flagship reasoning — don't downgrade to `gpt-6-luna` here. Set both on the first `codex` call only; `codex-reply` reuses them unless you escalate. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same plan in a fresh thread — see `../references/patterns.md` → Escalating to gpt-6-astra.
+**Pin `model: "gpt-6.1-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Plan review benefits from flagship reasoning — don't downgrade to `gpt-6-luna` here. Set both on the first `codex` call only; `codex-reply` reuses them unless you escalate. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same plan in a fresh thread — see `../references/patterns.md` → Escalating to gpt-6-astra.
 
 ## Flow
 
@@ -25,7 +25,7 @@ Codex reads files from the project root. For plans living outside the repo (e.g.
 mcp__plugin_codex_cli__codex({
   "prompt": "<task>\nReview this implementation plan before it is built.\nGoal: [GOAL]\nConstraints already decided: [CONSTRAINTS]\nOut of scope: [OUT OF SCOPE]\n---\n[PLAN CONTENT HERE]\n---\n</task>\n\n<structured_output_contract>\nReturn, most serious first:\n1. Gaps or missing steps\n2. Risks not addressed\n3. Better alternatives, if any\nName the plan step each point applies to. If the plan is sound, say so in one line.\n</structured_output_contract>\n\n<grounding_rules>\nCheck claims about the codebase against the actual files. Label inferences.\n</grounding_rules>",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -36,7 +36,7 @@ If the plan lives inside the repo, you can just reference the path:
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the implementation plan at docs/plans/auth-rewrite.md. Flag gaps, risks, and better alternatives.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -49,7 +49,7 @@ Let Codex cross-check the plan against the actual code:
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nRead these source files for context before critiquing:\n- src/auth/login.ts\n- src/middleware/session.ts\n\nEvaluate whether the plan accounts for the real code structure.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -61,7 +61,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Risk review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Breaking changes\n- Data loss potential\n- Rollback complexity\n- Dependencies that could fail",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -71,7 +71,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Completeness review of this plan:\n\n[PLAN CONTENT]\n\nEvaluate:\n- Edge cases covered?\n- Testing addressed?\n- Missing steps?",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -93,7 +93,7 @@ Typical loop: initial critique → Claude revises the plan → `codex-reply` wit
 mcp__plugin_codex_cli__codex({
   "prompt": "Review this plan:\n\n[PLAN CONTENT]\n\nFlag gaps, risks, and better alternatives.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: "No rollback strategy for the schema migration in step 3."

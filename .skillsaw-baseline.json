@@ -1,7 +1,7 @@
 {
   "version": "1",
   "generated_by": "skillsaw 0.21.0",
-  "generated_at": "2026-10-03T05:29:41.653757+00:00",
+  "generated_at": "2026-10-09T02:03:49.094226+00:00",
   "violations": [
     {
       "fingerprint": "706fff9e737969fc",
@@ -15,9 +15,9 @@
       "fingerprint": "f27bcb725a788fd5",
       "rule_id": "context-budget",
       "file_path": "plugins/codex/agents/consult.md",
-      "message": "Estimated 3,126 tokens exceeds agent warn limit of 2,000",
+      "message": "Estimated 3,165 tokens exceeds agent warn limit of 2,000",
       "severity": "warning",
-      "value": 3126,
+      "value": 3165,
       "baseline_mode": "ceiling"
     },
     {
