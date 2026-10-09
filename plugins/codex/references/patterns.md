@@ -22,23 +22,28 @@ Tool names (check `/mcp` for exact names on your install):
 
 ## Models
 
-Authoritative list (current snapshot below may go stale): https://developers.openai.com/codex/models — and what your local Codex advertises. The bare `gpt-6` name is **not** in the CLI's model list; use the explicit `-astra`/`-sol`/`-luna` slugs.
+Authoritative list (current snapshot below may go stale): https://learn.chatgpt.com/docs/models — and what your local Codex advertises. The bare `gpt-6` name is **not** in the CLI's model list; use the explicit `-astra`/`-sol`/`-luna` slugs.
 
 | Model | When to use | Pinned effort |
 |-------|-------------|---------------|
-| `gpt-6-sol` | **Default for these skills.** OpenAI's recommendation for complex coding and multi-step agent work: plan review, codebase analysis, security/perf review. | `medium` |
+| `gpt-6.1-sol` | **Default for these skills.** OpenAI's recommendation for complex coding and multi-step agent work ("near-Astra performance at a lower cost than Astra"): plan review, codebase analysis, security/perf review. | `medium` |
 | `gpt-6-luna` | OpenAI's recommendation for focused, repeatable tasks: single-function diff, dependency lookup, yes/no triage. | `low` |
 | `gpt-6-astra` | Frontier tier. Not used on the first call; escalate to it when a thread needs repeated refinement (see [Escalating to gpt-6-astra](#escalating-to-gpt-6-astra)) or when the user asks. | `medium` |
-| `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` | Previous generation. Use only if the user asks or the account lacks GPT-6. | `medium` / `medium` / `low` |
-| `gpt-5.5` | Legacy. | — |
+| `gpt-6-sol` | Previous Sol. Use only if the user asks, or as the deep-task fallback when the account or CLI doesn't list `gpt-6.1-sol`. | `medium` |
+| `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` | Older generation. Use only if the user asks or the account lacks GPT-6. | `medium` / `medium` / `low` |
+| `gpt-5.5` | Retires from Codex on 2026-10-14 (hidden from the CLI list already). Don't use. | — |
 
-**Default behavior: pin both `model` and effort explicitly** (see [Reasoning effort](#reasoning-effort) for why omitting is not the same as using a model default). For deep tasks — plan critique, codebase analysis, security/perf review — use `gpt-6-sol` at `medium`. For clearly small tasks — a brief lookup, a tiny diff, a yes/no triage — use `gpt-6-luna` at `low` to save quota and latency. **Don't downgrade to `luna` for deep reasoning tasks.**
+**Default behavior: pin both `model` and effort explicitly** (see [Reasoning effort](#reasoning-effort) for why omitting is not the same as using a model default). For deep tasks — plan critique, codebase analysis, security/perf review — use `gpt-6.1-sol` at `medium`. For clearly small tasks — a brief lookup, a tiny diff, a yes/no triage — use `gpt-6-luna` at `low` to save quota and latency. **Don't downgrade to `luna` for deep reasoning tasks.**
 
-Models not listed above (e.g., `o3`, `o4-mini`, `codex-mini-latest`, a `gpt-6-terra` tier, or the bare `gpt-6`) either don't exist, aren't advertised by the CLI, or aren't available to ChatGPT-account users. Don't guess — pick a slug from the table, or one your local Codex actually lists.
+There is no 6.1 Luna or 6.1 Astra: `gpt-6-luna` and `gpt-6-astra` are still the current tiers.
+
+Models not listed above (e.g., `o3`, `o4-mini`, `codex-mini-latest`, a `gpt-6-terra` tier, `gpt-6.1-luna`/`gpt-6.1-astra`, or the bare `gpt-6`/`gpt-6.1`) either don't exist, aren't advertised by the CLI, or aren't available to ChatGPT-account users. Don't guess — pick a slug from the table, or one your local Codex actually lists.
 
 ## Reasoning effort
 
 GPT-6 models expose a reasoning-effort setting. **Set it explicitly on every opening call** — don't rely on "the default." Omitting effort does **not** pick the model's own default; it inherits whatever `model_reasoning_effort` is in the user's `~/.codex/config.toml`, which is unknown and could be anything (`high`, `max`, …). For reproducible behavior, pin it: `sol` → `medium`, `luna` → `low`, `astra` → `medium`. Raise sol to `high` only for a task that measurably benefits.
+
+`gpt-6.1-sol` keeps sol's `medium`: OpenAI's migration guidance from `gpt-6-sol` is to preserve the effective effort. Pinning matters more for it than before, because Codex's catalog default for `gpt-6.1-sol` is `low` (it was `medium` for `gpt-6-sol`), so a config with no effort set would silently run reviews shallower. Unlike `gpt-6-sol`, `gpt-6.1-sol` doesn't accept `none` or `minimal`; use `low`.
 
 Pass it via the MCP `config` object (overrides `config.toml` for that call). Model + effort go on the **opening `codex` call**; `codex-reply` reuses both, so set them once when you start the thread. The exception is escalation: pass `model`/`config` on a `codex-reply` to switch the thread to a stronger model (next section).
 
@@ -46,21 +51,21 @@ Pass it via the MCP `config` object (overrides `config.toml` for that call). Mod
 mcp__plugin_codex_cli__codex({
   "prompt": "...",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
 
-Bash equivalent (quote the TOML value so the shell keeps it): `-m gpt-6-sol -c 'model_reasoning_effort="medium"'`.
+Bash equivalent (quote the TOML value so the shell keeps it): `-m gpt-6.1-sol -c 'model_reasoning_effort="medium"'`.
 
-**Capability vs. recommendation** — supported effort levels (capability snapshot observed with Codex CLI 0.155.1 on 2026-09-23, from the account's local model list; availability and levels are account- and release-dependent and may change — check your local Codex model list):
+**Capability vs. recommendation** — supported effort levels (capability snapshot observed with Codex CLI 0.162.0 on 2026-10-08, from the account's local model list; availability and levels are account- and release-dependent and may change — check your local Codex model list):
 
 | Model | Supported efforts |
 |-------|-------------------|
-| `gpt-6-astra`, `gpt-6-sol` | `low`, `medium`, `high`, `xhigh`, `max`, `ultra` |
+| `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-sol` | `low`, `medium`, `high`, `xhigh`, `max`, `ultra` |
 | `gpt-6-luna` | `low`, `medium`, `high`, `xhigh`, `max` |
 
-This table is *capability*, not policy. By default this plugin uses only `gpt-6-sol`/`medium` and `gpt-6-luna`/`low`.
+This table is *capability*, not policy. By default this plugin uses only `gpt-6.1-sol`/`medium` and `gpt-6-luna`/`low`.
 
 ## Escalating to gpt-6-astra
 
@@ -70,7 +75,7 @@ Repeated refinement is a sign the task is harder than the opening model handles 
 - **Round 3 of a thread.** The opening call and one follow-up haven't settled it, and you are about to send another substantive round (a revised plan or diff, or a point still in dispute).
 - **A disagreement survives a round.** You pushed back with evidence and Codex either held its position without new evidence or reversed itself, and the point still matters.
 - **A second review of the same work in a fresh thread.** For example, re-reviewing a revised plan or diff after the earlier `threadId` was lost, or after an earlier review round in this session already led to revisions. Open the new thread on astra.
-- **A `gpt-6-luna` thread turns out not to be small.** Move it to `gpt-6-sol` on the first substantive follow-up, then to astra if it reaches round 3.
+- **A `gpt-6-luna` thread turns out not to be small.** Move it to `gpt-6.1-sol` on the first substantive follow-up, then to astra if it reaches round 3.
 
 **How:** pass `model` (and effort) on the `codex-reply`. The thread keeps its history and later replies stay on astra:
 
@@ -127,7 +132,7 @@ Every `codex` and `codex-reply` response returns a `threadId`. As long as it's s
 mcp__plugin_codex_cli__codex({
   "prompt": "Review the auth flow in src/auth/. Call out concerns.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 # → response includes threadId: "019da14b-8e9d-..."
@@ -203,7 +208,7 @@ Only when the MCP server is unavailable (plugin disabled, server failed to start
 codex exec --ephemeral --sandbox read-only "prompt" < /dev/null
 ```
 
-- Pin the model and effort explicitly: `-m gpt-6-sol -c 'model_reasoning_effort="medium"'` (quote the TOML value so the shell keeps it). Use `-m gpt-6-luna -c 'model_reasoning_effort="low"'` for small tasks.
+- Pin the model and effort explicitly: `-m gpt-6.1-sol -c 'model_reasoning_effort="medium"'` (quote the TOML value so the shell keeps it). Use `-m gpt-6-luna -c 'model_reasoning_effort="low"'` for small tasks.
 - `--ephemeral` avoids persisting a session to `~/.codex/sessions/`.
 - `< /dev/null` stops `codex exec` from waiting on stdin.
 - This requires `dangerouslyDisableSandbox: true` because Codex writes to its own state dirs.
