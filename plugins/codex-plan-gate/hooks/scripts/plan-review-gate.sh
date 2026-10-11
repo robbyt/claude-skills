@@ -63,7 +63,7 @@ will let the re-submission through.
    and append one line to the plan: "_Codex review skipped: trivial plan._"
 
 2. CONSULT CODEX. Otherwise call the MCP tool `mcp__plugin_codex_cli__codex` with
-   `sandbox: "read-only"`, `model: "gpt-6-sol"`, and
+   `sandbox: "read-only"`, `model: "gpt-6.1-sol"`, and
    `config: {"model_reasoning_effort": "medium"}` (or the model the user asked for). Embed the FULL plan you just wrote in the prompt and ask Codex
    to flag gaps, missing steps, risks, and better alternatives. List any in-repo files
    Codex should read for context. Note the `threadId` it returns - you need it for step 3.

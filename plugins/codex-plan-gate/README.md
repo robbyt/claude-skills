@@ -22,7 +22,7 @@ Claude drafts a plan
                                    You see the refined plan
 ```
 
-The hook **denies the first `ExitPlanMode` call** for a plan and feeds Claude a set of instructions: consult Codex via `mcp__plugin_codex_cli__codex` (sandbox `read-only`), have it flag gaps/risks/alternatives, iterate up to **3 rounds** with `codex-reply`, revise the plan, then re-submit. The review opens on `gpt-6-sol`; if it reaches round 3, or a concern is still disputed after a round, Claude switches the thread to `gpt-6-astra`, on the reasoning that repeated refinement means the plan needs a stronger model. A short-lived, session-keyed marker file lets the refined re-submission through, so you only ever see the Codex-reviewed version.
+The hook **denies the first `ExitPlanMode` call** for a plan and feeds Claude a set of instructions: consult Codex via `mcp__plugin_codex_cli__codex` (sandbox `read-only`), have it flag gaps/risks/alternatives, iterate up to **3 rounds** with `codex-reply`, revise the plan, then re-submit. The review opens on `gpt-6.1-sol` at `medium` effort; if it reaches round 3, or a concern is still disputed after a round, Claude switches the thread to `gpt-6-astra`, on the reasoning that repeated refinement means the plan needs a stronger model. A short-lived, session-keyed marker file lets the refined re-submission through, so you only ever see the Codex-reviewed version.
 
 Claude is told to **skip the review for trivial plans** (single obvious edits, doc/config tweaks) and just note that it skipped.
 
