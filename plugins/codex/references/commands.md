@@ -12,7 +12,7 @@ The plugin's `.mcp.json` starts its own MCP server (`scripts/codex-mcp-server.mj
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project's architecture.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -21,7 +21,7 @@ mcp__plugin_codex_cli__codex({
 |-----------|----------|---------|-------|
 | `prompt` | yes | — | The task or question |
 | `sandbox` | no | `read-only` | Only `read-only` is accepted |
-| `model` | no | — | **Pin explicitly.** `gpt-6-sol` for deep tasks, `gpt-6-luna` for small ones (see Models). Don't omit — see `patterns.md` → Reasoning effort. |
+| `model` | no | — | **Pin explicitly.** `gpt-6.1-sol` for deep tasks, `gpt-6-luna` for small ones (see Models). Don't omit — see `patterns.md` → Reasoning effort. |
 | `config` | no | — | TOML overrides (dotted paths). Carries reasoning effort: `{ "model_reasoning_effort": "medium" }`. |
 | `cwd` | no | project root | Working directory |
 | `outputSchema` | no | — | `"review"` for the bundled review schema, or an inline JSON Schema object |
@@ -44,15 +44,16 @@ mcp__plugin_codex_cli__codex-reply({
 
 ## Models
 
-Authoritative list (snapshot below may go stale): https://developers.openai.com/codex/models — and what your local Codex advertises. The bare `gpt-6` name is **not** in the CLI list; use explicit slugs. Pin effort alongside the model — see `patterns.md` → Reasoning effort.
+Authoritative list (snapshot below may go stale): https://learn.chatgpt.com/docs/models — and what your local Codex advertises. The bare `gpt-6` name is **not** in the CLI list; use explicit slugs. Pin effort alongside the model — see `patterns.md` → Reasoning effort.
 
 | Model | Notes | Pinned effort |
 |-------|-------|---------------|
-| `gpt-6-sol` | Complex coding and multi-step agent work — default for deep tasks | `medium` |
+| `gpt-6.1-sol` | Complex coding and multi-step agent work — default for deep tasks | `medium` |
 | `gpt-6-luna` | Focused, repeatable tasks | `low` |
 | `gpt-6-astra` | Frontier tier; escalate to it for repeated refinement (round 3+, see `patterns.md`) | `medium` |
-| `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` | Previous generation | `medium` / `medium` / `low` |
-| `gpt-5.5` | Legacy | — |
+| `gpt-6-sol` | Previous Sol; deep-task fallback when `gpt-6.1-sol` isn't listed | `medium` |
+| `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` | Older generation | `medium` / `medium` / `low` |
+| `gpt-5.5` | Retires from Codex 2026-10-14; don't use | — |
 
 ## Bash fallback (rare)
 
@@ -60,7 +61,7 @@ Only when MCP is unavailable. Requires `dangerouslyDisableSandbox: true`.
 
 ```bash
 codex exec --ephemeral --sandbox read-only \
-  -m gpt-6-sol -c 'model_reasoning_effort="medium"' "prompt" < /dev/null
+  -m gpt-6.1-sol -c 'model_reasoning_effort="medium"' "prompt" < /dev/null
 ```
 
 `codex exec` reads stdin to EOF when stdin is not a terminal and appends it to the prompt. Redirect from `/dev/null` (or pipe the prompt in and pass `-` as the prompt) so it doesn't wait on an open pipe.
@@ -71,7 +72,7 @@ codex exec --ephemeral --sandbox read-only \
 |------|---------|
 | `--ephemeral` | Don't persist session to `~/.codex/sessions/` |
 | `--sandbox read-only` | Read-only filesystem access |
-| `-m <model>` | Model to use — pin explicitly (`gpt-6-sol` deep, `gpt-6-luna` small) |
+| `-m <model>` | Model to use — pin explicitly (`gpt-6.1-sol` deep, `gpt-6-luna` small) |
 | `-c 'model_reasoning_effort="<level>"'` | Reasoning effort (`medium` for sol, `low` for luna). Quote the value so the shell keeps the TOML string. |
 | `-C <dir>` | Set working directory |
 | `--output-last-message <file>` | Write final agent message to file |

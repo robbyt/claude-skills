@@ -13,7 +13,7 @@ Use Codex to get a second-opinion architectural read of the current project, wit
 
 ## Model
 
-**Pin `model: "gpt-6-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Codebase analysis benefits from the flagship's reasoning across many files — don't downgrade to `gpt-6-luna` here. Set both on the first `codex` call only; `codex-reply` reuses them unless you escalate. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same area in a fresh thread — see `../references/patterns.md` → Escalating to gpt-6-astra.
+**Pin `model: "gpt-6.1-sol"` with `config: { "model_reasoning_effort": "medium" }`** on the opening call. Codebase analysis benefits from the flagship's reasoning across many files — don't downgrade to `gpt-6-luna` here. Set both on the first `codex` call only; `codex-reply` reuses them unless you escalate. Honor an explicit user-named model if given. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same area in a fresh thread — see `../references/patterns.md` → Escalating to gpt-6-astra.
 
 ## Basic call
 
@@ -21,7 +21,7 @@ Use Codex to get a second-opinion architectural read of the current project, wit
 mcp__plugin_codex_cli__codex({
   "prompt": "<task>\nAnalyze this project's architecture: entry points, major modules, component relationships, and notable dependencies.\n</task>\n\n<compact_output_contract>\nStructured sections, one per topic. Cite the files each claim is based on.\n</compact_output_contract>\n\n<grounding_rules>\nGround claims in files you read. Label inferences, and list what you could not determine.\n</grounding_rules>",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -44,7 +44,7 @@ The response includes a `threadId`. Use `mcp__plugin_codex_cli__codex-reply` wit
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project. Report on:\n- Overall architecture\n- Key dependencies\n- Component relationships\n- Potential issues",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -54,7 +54,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Map the authentication flow. Identify every component involved from request to session creation.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -64,7 +64,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze dependencies: direct vs transitive, outdated packages, circular dependencies, bundle-size impact.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -89,7 +89,7 @@ Typical loop:
 mcp__plugin_codex_cli__codex({
   "prompt": "Map the auth flow end-to-end.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: uncertainty about session rotation

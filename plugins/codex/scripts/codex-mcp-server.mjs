@@ -37,7 +37,7 @@ export const TOOLS = [
         prompt: { type: "string", description: "The task or question for Codex." },
         model: {
           type: "string",
-          description: "Model slug, e.g. gpt-6-sol or gpt-6-luna. Omit to use ~/.codex/config.toml.",
+          description: "Model slug, e.g. gpt-6.1-sol or gpt-6-luna. Omit to use ~/.codex/config.toml.",
         },
         sandbox: {
           type: "string",

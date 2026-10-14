@@ -48,7 +48,7 @@ Codebase and architecture analysis with read-only sandbox.
 
 ## Models
 
-Skills pin `gpt-6-sol` at `medium` effort for complex work and `gpt-6-luna` at `low` for small, focused tasks. Ask for a different model by name to override. See `references/patterns.md`.
+Skills pin `gpt-6.1-sol` at `medium` effort for complex work and `gpt-6-luna` at `low` for small, focused tasks. Ask for a different model by name to override. See `references/patterns.md`.
 
 ## Setup
 

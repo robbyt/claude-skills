@@ -155,7 +155,7 @@ test("codex runs exec read-only with model and effort, then codex-reply reuses t
   t.after(s.stop);
   const first = await s.call(
     "codex",
-    { prompt: "review this", model: "gpt-6-sol", config: { model_reasoning_effort: "medium" } },
+    { prompt: "review this", model: "gpt-6.1-sol", config: { model_reasoning_effort: "medium" } },
     { progressToken: "tok" },
   );
   assert.equal(first.isError, undefined);
@@ -172,15 +172,15 @@ test("codex runs exec read-only with model and effort, then codex-reply reuses t
   assert.equal(open.cmuxHooksDisabled, "1");
   assert.deepEqual(open.argv.slice(0, 5), ["exec", "--json", "--skip-git-repo-check", "-s", "read-only"]);
   assert.equal(open.argv.at(-1), "-");
-  assert.ok(open.argv.join(" ").includes('-m gpt-6-sol -c model_reasoning_effort="medium"'));
-  assert.ok(resume.argv.join(" ").includes(`-m gpt-6-sol -c model_reasoning_effort="medium" resume ${THREAD_ID} -`));
+  assert.ok(open.argv.join(" ").includes('-m gpt-6.1-sol -c model_reasoning_effort="medium"'));
+  assert.ok(resume.argv.join(" ").includes(`-m gpt-6.1-sol -c model_reasoning_effort="medium" resume ${THREAD_ID} -`));
   assert.equal(resume.stdin, "and now?");
 });
 
 test("codex-reply can switch the thread to a stronger model, and later replies keep it", async (t) => {
   const s = startServer();
   t.after(s.stop);
-  await s.call("codex", { prompt: "a", model: "gpt-6-sol", config: { model_reasoning_effort: "medium", web_search: "live" } });
+  await s.call("codex", { prompt: "a", model: "gpt-6.1-sol", config: { model_reasoning_effort: "medium", web_search: "live" } });
   await s.call("codex-reply", { threadId: THREAD_ID, prompt: "b", model: "gpt-6-astra", config: { model_reasoning_effort: "high" } });
   await s.call("codex-reply", { threadId: THREAD_ID, prompt: "c" });
   const [, escalated, later] = s.calls().map((c) => c.argv.join(" "));

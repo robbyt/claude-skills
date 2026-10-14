@@ -19,7 +19,7 @@ codex features list      # feature flags and their states
 | Parameter | Required | Notes |
 |-----------|----------|-------|
 | `prompt` | yes | Initial prompt. Sent to Codex on stdin, so long embedded plans and diffs are fine. |
-| `model` | no | **Pin explicitly.** Don't omit it: omitting inherits the user's `config.toml`, not a model default. Use `gpt-6-sol` for deep tasks and `gpt-6-luna` for small ones. `gpt-6-astra` is for escalation (see `patterns.md` → Escalating to gpt-6-astra). The bare `gpt-6` name is unlisted; use the slugs. See `patterns.md` → Models. |
+| `model` | no | **Pin explicitly.** Don't omit it: omitting inherits the user's `config.toml`, not a model default. Use `gpt-6.1-sol` for deep tasks and `gpt-6-luna` for small ones. `gpt-6-astra` is for escalation (see `patterns.md` → Escalating to gpt-6-astra). The bare `gpt-6` name is unlisted; use the slugs. See `patterns.md` → Models. |
 | `sandbox` | no | Only `read-only` is accepted, and it is the default. Other values return an error. |
 | `config` | no | Config overrides as dotted keys with string, number, or boolean values, each passed as `-c key=value`. Reasoning effort goes here, e.g. `{ "model_reasoning_effort": "medium" }` (`medium` for sol, `low` for luna). |
 | `cwd` | no | Working directory. Defaults to the project directory. |
@@ -37,7 +37,7 @@ Opening call — pin `model` and reasoning effort via `config`:
 mcp__plugin_codex_cli__codex({
   "prompt": "Analyze this project's architecture.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.1-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
