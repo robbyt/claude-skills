@@ -1,7 +1,7 @@
 {
   "name": "codex",
   "description": "OpenAI Codex CLI integration with a bundled MCP server and read-only skills for plan review, code review, adversarial review, and codebase analysis",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "author": {
     "name": "robbyt",
     "email": "robbyt@robbyt.net"

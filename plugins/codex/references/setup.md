@@ -38,17 +38,17 @@ At runtime, call Codex via the MCP tool, not `codex exec` — see `patterns.md`.
 
 ## Model compatibility
 
-These skills **pin** the GPT-6 tiers explicitly (`gpt-6-sol` for deep tasks, `gpt-6-luna` for small ones), so an older CLI or an account without GPT-6 access will **error** rather than silently fall back.
+These skills **pin** models explicitly (`gpt-6.2-sol` for deep tasks, `gpt-6.2-astra` for escalation, `gpt-6-luna` for small ones), so an older CLI or an account without GPT-6.2 access will **error** rather than silently fall back.
 
-- Tested with **Codex CLI 0.155.1**. The minimum is 0.154, which the MCP server requires. If a GPT-6 slug is rejected, upgrade first: `npm install -g @openai/codex`.
-- Your **local model list is authoritative** — availability is account- and release-dependent. Confirm a slug is advertised before relying on it (an unsupported name fails fast: `codex exec -m gpt-6-sol --sandbox read-only --ephemeral "hi" < /dev/null`).
-- **Operational fallback** if your account hasn't received GPT-6: editing `~/.codex/config.toml` alone won't help, because the skills override the model per call. Instead, **explicitly ask** for a model your Codex advertises (e.g. "use gpt-5.6-sol") — the skills/agent honor a supported user-provided model — or use an API-key install that has the GPT-6 tiers.
+- Tested with **Codex CLI 0.169.1**. The MCP server needs at least 0.154. If a GPT-6.2 slug is rejected, upgrade first: `npm install -g @openai/codex`.
+- Your **local model list is authoritative** — availability is account- and release-dependent. Confirm a slug is advertised before relying on it (an unsupported name fails fast: `codex exec -m gpt-6.2-sol --sandbox read-only --ephemeral "hi" < /dev/null`).
+- **Operational fallback** if your account hasn't received GPT-6.2: editing `~/.codex/config.toml` alone won't help, because the skills override the model per call. Instead, **explicitly ask** for a model your Codex advertises (e.g. "use gpt-6.1-sol") — the skills/agent honor a supported user-provided model — or use an API-key install that has the GPT-6.2 tiers.
 
 ## Authentication
 
 Claude Code will **not** configure Codex auth. Codex CLI must be pre-authenticated (ChatGPT account or API key). See https://github.com/openai/codex for options.
 
-**ChatGPT account note:** the GPT-6 tiers (`gpt-6-astra`, `gpt-6-sol`, `gpt-6-luna`) plus the older `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, and `gpt-5.5` work on Plus/Pro/Business/Edu/Enterprise plans. Availability is account-dependent — your local Codex model list is authoritative. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, the bare `gpt-6`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
+**ChatGPT account note:** the current tiers (`gpt-6.2-sol`, `gpt-6.2-astra`, `gpt-6-luna`) plus the older `gpt-6-astra`, `gpt-6.1-sol`, `gpt-6.1-terra`, `gpt-6-sol`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna`, and `gpt-5.5` work on Plus/Pro/Business/Edu/Enterprise plans. Availability is account-dependent — your local Codex model list is authoritative. Other names (`o3`, `o4-mini`, `gpt-5.4-codex`, `codex-mini-latest`, `gpt-6.2-luna`, `gpt-6.2-terra`, the bare `gpt-6`, …) return "model is not supported when using Codex with a ChatGPT account" — use an API-key install for those.
 
 ## Sandbox Modes
 
@@ -86,7 +86,7 @@ The cmux terminal puts a wrapper script in front of `codex` that adds a computer
 
 ### "model is not supported" error
 
-You're passing a model name your Codex account or CLI doesn't advertise. Common causes: the bare `gpt-6` (unlisted — use `gpt-6-sol`), an account that hasn't received the GPT-6 tiers yet, or an out-of-date CLI. Pick a slug your local Codex actually lists (`codex exec -m … --sandbox read-only --ephemeral "hi"` fails fast on an unsupported name), or fall back to an older listed model — `gpt-5.6-sol`, `gpt-5.6-luna`, `gpt-5.5`. See the compatibility note above for the operational fallback.
+You're passing a model name your Codex account or CLI doesn't advertise. Common causes: the bare `gpt-6`/`gpt-6.2` (unlisted — use `gpt-6.2-sol`), a nonexistent tier like `gpt-6.2-luna` (use `gpt-6-luna`), an account that hasn't received GPT-6.2 yet, or an out-of-date CLI. Pick a slug your local Codex actually lists (`codex exec -m … --sandbox read-only --ephemeral "hi"` fails fast on an unsupported name), or fall back to an older listed model — `gpt-6.1-sol`, `gpt-6-astra`, `gpt-6-sol`, `gpt-5.6-sol`. See the compatibility note above for the operational fallback.
 
 ### Codex asks clarifying questions instead of answering
 
