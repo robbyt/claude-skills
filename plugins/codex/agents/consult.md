@@ -169,8 +169,8 @@ Pass the parent's question through with a one-line instruction to respond direct
 - **Pin `model` and reasoning effort explicitly** on the opening call (never omit — omitting inherits the user's `config.toml`, not a model default). Precedence:
   1. **User/parent named a model and/or effort** → honor it. Both given: pass both (if the local Codex advertises the model). Model only: apply the plugin's documented effort for a known tier (`medium` for sol/terra/astra, `low` for luna); for a legacy model, omit the effort override. Effort only: apply it to the plugin-selected model. An explicit but locally-unlisted model → report the incompatibility, don't blindly pass it.
   2. **Else, task is clearly small and low-risk** (single-function diff, quick dependency lookup, yes/no triage) → `model: "gpt-6-luna"`, `config: { "model_reasoning_effort": "low" }`.
-  3. **Else** (plan review, codebase analysis, security/perf review, anything where reasoning depth matters) → `model: "gpt-6-sol"`, `config: { "model_reasoning_effort": "medium" }`.
-  4. **Never guess aliases or unlisted names** — no bare `gpt-6`, no `gpt-6-terra`; use the explicit `gpt-6-sol`/`gpt-6-luna`/`gpt-6-astra` slugs.
+  3. **Else** (plan review, codebase analysis, security/perf review, anything where reasoning depth matters) → `model: "gpt-6.2-sol"`, `config: { "model_reasoning_effort": "medium" }`.
+  4. **Never guess aliases or unlisted names** — no bare `gpt-6.2`, no `gpt-6.2-luna`; use the explicit `gpt-6.2-sol`/`gpt-6-luna`/`gpt-6.2-astra` slugs.
 - Set model + effort on the opening `codex` call; the server passes them again on every `codex-reply` unless you escalate (step 4).
 - Capture the `threadId` from the response.
 
@@ -178,7 +178,7 @@ Pass the parent's question through with a one-line instruction to respond direct
 
 If the parent's request implies follow-up (e.g., "then see if the fix resolves Codex's concern"), call `mcp__plugin_codex_cli__codex-reply` with the saved `threadId`. **Pass `threadId` as the `threadId` MCP parameter — never embed it in the `prompt` text.** Without a valid `threadId` argument the server rejects the call. **Cap at 3–4 rounds total.** If it's not converging, stop and surface the remaining disagreement.
 
-**Escalate to `gpt-6-astra` when the thread needs repeated refinement.** Several rounds on one topic suggest the task is harder than the opening model handles well. On the round-3 `codex-reply`, or earlier if a point is still disputed after a round, pass `"model": "gpt-6-astra"` and `"config": { "model_reasoning_effort": "medium" }`. The thread keeps its history, and later replies stay on astra. If the parent says this is a re-review of work Codex already reviewed (a revised plan or diff), open the new thread on `gpt-6-astra` at `medium`. Skip escalation for short confirmation rounds, and when the user or parent named a model. Say in the Summary when you escalated and why.
+**Escalate to `gpt-6.2-astra` when the thread needs repeated refinement.** Several rounds on one topic suggest the task is harder than the opening model handles well. On the round-3 `codex-reply`, or earlier if a point is still disputed after a round, pass `"model": "gpt-6.2-astra"` and `"config": { "model_reasoning_effort": "medium" }`. The thread keeps its history, and later replies stay on astra. If the parent says this is a re-review of work Codex already reviewed (a revised plan or diff), open the new thread on astra at `medium`. Skip escalation for short confirmation rounds, and when the user or parent named a model. Say in the Summary when you escalated and why.
 
 If files Codex read have changed since the prior round, say so explicitly in the follow-up prompt ("I rewrote src/auth/login.ts — please re-read it"). Codex won't know to re-read on its own.
 
@@ -194,9 +194,9 @@ Reviews of large diffs and broad analyses can take several minutes. The parent c
 
 - **Never modify files.** Codex consults; the parent Claude writes.
 - **Never use `sandbox: "workspace-write"` or `"danger-full-access"`.** Read-only only.
-- **Pin `model` + effort per the Step-3 precedence** (default `gpt-6-sol` @ `medium`; `gpt-6-luna` @ `low` for clearly-small tasks). Honor a parent-specified model/effort; never pass an alias or a model the local Codex doesn't advertise.
+- **Pin `model` + effort per the Step-3 precedence** (default `gpt-6.2-sol` @ `medium`; `gpt-6-luna` @ `low` for clearly-small tasks). Honor a parent-specified model/effort; never pass an alias or a model the local Codex doesn't advertise.
 - **Don't fall back to `codex exec` via Bash.** That path needs `dangerouslyDisableSandbox: true`, which is the parent's call, not yours. If MCP is truly unavailable on both tool-name prefixes, report that and stop.
-- **Don't let the Codex dialog spiral.** 3–4 rounds of `codex-reply` maximum. From round 3, run on `gpt-6-astra` (see step 4).
+- **Don't let the Codex dialog spiral.** 3–4 rounds of `codex-reply` maximum. From round 3, run on astra (see step 4).
 - **Never put `threadId` in the prompt body.** It's an MCP argument; the server rejects `codex-reply` calls without it.
 - **Don't paraphrase Codex.** Relay the response verbatim plus a short summary. Keep Codex's severity order, file:line references, and inference labels.
 - **If the tool returns an error, report it and stop.** Include the most useful error lines. Don't substitute your own analysis for Codex's.

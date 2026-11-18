@@ -63,7 +63,7 @@ will let the re-submission through.
    and append one line to the plan: "_Codex review skipped: trivial plan._"
 
 2. CONSULT CODEX. Otherwise call the MCP tool `mcp__plugin_codex_cli__codex` with
-   `sandbox: "read-only"`, `model: "gpt-6.1-sol"`, and
+   `sandbox: "read-only"`, `model: "gpt-6.2-sol"`, and
    `config: {"model_reasoning_effort": "medium"}` (or the model the user asked for). Embed the FULL plan you just wrote in the prompt and ask Codex
    to flag gaps, missing steps, risks, and better alternatives. List any in-repo files
    Codex should read for context. Note the `threadId` it returns - you need it for step 3.
@@ -79,14 +79,14 @@ will let the re-submission through.
    material concerns, send the revised sections back via `codex-reply`, and ask whether the
    revision resolves them. Keep using the same `threadId` for rounds 2 and 3. Repeated
    refinement means the plan is harder than it looked: on round 3, or earlier if a concern
-   is still disputed after a round, also pass `model: "gpt-6-astra"` and
+   is still disputed after a round, also pass `model: "gpt-6.2-astra"` and
    `config: {"model_reasoning_effort": "medium"}` on the `codex-reply` (skip this if the
    user named a model). The thread keeps its history. Stop at 3
    rounds total; if anything is still unresolved, surface it as an open question in the plan
    instead of looping further.
 
 4. RE-SUBMIT. Call ExitPlanMode with the refined plan, and note briefly at the end what
-   Codex changed or confirmed, and whether the review escalated to gpt-6-astra.
+   Codex changed or confirmed, and whether the review escalated to gpt-6.2-astra.
 EOF
 
 jq -n --arg r "$reason" '{

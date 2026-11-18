@@ -37,7 +37,7 @@ export const TOOLS = [
         prompt: { type: "string", description: "The task or question for Codex." },
         model: {
           type: "string",
-          description: "Model slug, e.g. gpt-6-sol or gpt-6-luna. Omit to use ~/.codex/config.toml.",
+          description: "Model slug, e.g. gpt-6.2-sol or gpt-6-luna. Omit to use ~/.codex/config.toml.",
         },
         sandbox: {
           type: "string",
@@ -77,7 +77,7 @@ export const TOOLS = [
         model: {
           type: "string",
           description:
-            "Optional. Switch the thread to this model for this and later replies, e.g. escalate to gpt-6-astra. The thread keeps its history.",
+            "Optional. Switch the thread to this model for this and later replies, e.g. escalate to gpt-6.2-astra. The thread keeps its history.",
         },
         config: {
           type: "object",

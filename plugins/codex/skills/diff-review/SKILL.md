@@ -13,7 +13,7 @@ Use Codex to review git changes for bugs, security issues, and style problems. C
 
 ## Model
 
-**Pin `model: "gpt-6-sol"` with `config: { "model_reasoning_effort": "medium" }`** for non-trivial diffs. For small diffs (~< 100 changed lines, single function, no security surface) use `model: "gpt-6-luna"` with `config: { "model_reasoning_effort": "low" }` to save quota. **Security- or performance-focused reviews always stay on `gpt-6-sol` at `medium`** — don't downgrade. Set model+effort on the opening call only; `codex-reply` reuses them unless you escalate. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same diff in a fresh thread — see `../references/patterns.md` → Escalating to gpt-6-astra.
+**Pin `model: "gpt-6.2-sol"` with `config: { "model_reasoning_effort": "medium" }`** for non-trivial diffs. For small diffs (~< 100 changed lines, single function, no security surface) use `model: "gpt-6-luna"` with `config: { "model_reasoning_effort": "low" }` to save quota. **Security- or performance-focused reviews always stay on `gpt-6.2-sol` at `medium`** — don't downgrade. Set model+effort on the opening call only; `codex-reply` reuses them unless you escalate. See `../references/patterns.md` → Models and Reasoning effort. **Escalate to `gpt-6.2-astra`** (pass `model` + `config` on the `codex-reply`) from round 3, when a disagreement survives a round, or when re-reviewing the same diff in a fresh thread — see `../references/patterns.md` → Escalating to Astra.
 
 ## Flow
 
@@ -29,7 +29,7 @@ Then:
 mcp__plugin_codex_cli__codex({
   "prompt": "<task>\nReview codex-review.diff for bugs, security issues, and missing error handling. Read the surrounding source files as needed.\n</task>\n\n<structured_output_contract>\nFindings ordered by severity (critical, high, medium, low). For each: file:line, the problem, why it matters, and a concrete fix. If there are no material findings, say so in one line.\n</structured_output_contract>\n\n<grounding_rules>\nGround every finding in the diff or files you read. Label inferences. Skip style nits unless they hide a bug.\n</grounding_rules>\n\n<dig_deeper_nudge>\nAfter the first issue, check error paths, empty state, retries, and concurrency before finishing.\n</dig_deeper_nudge>",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.2-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -68,7 +68,7 @@ git show <sha> > codex-review.diff
 mcp__plugin_codex_cli__codex({
   "prompt": "Security review of codex-review.diff:\n- XSS vulnerabilities\n- SQL/command injection\n- Sensitive data exposure\n- Auth/authz issues",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.2-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -78,7 +78,7 @@ mcp__plugin_codex_cli__codex({
 mcp__plugin_codex_cli__codex({
   "prompt": "Performance review of codex-review.diff:\n- Inefficient algorithms\n- N+1 queries\n- Memory leaks\n- Blocking operations",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.2-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
@@ -89,7 +89,7 @@ When you're still working on the same diff, **continue the existing thread** rat
 
 Typical loop: initial review → Claude implements a fix → `codex-reply` asking "does the revised code still have the issue?" → Codex confirms or flags new concern → repeat.
 
-**Cap at 3–4 rounds total, and run round 3 onward on `gpt-6-astra`.** Diff reviews should converge fast; if you're still going at round 5, stop and surface the remaining disagreement to the user rather than letting the two models debate indefinitely.
+**Cap at 3–4 rounds total, and run round 3 onward on `gpt-6.2-astra`.** Diff reviews should converge fast; if you're still going at round 5, stop and surface the remaining disagreement to the user rather than letting the two models debate indefinitely.
 
 **`threadId` is an MCP argument — pass it as the `threadId` field of `codex-reply`, not in the `prompt` text.** See `../references/mcp-schema.md` for wrong-vs-right examples.
 
@@ -100,7 +100,7 @@ Typical loop: initial review → Claude implements a fix → `codex-reply` askin
 mcp__plugin_codex_cli__codex({
   "prompt": "Review codex-review.diff for bugs, security issues, and missing error handling.",
   "sandbox": "read-only",
-  "model": "gpt-6-sol",
+  "model": "gpt-6.2-sol",
   "config": { "model_reasoning_effort": "medium" }
 })
 # → threadId: "019da14b-..."  /  flags: "parseToken doesn't handle malformed JWTs — will throw unhandled."
@@ -112,11 +112,11 @@ mcp__plugin_codex_cli__codex-reply({
   "prompt": "I've re-written codex-review.diff with a fix — please re-read the file. I added a try/catch around parseToken that returns 401 on any JWT parse error. Does this address your concern?"
 })
 
-# Round 3 — triage; escalate to gpt-6-astra (the thread keeps its history)
+# Round 3 — triage; escalate to gpt-6.2-astra (the thread keeps its history)
 mcp__plugin_codex_cli__codex-reply({
   "threadId": "019da14b-...",
   "prompt": "Of the remaining issues, which are merge-blockers vs. nits we can defer?",
-  "model": "gpt-6-astra",
+  "model": "gpt-6.2-astra",
   "config": { "model_reasoning_effort": "medium" }
 })
 ```
